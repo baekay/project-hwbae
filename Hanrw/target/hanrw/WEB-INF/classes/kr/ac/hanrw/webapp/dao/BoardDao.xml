@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.ac.hanrw.webapp.dao.BoardDao">
+    <cache/>
+    <!--
+        SQL Query
+    -->
+
+
+    <resultMap id="BoardResultMap" type="Board">
+        <id property="articleId" column="ARTICLE_ID"/>
+        <result property="parentArticleId" column="PARENT_ARTICLE_ID"/>
+        <result property="menuId" column="MENU_ID"/>
+        <result property="userId" column="author_id"/>
+        <result property="subject" column="SUBJECT"/>
+        <result property="context" column="CONTEXT"/>
+        <result property="isReply" column="REPLY_YN"/>
+        <result property="replyCnt" column="REPLY_CNT"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <association property="user" resultMap="oathUser"/>
+        <collection property="attachmentList" resultMap="attachment" notNullColumn="FILE_ID"/>
+        <collection property="replies" resultMap="replyItem" notNullColumn="REPLY_ARTICLE_ID"/>
+    </resultMap>
+    <resultMap id="BoardResultMapList" type="Board">
+        <id property="articleId" column="ARTICLE_ID"/>
+        <result property="parentArticleId" column="PARENT_ARTICLE_ID"/>
+        <result property="menuId" column="MENU_ID"/>
+        <result property="userId" column="author_id"/>
+        <result property="subject" column="SUBJECT"/>
+        <result property="context" column="CONTEXT"/>
+        <result property="isReply" column="REPLY_YN"/>
+        <result property="replyCnt" column="REPLY_CNT"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <association property="user" resultMap="oathUser"/>
+    </resultMap>
+    <resultMap id="oathUser" type="kr.ac.hanrw.webapp.dto.User">
+        <id property="userId" column="USER_ID"/>
+        <result property="userName" column="USER_NAME"/>
+    </resultMap>
+    <resultMap id="attachment" type="Attachment">
+        <id property="fileId" column="FILE_ID"/>
+        <result property="fileNameSrc" column="FILE_NAME_SRC"/>
+        <result property="fileNameSaved" column="FILE_NAME_SAVED"/>
+        <result property="filePath" column="FILE_PATH"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="articleId" column="articleId"/>
+    </resultMap>
+
+    <resultMap id="replyItem" type="Board">
+        <id property="articleId" column="REPLY_ARTICLE_ID"/>
+        <result property="parentArticleId" column="PARENT_ARTICLE_ID"/>
+        <result property="subject" column="REPLY_SUBJECT"/>
+        <result property="isReply" column="REPLY_YN"/>
+        <result property="createTime" column="REPLY_CREATE_TIME"/>
+        <association property="user" javaType="kr.ac.hanrw.webapp.dto.User">
+            <id property="userId" column="REPLY_USER_ID"/>
+            <result property="userName" column="REPLY_USER_NAME"/>
+        </association>
+    </resultMap>
+
+
+    <select id="getBoardListByCondition" resultMap="BoardResultMapList">
+        SELECT
+            A.MENU_ID,
+            A.USER_ID                       AS AUTHOR_ID,
+            A.ARTICLE_ID,
+            A.PARENT_ARTICLE_ID,
+            A.SUBJECT,
+            A.CONTEXT,
+            A.REPLY_YN,
+            A.CREATE_TIME,
+            A.USER_ID,
+            B.USER_NAME,
+            (SELECT COUNT(*) REPLY_CNT
+              FROM BOARD_MASTER M, user_master U
+              WHERE A.ARTICLE_ID = PARENT_ARTICLE_ID AND REPLY_YN=TRUE
+                  AND M.USER_ID = U.USER_ID
+                <if test="searchCondition.column != null and searchCondition.qstr != null">
+                    <if test= "searchCondition.column.equals('name')">
+                      AND U.USER_NAME like '%${searchCondition.qstr}%'
+                    </if>
+                    <if test="searchCondition.column.equals('id')">
+                        AND M.USER_ID like '%${searchCondition.qstr}%'
+                    </if>
+                    <if test="searchCondition.column.equals('subject')">
+                        AND M.SUBJECT like '%${searchCondition.qstr}%'
+                    </if>
+                    <if test="searchCondition.column.equals('context')">
+                        AND M.CONTEXT like '%${searchCondition.qstr}%'
+                    </if>
+                </if>
+            ) AS REPLY_CNT
+        FROM BOARD_MASTER A, USER_MASTER B
+        WHERE REPLY_YN=FALSE AND MENU_ID = #{boardId}
+            AND A.USER_ID = B.USER_ID
+            <if test="searchCondition.column != null and searchCondition.qstr != null">
+                <if test="searchCondition.column.equals('name')">
+                    AND B.USER_NAME like '%${searchCondition.qstr}%'
+                </if>
+                <if test="searchCondition.column.equals('id')">
+                    AND A.USER_ID like '%${searchCondition.qstr}%'
+                </if>
+                <if test="searchCondition.column.equals('subject')">
+                    AND A.SUBJECT like '%${searchCondition.qstr}%'
+                </if>
+                <if test="searchCondition.column.equals('context')">
+                    AND A.CONTEXT like '%${searchCondition.qstr}%'
+                </if>
+            </if>
+        ORDER BY A.ARTICLE_ID DESC
+        <if test="searchCondition.limitStart != null and searchCondition.limitEnd != null">
+            limit ${searchCondition.limitStart},${searchCondition.limitEnd}
+        </if>;
+    </select>
+
+    <select id="getReplyCntById"  parameterType="int" resultType="java.lang.Integer">
+        SELECT COUNT(*) REPLY_CNT
+        FROM BOARD_MASTER
+        WHERE PARENT_ARTICLE_ID = #{articleId} AND REPLY_YN=TRUE
+    </select>
+
+    <select id="getReplyListByCondition"  resultMap="BoardResultMapList">
+        SELECT
+        A.MENU_ID,
+        A.USER_ID                       AS AUTHOR_ID,
+        A.PARENT_ARTICLE_ID,
+        A.ARTICLE_ID,
+        A.SUBJECT,
+        A.CONTEXT,
+        A.REPLY_YN,
+        A.CREATE_TIME,
+        A.USER_ID,
+        B.USER_NAME,
+        (SELECT COUNT(*) REPLY_CNT
+        FROM BOARD_MASTER M, user_master U
+        WHERE A.ARTICLE_ID = PARENT_ARTICLE_ID AND REPLY_YN=TRUE
+        AND M.USER_ID = U.USER_ID
+        <if test="searchCondition.column != null and searchCondition.qstr != null">
+            <if test= "searchCondition.column.equals('name')">
+                AND U.USER_NAME like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('id')">
+                AND M.USER_ID like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('subject')">
+                AND M.SUBJECT like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('context')">
+                AND M.CONTEXT like '%${searchCondition.qstr}%'
+            </if>
+        </if>
+        ) AS REPLY_CNT
+        FROM BOARD_MASTER A, USER_MASTER B
+        WHERE PARENT_ARTICLE_ID = #{parentArticleId} AND REPLY_YN=TRUE
+        AND A.USER_ID = B.USER_ID
+        <if test="searchCondition.column != null and searchCondition.qstr != null">
+            <if test= "searchCondition.column.equals('name')">
+                AND B.USER_NAME like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('id')">
+                AND A.USER_ID like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('subject')">
+                AND A.SUBJECT like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('context')">
+                AND A.CONTEXT like '%${searchCondition.qstr}%'
+            </if>
+        </if>
+        ORDER BY A.ARTICLE_ID DESC;
+    </select>
+
+    <select id="getBoardTotalCntByCondition" parameterType="int" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM BOARD_MASTER  M, USER_MASTER U
+        WHERE REPLY_YN=FALSE AND MENU_ID = #{boardId}
+        AND M.USER_ID = U.USER_ID
+        <if test="searchCondition.column != null and searchCondition.qstr != null">
+            <if test= "searchCondition.column.equals('name')">
+                AND U.USER_NAME like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('id')">
+                AND M.USER_ID like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('subject')">
+                AND M.SUBJECT like '%${searchCondition.qstr}%'
+            </if>
+            <if test="searchCondition.column.equals('context')">
+                AND M.CONTEXT like '%${searchCondition.qstr}%'
+            </if>
+        </if>
+    </select>
+
+    <select id="getBoardById" parameterType="int" resultMap="BoardResultMap">
+        SELECT
+            A.MENU_ID,
+            A.USER_ID                       AS AUTHOR_ID,
+            A.ARTICLE_ID,
+            A.PARENT_ARTICLE_ID,
+            A.SUBJECT,
+            A.CONTEXT,
+            A.REPLY_YN,
+            (SELECT COUNT(*) REPLY_CNT
+              FROM BOARD_MASTER
+               WHERE A.ARTICLE_ID = PARENT_ARTICLE_ID AND REPLY_YN=TRUE
+            ) AS REPLY_CNT,
+            A.CREATE_TIME,
+            B.FILE_ID,
+            B.FILE_NAME_SAVED,
+            B.FILE_NAME_SRC,
+            B.ARTICLE_ID,
+            B.FILE_PATH,
+            A.USER_ID,
+            (SELECT
+            USER_NAME
+             FROM USER_MASTER
+             WHERE A.USER_ID = USER_ID)     AS USER_NAME,
+            AA.ARTICLE_ID                   AS REPLY_ARTICLE_ID,
+            AA.PARENT_ARTICLE_ID            AS PARENT_ARTICLE_ID,
+            AA.SUBJECT                      AS REPLY_SUBJECT,
+            AA.REPLY_YN                     AS REPLY_YN,
+            AA.CREATE_TIME                  AS REPLY_CREATE_TIME,
+            AA.USER_ID                      AS REPLY_USER_ID,
+            (SELECT
+            USER_NAME
+             FROM USER_MASTER
+             WHERE REPLY_USER_ID = USER_ID) AS REPLY_USER_NAME
+        FROM BOARD_MASTER A LEFT OUTER JOIN BOARD_MASTER AA
+                ON A.ARTICLE_ID = AA.PARENT_ARTICLE_ID AND AA.REPLY_YN = TRUE
+            LEFT OUTER JOIN BOARD_ATTACHMENT B
+                ON A.ARTICLE_ID = B.ARTICLE_ID
+        WHERE A.ARTICLE_ID = #{articleId}
+        ORDER BY A.ARTICLE_ID DESC, AA.ARTICLE_ID;
+    </select>
+
+    <insert id="insertBoard" parameterType="Board">
+        <selectKey keyProperty="articleId" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+
+        INSERT INTO board_master (
+        MENU_ID, USER_ID, ARTICLE_ID, PARENT_ARTICLE_ID, SUBJECT, CONTEXT, REPLY_YN, CREATE_TIME
+        ) VALUES (
+        #{menuId},#{userId},#{articleId},#{parentArticleId},#{subject},#{context},#{isReply}, CURRENT_TIMESTAMP
+        );
+    </insert>
+
+
+    <insert id="insertAttachments"  useGeneratedKeys="true" keyColumn="FILE_ID"
+            keyProperty="fileId">
+        <selectKey keyProperty="fileId" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO BOARD_ATTACHMENT(FILE_ID, FILE_NAME_SRC, FILE_NAME_SAVED, FILE_PATH, CREATE_TIME, ARTICLE_ID,FILE_DATA) VALUES
+        <foreach collection="attachmentList" item="item" open="(" close=")" separator="),(">
+            #{item.fileId},#{item.fileNameSrc},#{item.fileNameSaved},#{item.filePath},CURRENT_TIMESTAMP,#{articleId},#{item.fileData}
+        </foreach>
+    </insert>
+
+    <update id="updateBoard" parameterType="Board">
+        UPDATE BOARD_MASTER
+            <set>
+                <if test="subject != null">SUBJECT=#{subject},</if>
+                <if test="context != null">CONTEXT = #{context}</if>
+            </set>
+        WHERE ARTICLE_ID = #{articleId}
+    </update>
+
+    <delete id="deleteById" parameterType="int">
+        delete from board_master where article_id = #{articleId}
+    </delete>
+
+    <delete id="deleteByList" parameterType="List">
+        delete from board_master where article_id IN
+        <foreach collection="list" item="articleId" open="(" separator="," close=")">
+          #{articleId}
+        </foreach>
+    </delete>
+
+    <select id="getAttachementFile" parameterType="int" resultType="kr.ac.hanrw.webapp.dto.Attachment">
+        SELECT
+            file_id as fileId,
+            file_name_src as fileNameSrc,
+            file_data as fileData
+        FROM
+            board_attachment
+        WHERE
+            file_id= #{fileId};
+    </select>
+
+</mapper>

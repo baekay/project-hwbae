@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+        "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+        "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+
+    <!-- login -->
+    <!--<definition name="/" template="/WEB-INF/views/user/login.jsp" />
+    <definition name="user/login" template="/WEB-INF/views/user/login.jsp" />
+    -->
+    <!-- main_layout -->
+    <definition name="main_layout" template="/WEB-INF/views/layout/main_layout.jsp" />
+
+    <definition name="*/*" extends="main_layout">
+        <put-attribute name="content" value="/WEB-INF/views/{1}/{2}.jsp" />
+    </definition>
+
+</tiles-definitions>

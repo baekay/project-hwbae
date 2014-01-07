@@ -1,0 +1,21 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+
+/*body {
+	font-family: "“Trebuchet MS”", sans-serif;
+	letter-spacing: 0.1em;
+}
+*/
+
+a:link, a:visited, a:hover, a:focus, a:active {text-decoration:none;}
+a img {border: none;}
+
+/*숨기기*/
+.hide_class{ 	width:1px; height:1px;
+    font-size:0; line-height:0;
+    position:absolute;
+    visibility:hidden;}
+/*줄맞추기*/
+input, label, select{vertical-align:middle;}

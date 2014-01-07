@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.ac.hanrw.webapp.dao.P2TDao">
+    <cache />
+    <!--
+        SQL Query
+    -->
+    <insert id="requestP2T" parameterType="kr.ac.hanrw.webapp.dto.P2T">
+        INSERT INTO P2T_JOB_REQ (
+          SUBJECT, REQ_USER_ID, REQ_TIME
+        ) VALUES (
+          #{subject}, #{reqUserId}, CURRENT_TIMESTAMP
+        );
+        <selectKey keyProperty="reqId" resultType="int">
+            SELECT LAST_INSERT_ID() as reqId;
+        </selectKey>
+    </insert>
+
+    <insert id="processP2T" parameterType="String" >
+          INSERT INTO P2T_JOB_PRC (
+            REQ_ID, PRC_USER_ID, CONTEXT, STATUS, START_TIME
+          ) VALUES (
+            #{reqId}, #{prcUserId}, #{context}, #{status}, CURRENT_TIMESTAMP
+          )
+    </insert>
+
+    <update id="updateP2T" parameterType="kr.ac.hanrw.webapp.dto.P2T">
+        UPDATE
+          P2T_JOB_PRC
+        SET
+          CONTEXT = #{context}, PRC_USER_ID = #{prcUserId}, STATUS = #{status}, MOD_TIME = CURRENT_TIMESTAMP
+        WHERE REQ_ID = #{reqId};
+    </update>
+
+    <select id="getP2TTotalCnt" parameterType="kr.ac.hanrw.webapp.dto.SearchCondition" resultType="int">
+        SELECT COUNT(*) AS totalCnt
+        FROM
+          P2T_JOB_REQ AS A LEFT JOIN P2T_JOB_PRC AS B ON A.REQ_ID = B.REQ_ID
+        <if test="column != '' and queryString != ''">
+            WHERE
+            <if test="column == 'title'">
+                A.SUBJECT LIKE '%${queryString}%'
+            </if>
+            <if test="column == 'id'">
+                A.REQ_USER_ID LIKE '%${queryString}%'
+            </if>
+        </if>
+    </select>
+
+    <select id="getP2TList" parameterType="kr.ac.hanrw.webapp.dto.SearchCondition" resultType="kr.ac.hanrw.webapp.dto.P2T">
+        SELECT
+            A.REQ_ID AS reqId,
+            A.SUBJECT AS subject,
+            <!--B.CONTEXT AS context,-->
+            A.REQ_USER_ID AS reqUserId,
+            (SELECT USER_NAME FROM USER_MASTER WHERE USER_ID = A.REQ_USER_ID) AS reqUserName,
+            B.PRC_USER_ID AS prcUserId,
+            (SELECT USER_NAME FROM USER_MASTER WHERE USER_ID = B.PRC_USER_ID) AS prcUserName,
+            B.STATUS AS status,
+            B.START_TIME AS startTime,
+            A.REQ_TIME AS reqTime,
+            B.MOD_TIME AS modTIme
+        FROM
+          P2T_JOB_REQ AS A LEFT JOIN P2T_JOB_PRC AS B ON A.REQ_ID = B.REQ_ID
+        <if test="column != '' and queryString != ''">
+            WHERE
+            <if test="column == 'title'">
+                A.SUBJECT LIKE '%${queryString}%'
+            </if>
+            <if test="column == 'id'">
+                A.REQ_USER_ID LIKE '%${queryString}%'
+            </if>
+        </if>
+        ORDER BY A.REQ_TIME DESC LIMIT #{limitStart}, #{limitEnd};
+    </select>
+    <select id="getP2TBy" parameterType="int" resultType="kr.ac.hanrw.webapp.dto.P2T">
+        SELECT
+            A.REQ_ID AS reqId,
+            A.SUBJECT AS subject,
+            B.CONTEXT AS context,
+            A.REQ_USER_ID AS reqUserId,
+            B.PRC_USER_ID AS prcUserId,
+            B.STATUS AS status,
+            B.START_TIME AS startTime,
+            A.REQ_TIME AS reqTime,
+            B.MOD_TIME AS modTIme
+        FROM
+          P2T_JOB_REQ AS A LEFT JOIN P2T_JOB_PRC AS B ON A.REQ_ID = B.REQ_ID
+        WHERE A.REQ_ID = #{value};
+    </select>
+
+
+    <delete id="deleteP2T" parameterType="int">
+        DELETE FROM P2T_JOB_REQ WHERE REQ_ID = #{value};
+        DELETE FROM P2T_JOB_PRC WHERE REQ_ID = #{value};
+        DELETE FROM P2T_ATTACHMENT WHERE REQ_ID = #{value};
+    </delete>
+</mapper>
