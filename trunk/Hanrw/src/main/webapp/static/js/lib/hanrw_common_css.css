@@ -1,0 +1,16 @@
+@CHARSET "UTF-8";
+
+.validator_error {
+    background: #ffff00 !important;
+    border: 1px #ff9900 solid !important;
+}
+
+label.error {
+	/* IE6에서는 아래 줄을 제거하고 사용할  */
+	position: absolute;
+	float:none;
+	color: red;
+	font-style: italic;
+	font-size: 70%;
+	display: inline-block;
+}

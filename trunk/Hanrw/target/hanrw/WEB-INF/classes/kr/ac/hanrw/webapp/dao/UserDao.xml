@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.ac.hanrw.webapp.dao.UserDao">
+    <cache />
+    <!--
+        SQL Query
+    -->
+    <insert id="insertUser" parameterType="kr.ac.hanrw.webapp.dto.User">
+        INSERT INTO user_master (
+          USER_ID, ROLE_ID, USER_NAME, PASSWORD, EMAIL, TELNO, JOIN_DATE
+        ) VALUES (
+          #{userId}, #{roleId}, #{userName},
+          PASSWORD(#{password}), #{email}, #{telNo}, CURRENT_TIMESTAMP
+        );
+    </insert>
+    <select id="getUserBy" parameterType="String" resultType="kr.ac.hanrw.webapp.dto.User">
+        SELECT
+          USER_ID as userId,
+          ROLE_ID as roleId,
+          USER_NAME as userName,
+          PASSWORD as password,
+          EMAIL as email,
+          TELNO as telNo,
+          JOIN_DATE as joinDate
+        FROM user_master WHERE USER_ID = '${value}';
+    </select>
+    <select id="loginUser" parameterType="kr.ac.hanrw.webapp.dto.User" resultType="boolean">
+        SELECT
+          password(#{password}) = PASSWORD as isLogin
+        FROM
+          USER_MASTER WHERE USER_ID = #{userId};
+    </select>
+    <select id="getUserList" parameterType="kr.ac.hanrw.webapp.dto.SearchCondition" resultType="kr.ac.hanrw.webapp.dto.User">
+        SELECT
+          USER_ID as userId,
+          ROLE_ID as roleId,
+          USER_NAME as userName,
+          PASSWORD as password,
+          EMAIL as email,
+          TELNO as telNo,
+          JOIN_DATE as joinDate
+        FROM user_master
+        <if test="column != '' and queryString != ''">
+          WHERE
+          <if test="column == 'name'">
+              USER_NAME LIKE '%${queryString}%'
+          </if>
+          <if test="column == 'id'">
+              USER_ID LIKE '%${queryString}%'
+          </if>
+        </if>
+        ORDER BY JOIN_DATE DESC LIMIT #{limitStart}, #{limitEnd};
+    </select>
+
+    <select id="getUserTotalCnt" parameterType="kr.ac.hanrw.webapp.dto.SearchCondition" resultType="int">
+        SELECT
+          count(*) AS TOTAL_CNT
+        FROM user_master
+        <if test="column != '' and queryString != ''">
+          <if test="column == 'name'">
+              WHERE USER_NAME LIKE '%${queryString}%'
+          </if>
+          <if test="column == 'id'">
+              WHERE USER_ID LIKE '%${queryString}%'
+          </if>
+        </if>
+    </select>
+
+    <update id="updateUser" parameterType="kr.ac.hanrw.webapp.dto.User">
+        UPDATE user_master SET
+          ROLE_ID = #{roleId},
+          USER_NAME = #{userName},
+          <if test="password != null">PASSWORD = PASSWORD(#{password}),</if>
+          EMAIL = #{email},
+          TELNO = #{telNo}
+        WHERE USER_ID = #{userId};
+    </update>
+
+    <delete id="deleteUser" parameterType="String">
+        DELETE FROM user_master WHERE USER_ID = #{value};
+    </delete>
+
+    <delete id="deleteUsers" parameterType="String">
+        DELETE FROM user_master WHERE USER_ID in (#{value});
+    </delete>
+</mapper>

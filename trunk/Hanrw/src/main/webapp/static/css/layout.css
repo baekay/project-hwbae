@@ -1,0 +1,154 @@
+@charset "UTF-8";
+@import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css);
+
+body {
+    font: 100%/1.4 'Nanum Gothic', sans-serif;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+    color: #000;
+}
+
+
+.container {width:1000px; background-color:#FFF; margin:0 auto;}
+
+/*헤더*/
+.header {width:100%; height:130px;}
+.header a img {margin-top:35px; float:left;}
+
+/*메뉴*/
+.nav{width:100%;}
+.nav li{display:inline; margin:0; padding:0;}
+.nav .nav_200 a {display:inline-block; float:left; width:200px; height:30px; line-height:30px; text-align:center; font-weight:bold; background-image:url(../img/menu_green_200.jpg); color:#fff;}
+.nav .nav_200 a:hover{background-image:url(../img/menu_orange_200.jpg);}
+.nav .nav_150 a {display:inline-block; float:left; width:150px; height:30px; line-height:30px; text-align:center; font-weight:bold; background-image:url(../img/menu_green.jpg); color:#fff;}
+.nav .nav_150 a:hover{background-image:url(../img/menu_orange.jpg);}
+.nav .on_200 a{background-image:url(../img/menu_orange_200.jpg);}
+.nav .on_150 a{background-image:url(../img/menu_orange.jpg);}
+
+
+
+/*본문*/
+.content {clear:both; padding:30px 0; margin:0;}
+
+/*게시판*/
+table{border-spacing:2px;}
+.board{clear:both; width:100%;}
+.board-box{clear:both; width:100%; height:15px; color:black; padding:7px 0 5px 0; border-collapse:collapse;}
+.board-line{height:1px; padding:0; font-size:0; line-height:0; background-color:#e5e5e5; overflow:hidden;}/*게시판 1px 줄*/
+.board-row{height:30px; padding:0; line-height:30px;}
+.bg-color{background-color:#f9f9f9;}
+.p11{font-size:12px; letter-spacing:-1px; text-align:center;}
+.p11 a, .p11 a:hover{color:black;}
+.board-list {font-size:12px; letter-spacing:-1px; text-align:left;}
+.board-list span {float: left; margin-left:20px; word-wrap: break-word; word-break: break-all;}
+.board-list span a, .board-list span a:hover{text-decoration:none; color:black;}
+.board-text{width:960px; padding:20px; border:none; word-wrap:break-word; word-break:break-all; vertical-align:top; font-size:12px; line-height:1.4em;}
+
+.file-name, .board-row input{display:inline-block; float:left; margin-right:10px;}
+.file-name{width:auto; margin-right:10px;}
+#file-dlt{width:50px; height:20px; margin:0 5px; line-height:20px; margin-top:5px; font-size:11px; border:none; background:#CCC;}
+
+
+
+
+/*게시판 수정 및 요청사항 버튼 입력단*/
+.list-works{clear:both; width:100%; padding-top:20px; text-align:right; vertical-align:middle; overflow:hidden;}
+.frmWorks{vertical-align:middle;}
+
+
+/*게시판 하단 버튼 모음*/
+#delete{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#f5811e; border:none; color:white; font-weight:bold;}
+#btnDelete{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#f5811e; border:none; color:white; font-weight:bold;}
+#btnCancle{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#f5811e; border:none; color:white; font-weight:bold;}
+#edit-info{display:block; width:100px; height:22px; margin:0 auto; line-height:22px; background:white; border:1px solid #ccc;}
+#add-member{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#delete-member{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#f5811e; border:none; color:white; font-weight:bold;}
+#save-temp{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#5e5f61; border:none; color:white; font-weight:bold;}
+#save-cmplt{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#f5811e; border:none; color:white; font-weight:bold;}
+#view-list{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#btnList{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#do{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#09C; border:none; color:white; font-weight:bold;}
+#write{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#btnWrite{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#btnUpdate{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#file-add{display:block; float:left; width:150px; height:22px; margin-right:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#btnAttach{display:block; float:left; width:150px; height:22px; margin-right:10px; line-height:22px; background:#9ba00f; border:none; color:white; font-weight:bold;}
+#edit{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#09C; border:none; color:white; font-weight:bold;}
+#btnEdit{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#09C; border:none; color:white; font-weight:bold;}
+#answer{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#5e5f61; border:none; color:white; font-weight:bold;}
+#btnReply{display:block; float:right; width:150px; height:22px; margin-left:10px; line-height:22px; background:#5e5f61; border:none; color:white; font-weight:bold;}
+#file-down{display:block; float:left; width:400px; height:22px; margin-right:10px; line-height:22px; background:#999; border:none; color:black; font-weight:bold;}
+
+
+/*게시판 목록*/
+.prev-next{clear:both; width:100%; margin-top:40px;}
+table.Pnavi{height:13px; border-collapse:collapse; margin:0 auto;}
+table.Pnavi a{display:block; font-size:12px; text-decoration: none; color:#666; padding: 2px 6px 0 5px;}
+table.Pnavi a.pn{font-weight:normal; cursor:pointer;}
+table.Pnavi td{width:20px; padding:0; text-align:center;}
+table.Pnavi td.pgL,  table.Pnavi td.pgR {width:50px; text-align:center;}
+table.Pnavi .on, table.Pnavi .on a{font-weight:bold; text-decoration:underline; color:black;}
+
+tr{display:table-row; vertical-align:inherit; border-color:inherit;}
+
+
+
+
+/*게시판 검색창*/
+.list-search{clear:both; width:100%; margin-top:20px; text-align:center; vertical-align:middle; font-size:9pt}
+.frmSearch{vertical-align:middle;}
+#query{display:inline; width:200px; height:20px; line-height:20px;}
+#search_btn{display:inline; width:40px; height:22px; line-height:20px; border:#333 1px solid;}
+#btnSearch{display:inline; width:40px; height:22px; line-height:20px; border:#333 1px solid;}
+
+/*작업상태에 따른 색상 클래스*/
+.color-blue{color:#6CC;} /*완료*/
+.color-green{color:#696;}/*진행중*/
+.color-grey{color:#666;}/*확인전*/
+
+
+/*회원관리*/
+.board-box-members{float:left; width:500px;}
+.board-members-info{float:right; width:490px; background:white; border:3px solid #e5e5e5}
+.board-members-info .p11 input{width:85%;}
+
+/*사진변환텍스트의 이미지갤러리*/
+.board-box-img{float:left; width:400px; text-align:center;}
+.big-img{display:table-cell; width:400px; height:400px; vertical-align:middle; border:3px solid #ccc;}
+.big-img img{max-width:400px; max-height:400px; margin:0 auto;}
+.img-list{width:400px; height:80px; margin-top:10px; background:#ccc; text-align:center; overflow:hidden;}
+.arrow-left{float:left; width:20px;}
+.arrow-left a{display:block; width:20px; height:80px; line-height:80px; color:white; font-size:18px; font-weight:bold;}
+.arrow-right{float:right; width:20px;}
+.arrow-right a{display:block; width:20px; height:80px; line-height:80px; color:white; font-size:18px; font-weight:bold;}
+.small-imgs{float:left; width:360px; height:80px; text-align:center; vertical-align:middle;}
+.small-imgs li {display:inline-block; width:80px; height:80px; border:none; margin:0 3px;}
+.small-imgs li a img{width:80px; height:80px;}
+
+
+/*사진변환텍스트+음성변환텍스트의 텍스트창*/
+.text-input{float:right; width:590px;}
+#text-change{width:570px; height:474px; padding:10px; border:1px solid #ccc; text-align:left; vertical-align:top; font-size:14px;}
+
+
+/*음성변환텍스트의 미디어플레이어*/
+.board-box-voice{float:left; width:400px; text-align:center;}
+.big-img-voice{display:table-cell; width:400px; height:378px; vertical-align:middle; border:3px solid #fff; background:url(../img/mic.jpg) no-repeat center;}
+.player{width:400px; height:80px; margin-top:10px; background:transparent; text-align:center; overflow:hidden;}
+
+/*로그인*/
+.login{width:600px; height:/*600*/250px; margin:50px auto;}
+.logo{width:400px; height:200px; margin:0 auto; background:#333 url(../img/logo-big.jpg);}
+.login-form{width:300px; height:250px; margin:20px auto;}
+.usb{width:600px; height:60px; color:#5e5f61; text-align:center;}
+
+#id, #pswd{width:278px; height:23px; padding:10px; border:1px solid #5e5f61; margin:10px auto 20px auto; color:#5e5f61;}
+#login{width:300px; height:45px; border:none; margin:10px auto 20px auto; background:#5e5f61; color:white;}
+
+/*회원정보 팝업 div*/
+.members-info{/*position:absolute;*/ width:200px; background:white; border:3px solid #e5e5e5}
+
+/*푸터*/
+.footer {clear:both; padding:10px 0; background-color: #CCC49F;}
+

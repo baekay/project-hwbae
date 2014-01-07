@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.ac.hanrw.webapp.dao.V2TAttachmentDao">
+    <cache/>
+    <!--
+        SQL Query
+    -->
+    <insert id="insertAudio" parameterType="kr.ac.hanrw.webapp.dto.V2TAttachment">
+        INSERT INTO V2T_ATTACHMENT
+          (REQ_ID, REQ_ORDER, AUDIO_CONTENTS, AUDIO_TYPE, FILENAME)
+        VALUES
+          (#{reqId}, #{reqOrder}, #{audioContents}, #{audioType}, #{fileName});
+        <selectKey keyProperty="audioId" resultType="int">
+            SELECT LAST_INSERT_ID() as audioId;
+        </selectKey>
+    </insert>
+
+    <select id="getReqAudioListBy" parameterType="int" resultType="kr.ac.hanrw.webapp.dto.V2TAttachment">
+        SELECT
+          AUDIO_ID AS audioId,
+          REQ_ID AS reqId,
+          REQ_ORDER AS reqOrder,
+          <!-- 실제 Byte 정보는 앱이나/웹에서 사용하지 않으므로 불러오지 않는다
+          AUDIO_CONTENTS AS audioContents,
+          -->
+          AUDIO_TYPE AS audioType,
+          FILENAME AS fileName
+        FROM
+          V2T_ATTACHMENT
+
+        WHERE
+          REQ_ID = #{value}
+
+        ORDER BY REQ_ORDER ASC;
+    </select>
+
+    <select id="getAudioBy" parameterType="int" resultType="kr.ac.hanrw.webapp.dto.V2TAttachment">
+        SELECT
+          AUDIO_ID AS audioId,
+          REQ_ID AS reqId,
+          REQ_ORDER AS reqOrder,
+          AUDIO_CONTENTS AS audioContents,
+          AUDIO_TYPE AS audioType,
+          FILENAME AS fileName
+        FROM
+          V2T_ATTACHMENT
+        WHERE
+          AUDIO_ID = #{value};
+    </select>
+
+    <select id="getThumbnailBy" parameterType="int" resultType="kr.ac.hanrw.webapp.dto.V2TAttachment">
+        SELECT
+          AUDIO_ID AS audioId,
+          REQ_ID AS reqId,
+          REQ_ORDER AS reqOrder,
+          THUMBNAIL_CONTENTS AS thumbnail,
+          AUDIO_TYPE AS audioType,
+          FILENAME AS fileName
+        FROM
+          V2T_ATTACHMENT
+        WHERE
+          REQ_ID = #{value};
+    </select>
+
+    <delete id="deleteAudios" parameterType="int">
+        DELETE FROM V2T_ATTACHMENT WHERE REQ_ID = #{value};
+    </delete>
+
+    <delete id="deleteAudio" parameterType="int">
+        DELETE FORM V2T_ATTACHMENT WHERE AUDIO_ID = #{value};
+    </delete>
+</mapper>
