@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!--
+ORACLE 및 UDB 관련 DAO 클래스 설정을 위한 XML 파일
+
+@sfmi.title ORACLE 및 UDB 관련 DAO 클래스 설정을 위한 XML 파일
+@sfmi.portal-id jk420.kim
+@sfmi.developer 박현준
+-->
+<!DOCTYPE daoConfig
+	    PUBLIC "-//ibatis.apache.org//DTD DAO Configuration 2.0//EN"
+	    "http://ibatis.apache.org/dtd/dao-2.dtd">
+<daoConfig>
+
+  <context id="udb">
+    <transactionManager type="SQLMAP">
+      <property name="SqlMapConfigResource"
+        value="sfmi/component/squad/itquality/dao/sqlmap/sql-map-udb-config.xml"/>
+    </transactionManager>
+        <!-- UDB -->
+    <dao interface="sfmi.component.squad.itquality.dao.UdbTranPerformanceMgrDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapUdbTranPerformanceMgrDao"/>
+        <!-- MCM -->
+    <dao interface="sfmi.component.squad.itquality.dao.McmKpiMgrDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapMcmKpiMgrDao"/>
+  </context>
+
+  <context id="oracle">
+    <transactionManager type="SQLMAP">
+      <property name="SqlMapConfigResource"
+        value="sfmi/component/squad/itquality/dao/sqlmap/sql-map-oracle-config.xml"/>
+    </transactionManager>
+
+    <!--  TEST  -->
+    <dao interface="sfmi.component.squad.itquality.dao.TestPolicyDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestPolicyDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestLevelDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestLevelDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestProcessDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestProcessDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.AutoValidationResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapAutoValidationResultDao"/>
+
+
+    <!--  TestScenario  -->
+    <dao interface="sfmi.component.squad.itquality.dao.TestScenarioDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestScenarioDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestStepDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestStepDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestScriptDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestScriptDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestResultDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestStatusDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestStatusDao"/>
+
+
+    <dao interface="sfmi.component.squad.itquality.dao.TestExecDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapTestExecDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.AutoValidationTestDefectDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapAutoValidationTestDefectDao"/>
+
+	<!-- 품질검증결과============================================================================= -->
+	<!-- 품질검증결과  --> <!-- 코드표준 --> <!-- SQL표준 --> <!-- 보안취약성 --> <!-- 데이터품질 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityResultDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.CIStandardRuleResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapCIStandardRuleResultDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.SqlStandardRuleResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapSqlStandardRuleResultDao"/>
+	<dao interface="sfmi.component.squad.itquality.dao.SecurityRuleResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapSecurityRuleResultDao"/>
+	<dao interface="sfmi.component.squad.itquality.dao.DataQualityValidationDao"
+    	implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapDataQualityValidationDao" />
+    <dao interface="sfmi.component.squad.itquality.dao.DataQualityResultDao"
+    	implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapDataQualityResultDao" />
+
+
+    <!-- 시스템관리-검증룰============================================================================= -->
+	<!-- 코드표준검증룰  --> <!-- SQL표준검증룰  --> <!-- 보안취약성검증룰  --> <!-- SQL표준검증룰 상세  -->
+    <dao interface="sfmi.component.squad.itquality.dao.CIStandardRuleDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapCIStandardRuleDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.SqlStandardRuleDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapSqlStandardRuleDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.SecurityRuleDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapSecurityRuleDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.SqlStandardVerificationItemDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapSqlStandardVerificationItemDao"/>
+    <!-- ============================================================================= -->
+
+	<!-- XML-Datasource ============================================================================= -->
+	<!-- XML-Datasource 매핑  --> <!--  Datasource 접속정보  -->
+	<dao interface="sfmi.component.squad.itquality.dao.DatasourceConnInfoDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapDatasourceConnInfoDao"/>
+	<dao interface="sfmi.component.squad.itquality.dao.XmlDatasourceMappingDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapXmlDatasourceMappingDao"/>
+	<!-- ============================================================================= -->
+
+
+    <!-- 시스템관리-TEST============================================================================= -->
+	<!-- 품질자동검증정책관리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.AutoValidationPolicyDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapAutoValidationPolicyDao"/>
+    <!-- ============================================================================= -->
+
+
+    <!--  COMMON  -->
+    <dao interface="sfmi.component.squad.itquality.dao.ItqualityCommonDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapItqualityCommonDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.ItqualityCommonCodeDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapItqualityCommonCodeDao"/>
+
+    <dao interface="sfmi.component.squad.itquality.dao.MyTestDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapMyTestDao"/>
+
+
+    <!--  권한관리  -->
+    <dao interface="sfmi.component.squad.itquality.dao.AuthorityDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapAuthorityDao"/>
+
+	<dao interface="sfmi.component.squad.itquality.dao.DiffResultDao"
+		implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapDiffResultDao"/>
+
+	<!-- UDB -->
+    <dao interface="sfmi.component.squad.itquality.dao.UdbSqlHistoryDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapUdbSqlHistoryDao"/>
+
+	<!-- 품질 통계 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityStatisticDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityStatisticDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.QualityStatisticTemplateDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityStatisticTemplateDao"/>
+
+	<!-- 품질 KPI -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityKpiDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityKpiDao"/>
+
+	<!-- 품질 지표 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityIndicatorDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityIndicatorDao"/>
+    <!-- 품질 지표 계산 -->
+	<dao interface="sfmi.component.squad.itquality.dao.QualityIndicatorCalculateDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityIndicatorCalculateDao"/>
+
+	<!-- 품질 KPI 수행 이력 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityKpiExecHistoryDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityKpiExecHistoryDao"/>
+
+	<!-- 통계 관련 -->
+    <dao interface="sfmi.component.squad.itquality.dao.StatisticDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapStatisticDao"/>
+
+	<!-- KPI 목표 설정 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityKpiConfigDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityKpiConfigDao"/>
+
+	<!-- KPI 추이및상세 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityKpiChartDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityKpiChartDao"/>
+
+	<!-- 품질 지표 데시보드 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityKpiDashBoardDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityKpiDashBoardDao"/>
+
+    <!-- 품질KPI 데시보드 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityKpiDashBoardConfigDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityKpiDashBoardConfigDao"/>
+
+	<dao interface="sfmi.component.squad.itquality.dao.FailResultPlanDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapFailResultPlanDao"/>
+
+    <!-- 품질우회처리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.QualityBypassDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapQualityBypassDao"/>
+
+    <!-- 코드표준검증예외항목관리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.CodeStandardExceptionItemDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapCodeStandardExceptionItemDao"/>
+
+    <!-- SQL표준검증예외항목관리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.SqlStandardExceptionItemDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapSqlStandardExceptionItemDao"/>
+
+    <!-- 알림 서비스 관리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.NoticeServiceMgrDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapNoticeServiceMgrDao"/>
+    
+    <!-- 알림 서비스 공통 메소드 관리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.NoticeCommonMethodDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapNoticeCommonMethodDao"/>
+    
+    <!-- 알림 서비스 Notifier를 통해 notify를 위한 데이터 조회 -->
+    <dao interface="sfmi.component.squad.itquality.dao.NoticeServiceNotifierDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapNoticeServiceNotifierDao"/>
+        
+    <!-- 프로젝트 품질검증결과============================================================================= -->
+	<!-- 프로젝트 품질검증결과  --> <!-- 코드표준 --> <!-- SQL표준 --> <!-- 보안취약성 --> <!-- 데이터품질 -->
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectQualityResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectQualityResultDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectCIStandardRuleResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectCIStandardRuleResultDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectSqlStandardRuleResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectSqlStandardRuleResultDao"/>
+	<dao interface="sfmi.component.squad.itquality.dao.ProjectSecurityRuleResultDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectSecurityRuleResultDao"/>
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectDataQualityResultDao"
+    	implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectDataQualityResultDao" />
+    
+    <!-- 프로젝트 파일 별 품질 통계 -->
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectFileStatsDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectFileStatsDao"/>
+        
+    <!-- 프로젝트 개발자 별 품질 통계 -->
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectDeveloperStatsDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectDeveloperStatsDao"/>
+    
+    <!-- 프로젝트 ID 별 품질 통계 -->
+    <dao interface="sfmi.component.squad.itquality.dao.ProjectIDStatsDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapProjectIDStatsDao"/>
+         
+    <!-- 변화관리 -->
+    <dao interface="sfmi.component.squad.itquality.dao.ChangeAdministrationDao"
+        implementation="sfmi.component.squad.itquality.dao.sqlmap.SqlMapChangeAdministrationDao"/>
+                 
+  </context>
+</daoConfig>

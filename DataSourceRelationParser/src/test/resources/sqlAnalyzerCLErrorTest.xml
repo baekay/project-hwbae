@@ -1,0 +1,2332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="sql.selectOne">
+		SELECT BSNS_CLS
+		,RCIV_DATE
+		,RCIV_SEQ_NUM
+		,COVR_CLS
+		,DAM_ORDER
+		,TARGT_NAME
+		,CAR_NAME
+		,FCTR_NAME
+		,DEPT_CODE
+		,TEAM_CODE
+		,CLERK_NO
+		,DAM_DEG
+		,INJR_CLS
+		,RPSN_GBHA
+		,DSCN_FLT_RATE
+		,COVR_RANGE
+		,DAM_STF_STS
+		,TER_CLS
+		,XMP_CANC_DATE
+		,XMP_CODE
+		,OS_INS_MNY
+		,ACC_DTMN_AMT
+		,LAST_AGREE_YN
+		,RLST_REPL_PATH_CLS
+		FROM (
+		SELECT PCAL01.BSNS_CLS
+		,PCAL01.RCIV_DATE
+		,PCAL01.RCIV_SEQ_NUM
+		,CASE PCAL01.COVR_CLS WHEN '10' THEN '3' WHEN '30' THEN '4' ELSE '5' END AS
+		COVRORDER
+		,PCAL01.COVR_CLS
+		,PCAL01.DAM_ORDER
+		,PCAC01.ACCD_PTY_NAME AS TARGT_NAME
+		,'' AS CAR_NAME
+		,PCAC01.HPTL_NAME AS FCTR_NAME
+		,PCAL01.DEPT_CODE
+		,PCAL01.TEAM_CODE
+		,PCAL01.CLERK_NO
+		,'' AS DAM_DEG
+		,COALESCE(SV00.INJR_CLS, '') INJR_CLS
+		,COALESCE(SV12.RPSN_GBHA, '') RPSN_GBHA
+		,VALUE(SV02.DSCN_FLT_RATE, 0) AS DSCN_FLT_RATE
+		,PCAC01.COVR_RANGE
+		,PCAL01.DAM_STF_STS
+		,RQ14TB.TER_CLS
+		,RQ14TB.XMP_CANC_DATE
+		,RQ14TB.XMP_CODE
+		,RQ00.OS_INS_MNY
+		,RQ00.ACC_DTMN_AMT
+		,(COALESCE(RQ07.LAST_AGREE_YN, '')) AS LAST_AGREE_YN
+		,(COALESCE(RQ07.RLST_REPL_PATH_CLS, '')) AS RLST_REPL_PATH_CLS
+		FROM PCAL01TB PCAL01
+		LEFT OUTER JOIN TABLE
+		(SELECT TER_CLS, XMP_CANC_DATE ,XMP_CODE
+		FROM PCRQ14TB RQ14TB
+		WHERE RQ14TB.BSNS_CLS = PCAL01.BSNS_CLS
+		AND RQ14TB.RCIV_DATE = PCAL01.RCIV_DATE
+		AND RQ14TB.RCIV_SEQ_NUM = PCAL01.RCIV_SEQ_NUM
+		AND RQ14TB.COVR_CLS = PCAL01.COVR_CLS
+		AND RQ14TB.DAM_ORDER = PCAL01.DAM_ORDER
+		AND RQ14TB.XMP_ORD_NUM = (SELECT MAX(XMP_ORD_NUM) FROM PCRQ14TB RQ14TB
+		WHERE RQ14TB.BSNS_CLS = PCAL01.BSNS_CLS
+		AND RQ14TB.RCIV_DATE = PCAL01.RCIV_DATE
+		AND RQ14TB.RCIV_SEQ_NUM = PCAL01.RCIV_SEQ_NUM
+		AND RQ14TB.COVR_CLS = PCAL01.COVR_CLS
+		AND RQ14TB.DAM_ORDER = PCAL01.DAM_ORDER)
+		) RQ14TB ON 1=1
+
+		LEFT OUTER JOIN PCRQ00TB RQ00
+		ON RQ00.FK_BSNS_CLS = PCAL01.BSNS_CLS
+		AND RQ00.FK_RCIV_DATE = PCAL01.RCIV_DATE
+		AND RQ00.FK_RCIV_SEQ_NUM = PCAL01.RCIV_SEQ_NUM
+		AND RQ00.FK_SEQ_NUM = 1
+		AND RQ00.COVR_CLS = PCAL01.COVR_CLS
+		AND RQ00.DAM_ORDER = PCAL01.DAM_ORDER
+
+		, PCAC01TB PCAC01
+
+		LEFT OUTER JOIN PCSV00TB SV00
+		ON SV00.FK_BSNS_CLS = PCAC01.FK_BSNS_CLS
+		AND SV00.FK_RCIV_DATE = PCAC01.FK_RCIV_DATE
+		AND SV00.FK_RCIV_SEQ_NUM = PCAC01.FK_RCIV_SEQ_NUM
+		AND SV00.PTY_ID = PCAC01.PTY_ID
+		AND SV00.INJURED_YN = '1'
+
+		LEFT OUTER JOIN PCSV02TB SV02
+		ON SV02.FK_BSNS_CLS = SV00.FK_BSNS_CLS
+		AND SV02.FK_RCIV_DATE = SV00.FK_RCIV_DATE
+		AND SV02.FK_RCIV_SEQ_NUM = SV00.FK_RCIV_SEQ_NUM
+		AND SV02.FK_PTY_ID = SV00.PTY_ID
+		AND SV02.SVY_CLS = '2'
+		AND SV02.APP_END_DATE = '9999-12-31'
+
+		LEFT OUTER JOIN PCSV12TB SV12
+		ON SV12.FK_BSNS_CLS = SV00.FK_BSNS_CLS
+		AND SV12.FK_RCIV_DATE = SV00.FK_RCIV_DATE
+		AND SV12.FK_RCIV_SEQ_NUM = SV00.FK_RCIV_SEQ_NUM
+		AND SV12.FK_PTY_ID = SV00.PTY_ID
+		AND SV12.END_DATE = '9999-12-31'
+		AND SV12.GBHA_CLS = '1'
+
+		LEFT OUTER JOIN pcrq07tb RQ07
+		ON RQ07.FK_BSNS_CLS = PCAC01.FK_BSNS_CLS
+		AND RQ07.FK_RCIV_DATE = PCAC01.FK_RCIV_DATE
+		AND RQ07.FK_RCIV_SEQ_NUM = PCAC01.FK_RCIV_SEQ_NUM
+		AND RQ07.FK_COVR_CLS = PCAC01.COVR_CLS
+		AND RQ07.FK_DAM_ORDER = PCAC01.DAM_ORDER
+		AND RQ07.AGREE_CLS = '2'
+		AND RQ07.APPL_END_DATE = '9999-12-31'
+
+		, PCAC00TB PCAC00
+		WHERE PCAL01.BSNS_CLS = #bsnsCls#
+		AND PCAL01.RCIV_DATE = #rcivDate#
+		AND PCAL01.RCIV_SEQ_NUM = #rcivSeqNum#
+		AND PCAL01.PCAC01_PCAC02_CLS = '1'
+		AND PCAL01.DAM_CLS = '1'
+		AND PCAL01.DAM_STF_STS IN ('1','2')
+		AND PCAL01.BSNS_CLS = PCAC01.FK_BSNS_CLS
+		AND PCAL01.RCIV_DATE = PCAC01.FK_RCIV_DATE
+		AND PCAL01.RCIV_SEQ_NUM = PCAC01.FK_RCIV_SEQ_NUM
+		AND PCAL01.PCAC01_PCAC02_SEQ = PCAC01.SEQ_NUM
+		AND PCAC00.BSNS_CLS = PCAL01.BSNS_CLS
+		AND PCAC00.RCIV_DATE = PCAL01.RCIV_DATE
+		AND PCAC00.RCIV_SEQ_NUM = PCAL01.RCIV_SEQ_NUM
+		UNION ALL
+		SELECT PCAC00.BSNS_CLS
+		,PCAC00.RCIV_DATE
+		,PCAC00.RCIV_SEQ_NUM
+		,CASE PCAC02.COVR_CLS WHEN '40' THEN '1' ELSE '2' END AS COVRORDER
+		,PCAC02.COVR_CLS
+		,PCAC02.DAM_ORDER
+		,(CASE PCAC02.PDLB_CLS WHEN '10' THEN PCAC02.CAR_NO ELSE PCAC02.DAM_OBJ_NAME
+		END) AS TARGT_NAME
+		,PCAC02.DAM_OBJ_NAME AS CAR_NAME
+		,COALESCE((SELECT FCTR_NAME FROM PCSV51TB
+		WHERE FK_BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND FK_RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND FK_RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND FK_SEQ_NUM = PCAC02.SEQ_NUM
+		AND INPUT_CLS = '2'
+		AND APP_END_DATE = '9999-12-31')
+		,(SELECT FCTR_NAME FROM PCSV51TB
+		WHERE FK_BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND FK_RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND FK_RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND FK_SEQ_NUM = PCAC02.SEQ_NUM
+		AND INPUT_CLS = '1'
+		AND APP_END_DATE = '9999-12-31')
+		) AS FCTR_NAME
+		,PCAL01.DEPT_CODE
+		,PCAL01.TEAM_CODE
+		,PCAL01.CLERK_NO
+		,PCAC02.DAM_DEG
+		,'' INJR_CLS
+		,'' RPSN_GBHA
+		,CASE PCAC02.COVR_CLS
+		WHEN '20' THEN PCAC02.FLT_RATE
+		ELSE COALESCE((
+		SELECT DSCN_FLT_RATE FROM PCSV02TB
+		WHERE FK_BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND FK_RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND FK_RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND SVY_CLS = '1'
+		AND APP_END_DATE = '9999-12-31'
+		),0)
+		END AS DSCN_FLT_RATE
+		, '' COVR_RANGE
+		,PCAL01.DAM_STF_STS
+		,RQ14TB.TER_CLS
+		,RQ14TB.XMP_CANC_DATE
+		,RQ14TB.XMP_CODE
+		,RQ00.OS_INS_MNY
+		,RQ00.ACC_DTMN_AMT
+		,(COALESCE(RQ07.LAST_AGREE_YN, '')) AS LAST_AGREE_YN
+		,(COALESCE(RQ07.RLST_REPL_PATH_CLS, '')) AS RLST_REPL_PATH_CLS
+		FROM PCAC00TB PCAC00
+		, PCAC02TB PCAC02
+		LEFT OUTER JOIN PCAL01TB PCAL01
+		ON PCAL01.BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND PCAL01.RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND PCAL01.RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND PCAL01.PCAC01_PCAC02_CLS = '2'
+		AND PCAL01.DAM_CLS = '1'
+		AND PCAL01.DAM_STF_STS IN ('1','2')
+		AND PCAL01.PCAC01_PCAC02_SEQ = PCAC02.SEQ_NUM
+
+		LEFT OUTER JOIN TABLE
+		(SELECT TER_CLS, XMP_CANC_DATE, XMP_CODE FROM PCRQ14TB RQ14TB
+		WHERE RQ14TB.BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND RQ14TB.RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND RQ14TB.RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND RQ14TB.COVR_CLS = PCAC02.COVR_CLS
+		AND RQ14TB.DAM_ORDER = PCAC02.DAM_ORDER
+		AND RQ14TB.XMP_ORD_NUM = (SELECT MAX(XMP_ORD_NUM) FROM PCRQ14TB RQ14TB
+		WHERE
+		RQ14TB.BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND RQ14TB.RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND RQ14TB.RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND RQ14TB.COVR_CLS = PCAC02.COVR_CLS
+		AND RQ14TB.DAM_ORDER = PCAC02.DAM_ORDER)
+		) RQ14TB ON 1=1
+
+		LEFT OUTER JOIN PCRQ00TB RQ00
+		ON RQ00.FK_BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND RQ00.FK_RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND RQ00.FK_RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND RQ00.FK_SEQ_NUM = 1
+		AND RQ00.COVR_CLS = PCAC02.COVR_CLS
+		AND RQ00.DAM_ORDER = PCAC02.DAM_ORDER
+
+		LEFT OUTER JOIN pcrq07tb RQ07
+		ON RQ07.FK_BSNS_CLS = PCAC02.FK_BSNS_CLS
+		AND RQ07.FK_RCIV_DATE = PCAC02.FK_RCIV_DATE
+		AND RQ07.FK_RCIV_SEQ_NUM = PCAC02.FK_RCIV_SEQ_NUM
+		AND RQ07.FK_COVR_CLS = PCAC02.COVR_CLS
+		AND RQ07.FK_DAM_ORDER = PCAC02.DAM_ORDER
+		AND RQ07.AGREE_CLS = '3'
+		AND RQ07.APPL_END_DATE = '9999-12-31'
+		WHERE PCAC00.BSNS_CLS = #bsnsCls#
+		AND PCAC00.RCIV_DATE = #rcivDate#
+		AND PCAC00.RCIV_SEQ_NUM = #rcivSeqNum#
+		AND PCAC02.FK_BSNS_CLS = PCAC00.BSNS_CLS
+		AND PCAC02.FK_RCIV_DATE = PCAC00.RCIV_DATE
+		AND PCAC02.FK_RCIV_SEQ_NUM = PCAC00.RCIV_SEQ_NUM
+		AND PCAC02.COVR_CLS IN ('20','40')
+		)
+		ORDER BY COVRORDER, DAM_ORDER
+		OPTIMIZE FOR 1 ROW
+		WITH UR
+	</entry>
+
+	<entry key="sql.selectTwo">
+		SELECT
+		hos.SEQ_NUM,
+		hos.HPTL_NM,
+		hos.MAJ_DIAG_SBJT,
+		hos.DIAG_CLS,
+		hos.DIAG_START_DATE,
+		hos.DIAG_END_DATE,
+		hos.REAL_DIAG_DT_CNT,
+		c.CLERK_NO DAMDANG_CLERK,
+		d.CLERK_NAME DAMDANG_CLERK_NM,
+		hos.DIAG_PAPR_NO,
+		COALESCE(f.INJR_GBHA,'') INJR_GBHA,
+		COALESCE(f.INJR_DIAG_NAME,'') INJR_DIAG_NAME,
+		COALESCE(g.DIAG_PERI,0) DIAG_PERI,
+		COALESCE(g.DIAG_END_DATE,'0001-01-01') CURE_END_DATE,
+		hos.MAJ_DIAG_CONT,
+		rtrim(hos.HPTL_PTY_ID) HPTL_PTY_ID
+		FROM
+		(
+		SELECT
+		a.SEQ_NUM, a.HPTL_CD,
+		a.MAJ_DIAG_SBJT,
+		a.HPTL_NM,
+		b.FK_PTY_ID HS_PTY_ID,
+		a.DIAG_CLS,
+		a.DIAG_START_DATE,
+		a.DIAG_END_DATE,
+		a.REAL_DIAG_DT_CNT,
+		a.HSPTL_ABSNC_DAYS,
+		a.SKRM_NO,
+		a.DIAG_PAPR_NO,
+		a.INPUT_CLERK,
+		e.CLERK_NAME,
+		a.FK_BSNS_CLS,
+		a.FK_RCIV_DATE,
+		a.FK_RCIV_SEQ_NUM,
+		a.FK_PTY_ID,
+		a.MAJ_DIAG_CONT,
+		a.HPTL_PTY_ID
+		FROM
+		PCSV10TB a
+
+		LEFT OUTER JOIN TABLE
+		(SELECT FK_PTY_ID ,B.APPL_TER_DATE FROM GCCE20TB B
+		WHERE
+		B.FK_PTY_ID = a.HPTL_PTY_ID AND
+		B.SEQ_NUM = (select max(SEQ_NUM)
+		from GCCE20TB F
+		WHERE F.FK_PTY_ID = a.HPTL_PTY_ID)) B
+		ON 1=1 AND B.APPL_TER_DATE = '9999-12-31'
+		LEFT OUTER JOIN
+		STAFF0TB e
+		ON
+		a.INPUT_CLERK = e.CLERK_NO
+		WHERE
+		a.FK_BSNS_CLS = #bsnsCls# AND
+		a.FK_RCIV_DATE = #rcivDate# AND
+		a.FK_RCIV_SEQ_NUM = #rcivSeqNum# AND
+		a.FK_PTY_ID = #ptyId# ) hos
+
+		LEFT OUTER JOIN
+		PCAS08TB c
+		ON
+		hos.HS_PTY_ID = c.PTY_ID AND
+		WORK_CLS = '2' AND
+		REL_TER_DATE = '9999-12-31'
+		LEFT OUTER JOIN
+		STAFF0TB d
+		ON
+		c.CLERK_NO = d.CLERK_NO
+
+		LEFT OUTER JOIN
+		PCSV20TB f
+		ON
+		hos.FK_BSNS_CLS = f.FK_BSNS_CLS AND
+		hos.FK_RCIV_DATE = f.FK_RCIV_DATE AND
+		hos.FK_RCIV_SEQ_NUM = f.FK_RCIV_SEQ_NUM AND
+		hos.FK_PTY_ID = f.FK_PTY_ID AND
+		hos.DIAG_PAPR_NO = f.FK_DIAG_PAPR_NO AND
+		f.END_DATE = '9999-12-31'
+		LEFT OUTER JOIN
+		PCSV19TB g
+		ON
+		hos.FK_BSNS_CLS = g.FK_BSNS_CLS AND
+		hos.FK_RCIV_DATE = g.FK_RCIV_DATE AND
+		hos.FK_RCIV_SEQ_NUM = g.FK_RCIV_SEQ_NUM AND
+		hos.FK_PTY_ID = g.FK_PTY_ID AND
+		hos.DIAG_PAPR_NO = g.DIAG_PAPR_NO
+		OPTIMIZE FOR 1 ROW
+		WITH UR
+	</entry>
+
+	<entry key="sql.selectThree">
+	<![CDATA[
+		SELECT
+			T.rciv_date
+			,T.rciv_seq_num
+			,T.covr_cls
+			,T.dam_order
+			,T.accd_cls	 
+			,T.pty_name
+			,T.hptl_name
+			,T.rpsn_gbha            
+			,T.acc_dtmn_amt
+			,T.os_ins_mny
+			,T.clerk_name
+			,T.pass_Day
+			,T.carry_value
+		FROM
+			(SELECT 
+				al01.rciv_date
+			   ,al01.rciv_seq_num
+			   ,al01.covr_cls
+			   ,al01.dam_order
+			   ,CASE WHEN ac00.accd_cls = '10' THEN '책임' 
+					 WHEN ac00.accd_cls = '11' THEN 'Ｍ／Ｔ' 
+					 WHEN ac00.accd_cls = '12' THEN '비Ｍ／Ｔ' 
+					 WHEN ac00.accd_cls = '20' THEN '임의' 
+					 WHEN ac00.accd_cls = '21' THEN '타차운전' 
+					 WHEN ac00.accd_cls = '30' THEN '외화표시' 
+					 WHEN ac00.accd_cls = '40' THEN '취급업자' 
+					 WHEN ac00.accd_cls = '50' THEN '운전자' 
+					 WHEN ac00.accd_cls = '60' THEN '정부보장' 
+					 WHEN ac00.accd_cls = '13' THEN '책임임의' ELSE '' END accd_cls	 
+			   ,COALESCE(ac01.accd_pty_name ,'') pty_name
+			   ,VALUE(	(SELECT sv10.hptl_nm
+						FROM pcsv10tb sv10 
+						WHERE sv10.fk_bsns_cls		= ac01.fk_bsns_cls              
+						AND sv10.fk_rciv_date		= ac01.fk_rciv_date             
+						AND sv10.fk_rciv_seq_num	= ac01.fk_rciv_seq_num          
+						AND sv10.fk_pty_id			= ac01.pty_id                   
+						AND sv10.seq_num			=	(SELECT max(sv10.seq_num)                             
+														FROM pcsv10tb sv10                                 
+														WHERE sv10.fk_bsns_cls   = ac01.fk_bsns_cls    
+														AND sv10.fk_rciv_date    = ac01.fk_rciv_date   
+														AND sv10.fk_rciv_seq_num = ac01.fk_rciv_seq_num
+														AND sv10.fk_pty_id       = ac01.pty_id)
+				), '') hptl_name
+			   ,sv12.rpsn_gbha            
+			   ,rq00.acc_dtmn_amt
+			   ,rq00.os_ins_mny
+			   ,COALESCE((SELECT clerk_name FROM staff0tb where clerk_no = al01.clerk_no), '') clerk_name
+			   ,DAYS(current_date) - DAYS(ac00.accd_date) pass_Day
+			   ,COALESCE(lg12.carry_value, '') carry_value
+			FROM                      
+				pcal01tb al01 
+				LEFT OUTER JOIN	pclg12tb lg12	
+					ON   lg12.fk_bsns_cls       = al01.bsns_cls           
+					AND  lg12.fk_rciv_date      = al01.rciv_date          
+					AND  lg12.fk_rciv_seq_num   = al01.rciv_seq_num       
+					AND  lg12.fk_agt_seq_num    = 1                       
+					AND  lg12.fk_covr_cls       = al01.covr_cls           
+					AND  lg12.fk_dam_order      = al01.dam_order          
+					AND  lg12.fk_svy_req_cls    = '03'    	                          
+					AND  lg12.fk_seq_num        = 1
+					AND  lg12.seq_num           = 1
+			   ,pcac00tb ac00  	       
+			   ,pcrq00tb rq00
+			   ,pcac01tb ac01
+			   ,pcsv12tb sv12
+			WHERE 
+				al01.clerk_no						  = #clerkNo#                  
+				AND   al01.chrg_dtbn_ter_date         = '9999-12-31' 	
+				AND   al01.dam_stf_sts                = '1'   	               
+				AND   al01.dam_cls                    = '1'
+				AND   al01.pcac01_pcac02_cls          = '1'
+				AND   al01.bsns_cls                   = '1'
+				AND   al01.covr_cls                   = '10' 
+
+				AND   ac00.bsns_cls                   = al01.bsns_cls  
+				AND   ac00.rciv_date                  = al01.rciv_date 
+				AND   ac00.rciv_seq_num               = al01.rciv_seq_num 
+				AND   ac00.accd_cls                   NOT IN ('10','60')
+				AND   ac00.coop_unlw_act              <> '2'
+													  
+				AND   rq00.fk_bsns_cls                = al01.bsns_cls 
+				AND   rq00.fk_rciv_date               = al01.rciv_date 
+				AND   rq00.fk_rciv_seq_num            = al01.rciv_seq_num 
+				AND   rq00.fk_seq_num                 = 1
+				AND   rq00.covr_cls                   = al01.covr_cls 
+				AND   rq00.dam_order                  = al01.dam_order 
+
+				AND   ac01.fk_bsns_cls                = al01.bsns_cls        
+				AND   ac01.fk_rciv_date               = al01.rciv_date       
+				AND   ac01.fk_rciv_seq_num            = al01.rciv_seq_num    
+				AND   ac01.agrm_seq                   = 1                    
+				AND   ac01.covr_cls                   = al01.covr_cls        
+				AND   ac01.dam_order                  = al01.dam_order       
+				AND   ac01.pty_cls                    = '2'     
+					  
+				AND   sv12.fk_bsns_cls                = al01.bsns_cls     
+				AND   sv12.fk_rciv_date               = al01.rciv_date    
+				AND   sv12.fk_rciv_seq_num            = al01.rciv_seq_num 
+				AND   sv12.fk_pty_id                  = ac01.pty_id          
+				AND   sv12.gbha_cls                   = '1'                  
+				AND   sv12.end_date                   = '9999-12-31'
+
+				AND   NOT EXISTS (SELECT * FROM pcpa03tb pa03
+								  WHERE pa03.fk_bsns_cls             = al01.bsns_cls	
+									AND pa03.fk_rciv_date            = al01.rciv_date
+									AND pa03.fk_rciv_seq_num         = al01.rciv_seq_num
+									AND pa03.fk_agt_seq_num          = 1
+									AND pa03.fk_covr_cls             = al01.covr_cls
+									AND pa03.fk_dam_order            = al01.dam_order
+									AND pa03.pay_type                = '01')
+
+				AND ((DAYS($baseDate$) - DAYS(ac00.accd_date) > 151  AND  sv12.rpsn_gbha between '0100' and '0199')
+				OR   (DAYS($baseDate$) - DAYS(ac00.accd_date) > 91   AND  sv12.rpsn_gbha between '0200' and '0399')
+				OR   (DAYS($baseDate$) - DAYS(ac00.accd_date) > 61   AND  sv12.rpsn_gbha between '0400' and '0699'))
+			) T
+		WHERE
+			T.carry_value BETWEEN #fromCarryValue# AND #toCarryValue#
+			AND	 T.rciv_date  >= #rcivDate#                                                                
+			AND  ((T.rciv_date  > #rcivDate#)                                                                
+			OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num >= #rcivSeqNum#)    
+			OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num  = #rcivSeqNum# AND T.covr_cls >= #covrCls#)    
+			OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num  = #rcivSeqNum# AND T.covr_cls  = #covrCls# AND T.dam_order >= #damOrder# )) 
+		ORDER BY 
+			T.rciv_date
+			,T.rciv_seq_num
+			,T.covr_cls 
+			,T.dam_order
+		FETCH FIRST 15 ROWS ONLY           
+		OPTIMIZE FOR 1 ROW FOR FETCH ONLY
+		]]>
+	</entry>
+
+	<entry key="sql.selectFour">
+	<![CDATA[
+		SELECT
+			T.rciv_date
+			,T.rciv_seq_num
+			,T.covr_cls
+			,T.dam_order
+			,T.accd_cls	 
+			,T.pty_name
+			,T.hptl_name
+			,T.rpsn_gbha            
+			,T.acc_dtmn_amt
+			,T.os_ins_mny
+			,T.clerk_name
+			,T.pass_Day
+			,T.carry_value
+		FROM
+			(SELECT 
+				al01.rciv_date
+			   ,al01.rciv_seq_num
+			   ,al01.covr_cls
+			   ,al01.dam_order
+			   ,CASE WHEN ac00.accd_cls = '10' THEN '책임' 
+					 WHEN ac00.accd_cls = '11' THEN 'Ｍ／Ｔ' 
+					 WHEN ac00.accd_cls = '12' THEN '비Ｍ／Ｔ' 
+					 WHEN ac00.accd_cls = '20' THEN '임의' 
+					 WHEN ac00.accd_cls = '21' THEN '타차운전' 
+					 WHEN ac00.accd_cls = '30' THEN '외화표시' 
+					 WHEN ac00.accd_cls = '40' THEN '취급업자' 
+					 WHEN ac00.accd_cls = '50' THEN '운전자' 
+					 WHEN ac00.accd_cls = '60' THEN '정부보장' 
+					 WHEN ac00.accd_cls = '13' THEN '책임임의' ELSE '' END accd_cls	 
+			   ,COALESCE(ac01.accd_pty_name ,'') pty_name
+			   ,VALUE(	(SELECT sv10.hptl_nm
+						FROM pcsv10tb sv10 
+						WHERE sv10.fk_bsns_cls		= ac01.fk_bsns_cls              
+						AND sv10.fk_rciv_date		= ac01.fk_rciv_date             
+						AND sv10.fk_rciv_seq_num	= ac01.fk_rciv_seq_num          
+						AND sv10.fk_pty_id			= ac01.pty_id                   
+						AND sv10.seq_num			=	(SELECT max(sv10.seq_num)                             
+														FROM pcsv10tb sv10                                 
+														WHERE sv10.fk_bsns_cls   = ac01.fk_bsns_cls    
+														AND sv10.fk_rciv_date    = ac01.fk_rciv_date   
+														AND sv10.fk_rciv_seq_num = ac01.fk_rciv_seq_num
+														AND sv10.fk_pty_id       = ac01.pty_id)
+				), '') hptl_name
+			   ,sv12.rpsn_gbha            
+			   ,rq00.acc_dtmn_amt
+			   ,rq00.os_ins_mny
+			   ,COALESCE((SELECT clerk_name FROM staff0tb where clerk_no = al01.clerk_no), '') clerk_name
+			   ,DAYS(current_date) - DAYS(ac00.accd_date) pass_Day
+			   ,COALESCE(lg12.carry_value, '') carry_value
+			FROM                      
+				pcal01tb al01 
+				LEFT OUTER JOIN	pclg12tb lg12	
+					ON   lg12.fk_bsns_cls       = al01.bsns_cls           
+					AND  lg12.fk_rciv_date      = al01.rciv_date          
+					AND  lg12.fk_rciv_seq_num   = al01.rciv_seq_num       
+					AND  lg12.fk_agt_seq_num    = 1                       
+					AND  lg12.fk_covr_cls       = al01.covr_cls           
+					AND  lg12.fk_dam_order      = al01.dam_order          
+					AND  lg12.fk_svy_req_cls    = '03'    	                          
+					AND  lg12.fk_seq_num        = 1
+					AND  lg12.seq_num           = 1
+			   ,pcac00tb ac00  	       
+			   ,pcrq00tb rq00
+			   ,pcac01tb ac01
+			   ,pcsv12tb sv12
+			WHERE 
+				al01.clerk_no						  = #clerkNo#                  
+				AND   al01.chrg_dtbn_ter_date         = '9999-12-31' 	
+				AND   al01.dam_stf_sts                = '1'   	               
+				AND   al01.dam_cls                    = '1'
+				AND   al01.pcac01_pcac02_cls          = '1'
+				AND   al01.bsns_cls                   = '1'  
+				AND   al01.covr_cls                   = '10' 
+
+				AND   ac00.bsns_cls                   = al01.bsns_cls  
+				AND   ac00.rciv_date                  = al01.rciv_date 
+				AND   ac00.rciv_seq_num               = al01.rciv_seq_num 
+				AND   ac00.accd_cls                   NOT IN ('10','60','21')
+				AND   ac00.coop_unlw_act              <> '2'
+													  
+				AND   rq00.fk_bsns_cls                = al01.bsns_cls 
+				AND   rq00.fk_rciv_date               = al01.rciv_date 
+				AND   rq00.fk_rciv_seq_num            = al01.rciv_seq_num 
+				AND   rq00.fk_seq_num                 = 1
+				AND   rq00.covr_cls                   = al01.covr_cls 
+				AND   rq00.dam_order                  = al01.dam_order 
+
+				AND   ac01.fk_bsns_cls                = al01.bsns_cls        
+				AND   ac01.fk_rciv_date               = al01.rciv_date       
+				AND   ac01.fk_rciv_seq_num            = al01.rciv_seq_num    
+				AND   ac01.agrm_seq                   = 1                    
+				AND   ac01.covr_cls                   = al01.covr_cls        
+				AND   ac01.dam_order                  = al01.dam_order       
+				AND   ac01.pty_cls                    = '2'  
+				AND   ac01.jumin_ymd                  > ''
+				AND   ac01.jumin_sex                  > ''  
+					   
+				AND   sv12.fk_bsns_cls                = al01.bsns_cls     
+				AND   sv12.fk_rciv_date               = al01.rciv_date    
+				AND   sv12.fk_rciv_seq_num            = al01.rciv_seq_num 
+				AND   sv12.fk_pty_id                  = ac01.pty_id          
+				AND   sv12.gbha_cls                   = '1'                  
+				AND   sv12.end_date                   = '9999-12-31'
+
+				AND   NOT EXISTS (SELECT * FROM pcpa03tb pa03
+								  WHERE pa03.fk_bsns_cls             = al01.bsns_cls	
+									AND pa03.fk_rciv_date            = al01.rciv_date
+									AND pa03.fk_rciv_seq_num         = al01.rciv_seq_num
+									AND pa03.fk_agt_seq_num          = 1
+									AND pa03.fk_covr_cls             = al01.covr_cls
+									AND pa03.fk_dam_order            = al01.dam_order
+									AND pa03.pay_type                = '01')
+
+				AND ((DAYS($baseDate$) - DAYS(ac00.accd_date) between 181 and 210  AND  sv12.rpsn_gbha between '0100' and '0199')
+
+				OR   (DAYS($baseDate$) - DAYS(ac00.accd_date) between 121 and 150  AND  sv12.rpsn_gbha between '0200' and '0399' AND
+					 (YEAR(ac00.accd_date) -
+					  YEAR(CASE WHEN ac01.jumin_sex = '1' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '2' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '3' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '4' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '5' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '6' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '7' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '8' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								ELSE '' END))  between 20 and 55 )
+
+				OR   (DAYS($baseDate$) - DAYS(ac00.accd_date) between 91  and 120  AND  sv12.rpsn_gbha between '0400' and '0699' AND
+					 (YEAR(ac00.accd_date) -
+					  YEAR(CASE WHEN ac01.jumin_sex = '1' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '2' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '3' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '4' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '5' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '6' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '7' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								WHEN ac01.jumin_sex = '8' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+								ELSE '' END))  between 20 and 55 ))
+			) T
+		WHERE
+			T.carry_value BETWEEN #fromCarryValue# AND #toCarryValue#
+			AND	 T.rciv_date  >= #rcivDate#                                                                
+			AND  ((T.rciv_date  > #rcivDate#)                                                                
+			OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num >= #rcivSeqNum#)    
+			OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num  = #rcivSeqNum# AND T.covr_cls >= #covrCls#)    
+			OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num  = #rcivSeqNum# AND T.covr_cls  = #covrCls# AND T.dam_order >= #damOrder# )) 
+		ORDER BY 
+			T.rciv_date
+			,T.rciv_seq_num
+			,T.covr_cls 
+			,T.dam_order
+		FETCH FIRST 15 ROWS ONLY           
+		OPTIMIZE FOR 1 ROW FOR FETCH ONLY
+	]]>
+	</entry>
+
+	<entry key="sql.selectFive">
+	<![CDATA[
+		SELECT
+				T.rciv_date
+				,T.rciv_seq_num
+				,T.covr_cls
+				,T.dam_order
+				,T.accd_cls	 
+				,T.pty_name
+				,T.hptl_name
+				,T.rpsn_gbha            
+				,T.acc_dtmn_amt
+				,T.os_ins_mny
+				,T.clerk_name
+				,T.pass_Day
+				,T.carry_value
+			FROM
+				(SELECT 
+					al01.rciv_date
+				   ,al01.rciv_seq_num
+				   ,al01.covr_cls
+				   ,al01.dam_order
+				   ,CASE WHEN ac00.accd_cls = '10' THEN '책임' 
+						 WHEN ac00.accd_cls = '11' THEN 'Ｍ／Ｔ' 
+						 WHEN ac00.accd_cls = '12' THEN '비Ｍ／Ｔ' 
+						 WHEN ac00.accd_cls = '20' THEN '임의' 
+						 WHEN ac00.accd_cls = '21' THEN '타차운전' 
+						 WHEN ac00.accd_cls = '30' THEN '외화표시' 
+						 WHEN ac00.accd_cls = '40' THEN '취급업자' 
+						 WHEN ac00.accd_cls = '50' THEN '운전자' 
+						 WHEN ac00.accd_cls = '60' THEN '정부보장' 
+						 WHEN ac00.accd_cls = '13' THEN '책임임의' ELSE '' END accd_cls	 
+				   ,COALESCE(ac01.accd_pty_name ,'') pty_name
+				   ,VALUE(	(SELECT sv10.hptl_nm
+							FROM pcsv10tb sv10 
+							WHERE sv10.fk_bsns_cls		= ac01.fk_bsns_cls              
+							AND sv10.fk_rciv_date		= ac01.fk_rciv_date             
+							AND sv10.fk_rciv_seq_num	= ac01.fk_rciv_seq_num          
+							AND sv10.fk_pty_id			= ac01.pty_id                   
+							AND sv10.seq_num			=	(SELECT max(sv10.seq_num)                             
+															FROM pcsv10tb sv10                                 
+															WHERE sv10.fk_bsns_cls   = ac01.fk_bsns_cls    
+															AND sv10.fk_rciv_date    = ac01.fk_rciv_date   
+															AND sv10.fk_rciv_seq_num = ac01.fk_rciv_seq_num
+															AND sv10.fk_pty_id       = ac01.pty_id)
+					), '') hptl_name
+				   ,sv12.rpsn_gbha            
+				   ,rq00.acc_dtmn_amt
+				   ,rq00.os_ins_mny
+				   ,COALESCE((SELECT clerk_name FROM staff0tb where clerk_no = al01.clerk_no), '') clerk_name
+				   ,DAYS(current_date) - DAYS(ac00.accd_date) pass_Day
+				   ,COALESCE(lg12.carry_value, '') carry_value
+				FROM                      
+					pcal01tb al01 
+					LEFT OUTER JOIN	pclg12tb lg12	
+						ON   lg12.fk_bsns_cls       = al01.bsns_cls           
+						AND  lg12.fk_rciv_date      = al01.rciv_date          
+						AND  lg12.fk_rciv_seq_num   = al01.rciv_seq_num       
+						AND  lg12.fk_agt_seq_num    = 1                       
+						AND  lg12.fk_covr_cls       = al01.covr_cls           
+						AND  lg12.fk_dam_order      = al01.dam_order          
+						AND  lg12.fk_svy_req_cls    = '03'    	                          
+						AND  lg12.fk_seq_num        = 1
+						AND  lg12.seq_num           = 1
+				   ,pcac00tb ac00  	       
+				   ,pcrq00tb rq00
+				   ,pcac01tb ac01
+				   ,pcsv12tb sv12
+				WHERE 
+					al01.clerk_no						  = #clerkNo#                  
+					AND   al01.chrg_dtbn_ter_date         = '9999-12-31' 	
+					AND   al01.dam_stf_sts                = '1'   	               
+					AND   al01.dam_cls                    = '1'
+					AND   al01.pcac01_pcac02_cls          = '1'
+					AND   al01.bsns_cls                   = '1'  
+					AND   al01.covr_cls                   = '10' 
+														   
+					AND   ac00.bsns_cls                   = al01.bsns_cls  
+					AND   ac00.rciv_date                  = al01.rciv_date 
+					AND   ac00.rciv_seq_num               = al01.rciv_seq_num 
+					AND   ac00.accd_cls                   NOT IN ('10','60','21')
+					AND   ac00.coop_unlw_act              <> '2'
+														  
+					AND   rq00.fk_bsns_cls                = al01.bsns_cls 
+					AND   rq00.fk_rciv_date               = al01.rciv_date 
+					AND   rq00.fk_rciv_seq_num            = al01.rciv_seq_num 
+					AND   rq00.fk_seq_num                 = 1
+					AND   rq00.covr_cls                   = al01.covr_cls 
+					AND   rq00.dam_order                  = al01.dam_order 
+	
+					AND   ac01.fk_bsns_cls                = al01.bsns_cls        
+					AND   ac01.fk_rciv_date               = al01.rciv_date       
+					AND   ac01.fk_rciv_seq_num            = al01.rciv_seq_num    
+					AND   ac01.agrm_seq                   = 1                    
+					AND   ac01.covr_cls                   = al01.covr_cls        
+					AND   ac01.dam_order                  = al01.dam_order       
+					AND   ac01.pty_cls                    = '2'  
+					AND   ac01.jumin_ymd                  > ''
+					AND   ac01.jumin_sex                  > ''  
+						   
+					AND   sv12.fk_bsns_cls                = al01.bsns_cls     
+					AND   sv12.fk_rciv_date               = al01.rciv_date    
+					AND   sv12.fk_rciv_seq_num            = al01.rciv_seq_num 
+					AND   sv12.fk_pty_id                  = ac01.pty_id          
+					AND   sv12.gbha_cls                   = '1'                  
+					AND   sv12.end_date                   = '9999-12-31'
+	
+					AND   NOT EXISTS (SELECT * FROM pcpa03tb pa03
+									  WHERE pa03.fk_bsns_cls             = al01.bsns_cls	
+										AND pa03.fk_rciv_date            = al01.rciv_date
+										AND pa03.fk_rciv_seq_num         = al01.rciv_seq_num
+										AND pa03.fk_agt_seq_num          = 1
+										AND pa03.fk_covr_cls             = al01.covr_cls
+										AND pa03.fk_dam_order            = al01.dam_order
+										AND pa03.pay_type                = '01')
+	
+					AND ((DAYS($baseDate$) - DAYS(ac00.accd_date) > 271 AND  sv12.rpsn_gbha between '0100' and '0199')
+	
+					OR   (DAYS($baseDate$) - DAYS(ac00.accd_date) > 211 AND  sv12.rpsn_gbha between '0200' and '0399' AND
+						 (YEAR(ac00.accd_date) -
+						  YEAR(CASE WHEN ac01.jumin_sex = '1' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '2' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '3' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '4' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '5' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '6' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '7' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '8' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									ELSE '' END))  between 20 and 55 )
+	
+					OR   (DAYS($baseDate$) - DAYS(ac00.accd_date) > 180 AND  sv12.rpsn_gbha between '0400' and '0699' AND
+						 (YEAR(ac00.accd_date) -
+						  YEAR(CASE WHEN ac01.jumin_sex = '1' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '2' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '3' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '4' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '5' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '6' THEN '19' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '7' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									WHEN ac01.jumin_sex = '8' THEN '20' || substr(ac01.jumin_ymd,1,2) || '-' || substr(ac01.jumin_ymd,3,2) || '-' || substr(ac01.jumin_ymd,5,2)
+									ELSE '' END))  between 20 and 55 ))
+				) T
+			WHERE
+				T.carry_value BETWEEN #fromCarryValue# AND #toCarryValue#
+				AND	 T.rciv_date  >= #rcivDate#                                                                
+				AND  ((T.rciv_date  > #rcivDate#)                                                                
+				OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num >= #rcivSeqNum#)    
+				OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num  = #rcivSeqNum# AND T.covr_cls >= #covrCls#)    
+				OR   (T.rciv_date   = #rcivDate# AND T.rciv_seq_num  = #rcivSeqNum# AND T.covr_cls  = #covrCls# AND T.dam_order >= #damOrder# )) 
+			ORDER BY 
+				T.rciv_date
+				,T.rciv_seq_num
+				,T.covr_cls 
+				,T.dam_order
+			FETCH FIRST 15 ROWS ONLY           
+			OPTIMIZE FOR 1 ROW FOR FETCH ONLY
+		]]>
+	</entry>
+	
+	<entry key="sql.selectSix">
+	<![CDATA[
+		SELECT  SUBSTR(DTMN,1,9) AS CLERK_NO
+		       ,TRIM(SUBSTR(DTMN,10,5)) AS DEPT_CD
+		       ,(SELECT REPLACE(CLERK_NAME,'　','') 
+		           FROM STAFF0TB 
+		          WHERE CLERK_NO=SUBSTR(DTMN,1,9)) AS CLERK_NAME
+		       ,(SELECT REPLACE(DEPT_NAME,'　','') 
+		           FROM DEPT00TB 
+		          WHERE DEPT_CD=TRIM(SUBSTR(DTMN,10,5))) AS DEPT_NAME
+		       ,(SELECT TRIM(STF_CONTACT_NO1)||TRIM(STF_CONTACT_NO2)||TRIM(STF_CONTACT_NO3)||TRIM(STF_CONTACT_NO4)  
+		           FROM STAFF0TB 
+		          WHERE CLERK_NO=SUBSTR(DTMN,1,9)) AS CONTACT_NO
+		  FROM (   
+				SELECT MAX(RQ00.DTMN_CHRK_CLERK||RQ00.DTMN_CHRK_DEPT) AS DTMN
+				  FROM PCRQ00TB RQ00, PCAC00TB AC00
+				 WHERE RQ00.FK_BSNS_CLS      = #bsnsCls#
+				   AND RQ00.FK_RCIV_DATE     = #rcivDate#
+				   AND RQ00.FK_RCIV_SEQ_NUM  = #rcivSeqNum# 
+				   AND RQ00.PTY_ID           = #piboPtyId#
+				   AND RQ00.TER_DATE         = '9999-12-31'
+				   AND RQ00.RFD_STS_CLS      = '4'   
+				   AND AC00.BSNS_CLS         = RQ00.FK_BSNS_CLS
+                   AND AC00.RCIV_DATE        = RQ00.FK_RCIV_DATE
+                   AND AC00.RCIV_SEQ_NUM     = RQ00.FK_RCIV_SEQ_NUM
+                   AND AC00.ACD_RCV_SCRN_CLS <> 'A'
+				 HAVING MAX(RQ00.DTMN_CHRK_CLERK||RQ00.DTMN_CHRK_DEPT) is not null				   
+				 ) AA			   
+       		OPTIMIZE FOR 1 ROW		   			   
+			WITH UR
+	]]>
+	</entry>
+	
+	<entry key="sql.selectSeven">
+		select
+				MAX(PRE_INFO_DTL_DATE) as date
+			from pcps02tb
+			where	fk_bsns_cls = #bsnsCls#
+			AND fk_rciv_date = #rcivDate#
+			AND fk_rciv_seq_num = #rcivSeqNum#
+			AND FK_PTY_ID = #ptyId#
+			and FK_DAM_CLS = '10'
+			and FK_PROC_CLS ='A0'
+			and FK_PRE_INFO_CLS ='PR001'
+			OPTIMIZE FOR 1 ROW
+			WITH UR
+	</entry>
+	
+	<entry key="sql.selectEight">
+	<![CDATA[
+		SELECT CASE WHEN COUNT(*) = 1 THEN 1 ELSE 2 END AS CNT
+		  FROM (	
+				SELECT 
+				        COUNT(*) AS TCNT
+ 				       ,SUM(CASE WHEN OS01.SUBJECT_CODE IN ('CM201','CM202','CM203') THEN 1 ELSE 0 END) AS CNT1
+ 				       ,SUM(CASE WHEN OS01.SUBJECT_CODE IN ('CM251','CM252','CM253') THEN 1 ELSE 0 END) AS CNT2
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND OS01.SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') THEN 1 ELSE 0 END ) AS CNT3
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND OS01.SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '0' THEN 1 ELSE 0 END ) AS CNT30
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND OS01.SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '1' THEN 1 ELSE 0 END ) AS CNT31
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND OS01.SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '2' THEN 1 ELSE 0 END ) AS CNT32
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND OS01.SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '3' THEN 1 ELSE 0 END ) AS CNT33
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND OS01.SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '4' THEN 1 ELSE 0 END ) AS CNT34
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='03' THEN 1 ELSE 0 END ) AS CNT4	
+ 				       ,SUM(CASE WHEN CODE_TYPE_1='04' THEN 1 ELSE 0 END ) AS CNT6	
+ 				       ,SUM(CASE WHEN CODE_TYPE_1 IS NULL THEN 1 ELSE 0 END ) AS CNT5
+				  FROM PCOS01TB OS01
+				        LEFT OUTER JOIN PCCA20TB B
+				          ON GRP_CODE_TYPE = '2007'
+				         AND CODE_TYPE_1 IN ('01','03','04')
+				         AND APPL_END_DATE = '9999-12-31'
+				         AND APPL_CODE     = OS01.SUBJECT_CODE
+				      ,PCPA30TB PA30
+				        LEFT OUTER JOIN TABLE (   SELECT MAX(PAYED_DATE) as PAYED_DATE
+												    FROM PCAC03TB AC03E
+												        ,PCAC03TB AC03R
+												        ,PCRQ00TB RQ00R
+												        ,PCPA03TB PA03R
+												        ,PCPA04TB PA04R
+												        ,PCPA30TB PA30R
+												        ,PCAC00TB AC00R 
+												   WHERE PA30.SUBJECT_CODE IN ('C4218','C4246','C4219','C4236')
+												     AND AC03E.FK_BSNS_CLS     = PA30.FK_BSNS_CLS      
+												     AND AC03E.FK_RCIV_DATE    = PA30.FK_RCIV_DATE    
+												     AND AC03E.FK_RCIV_SEQ_NUM = PA30.FK_RCIV_SEQ_NUM
+												     AND AC03E.SEQ_NUM         = PA30.FK_SEQ_NUM
+												     
+												     AND AC03R.AGRM_NO         = AC03E.AGRM_NO 									             
+												     AND AC03R.FK_BSNS_CLS     = AC03E.FK_BSNS_CLS 
+												     AND RQ00R.FK_BSNS_CLS     = AC03R.FK_BSNS_CLS
+												     AND RQ00R.FK_RCIV_DATE    = AC03R.FK_RCIV_DATE
+												     AND RQ00R.FK_RCIV_SEQ_NUM = AC03R.FK_RCIV_SEQ_NUM
+												     AND RQ00R.FK_SEQ_NUM      = AC03R.SEQ_NUM
+												     AND RQ00R.PTY_ID||''      = #piboPtyId#
+												     AND PA03R.FK_BSNS_CLS     = RQ00R.FK_BSNS_CLS
+												     AND PA03R.FK_RCIV_DATE    = RQ00R.FK_RCIV_DATE
+												     AND PA03R.FK_RCIV_SEQ_NUM = RQ00R.FK_RCIV_SEQ_NUM
+												     AND PA03R.FK_AGT_SEQ_NUM  = RQ00R.FK_SEQ_NUM
+												     AND PA03R.FK_COVR_CLS     = RQ00R.COVR_CLS
+												     AND PA03R.FK_DAM_ORDER    = RQ00R.DAM_ORDER
+												     AND PA03R.PAYED_DATE     <> '0001-01-01'
+												     AND PA04R.FK_BSNS_CLS     = PA03R.FK_BSNS_CLS
+												     AND PA04R.FK_RCIV_DATE    = PA03R.FK_RCIV_DATE
+												     AND PA04R.FK_RCIV_SEQ_NUM = PA03R.FK_RCIV_SEQ_NUM
+												     AND PA04R.FK_AGT_SEQ_NUM  = PA03R.FK_AGT_SEQ_NUM
+												     AND PA04R.FK_COVR_CLS     = PA03R.FK_COVR_CLS
+												     AND PA04R.FK_DAM_ORDER    = PA03R.FK_DAM_ORDER
+												     AND PA04R.FK_SEQ_NUM      = PA03R.SEQ_NUM
+												     AND PA30R.FK_BSNS_CLS     = PA04R.FK_BSNS_CLS
+												     AND PA30R.FK_RCIV_DATE    = PA04R.FK_RCIV_DATE
+												     AND PA30R.FK_RCIV_SEQ_NUM = PA04R.FK_RCIV_SEQ_NUM
+												     AND PA30R.FK_SEQ_NUM      = PA04R.FK_AGT_SEQ_NUM
+												     AND PA30R.COVR_CLS        = PA04R.FK_COVR_CLS
+												     AND PA30R.DAM_ORDER       = PA04R.FK_DAM_ORDER
+												     AND PA30R.MNPV_CLS        = PA04R.MNPV_CLS
+												     AND PA30R.SUBJECT_CODE   IN ('C4218','C4246','C4219','C4236')
+												     AND AC00R.BSNS_CLS        = RQ00R.FK_BSNS_CLS
+												     AND AC00R.RCIV_DATE       = RQ00R.FK_RCIV_DATE
+												     AND AC00R.RCIV_SEQ_NUM    = RQ00R.FK_RCIV_SEQ_NUM
+												     AND CASE WHEN AC00R.ACCD_DATE BETWEEN (PA30.COVR_START_DATE+(YEAR((SELECT ACCD_DATE 
+														                                                              FROM PCAC00TB
+														                                                             WHERE BSNS_CLS     = PA30.FK_BSNS_CLS
+														                                                               AND RCIV_DATE    = PA30.FK_RCIV_DATE 
+														                                                               AND RCIV_SEQ_NUM = PA30.FK_RCIV_SEQ_NUM) - PA30.COVR_START_DATE))YEAR)
+												                                       AND (PA30.COVR_START_DATE+(YEAR((SELECT ACCD_DATE 
+														                                                              FROM PCAC00TB
+														                                                             WHERE BSNS_CLS     = PA30.FK_BSNS_CLS
+														                                                               AND RCIV_DATE    = PA30.FK_RCIV_DATE
+														                                                               AND RCIV_SEQ_NUM = PA30.FK_RCIV_SEQ_NUM) - PA30.COVR_START_DATE)+1)YEAR - 1 DAY)   THEN 1 ELSE 0 END = 1	
+					                            ) Z
+				                      ON 1=1 
+				      ,PCAC00TB AC00   
+				 WHERE OS01.FK_BSNS_CLS	   = #bsnsCls#
+				   AND OS01.FK_RCIV_DATE    = #rcivDate#
+				   AND OS01.FK_RCIV_SEQ_NUM = #rcivSeqNum#   
+				   AND OS01.FK_AGT_SEQ_NUM  = #agtSeqNum#  
+				   AND OS01.FK_COVR_CLS     = #covrCls#
+				   AND OS01.FK_DAM_ORDER    = #damOrder#				   
+			       AND OS01.FK_OS_RANK      = (SELECT MAX(OS00.OS_RANK)
+	                                            FROM PCOS00TB OS00
+	                                           WHERE OS00.FK_BSNS_CLS     = #bsnsCls#               
+	                                             AND OS00.FK_RCIV_DATE    = #rcivDate#     
+	                                             AND OS00.FK_RCIV_SEQ_NUM = #rcivSeqNum#    
+	                                             AND OS00.FK_AGT_SEQ_NUM  = #agtSeqNum#       
+	                                             AND OS00.FK_COVR_CLS     = #covrCls#
+	                                             AND OS00.FK_DAM_ORDER    = #damOrder# 
+                                               )  
+                    AND OS01.FK_BSNS_CLS      = PA30.FK_BSNS_CLS 
+				    AND OS01.FK_RCIV_DATE     = PA30.FK_RCIV_DATE       
+				    AND OS01.FK_RCIV_SEQ_NUM  = PA30.FK_RCIV_SEQ_NUM    
+				    AND OS01.FK_AGT_SEQ_NUM   = PA30.FK_SEQ_NUM         
+				    AND OS01.FK_COVR_CLS      = PA30.COVR_CLS           
+				    AND OS01.FK_DAM_ORDER     = PA30.DAM_ORDER          
+				    AND OS01.MNPV_CLS         = PA30.MNPV_CLS  
+				    AND OS01.SUBJECT_CODE     = PA30.SUBJECT_CODE
+				    AND AC00.BSNS_CLS         = OS01.FK_BSNS_CLS
+			        AND AC00.RCIV_DATE        = OS01.FK_RCIV_DATE
+				    AND AC00.RCIV_SEQ_NUM     = OS01.FK_RCIV_SEQ_NUM
+			        AND CASE WHEN OS01.SUBJECT_CODE IN ('C4218','C4246','C4219','C4236') THEN 
+			                     CASE WHEN AC00.ACCD_DATE BETWEEN (PA30.COVR_START_DATE+(YEAR(AC00.ACCD_DATE - PA30.COVR_START_DATE))YEAR)  AND (PA30.COVR_START_DATE+(YEAR(AC00.ACCD_DATE - PA30.COVR_START_DATE)+1)YEAR - 1 DAY)
+			                           AND COALESCE(Z.PAYED_DATE,'0001-01-01') = '0001-01-01' THEN 1 ELSE 0 END 
+			                 ELSE 1 END = 1                            
+		                ) AA
+		   WHERE CASE WHEN CNT5 > 0 THEN 0
+		              WHEN TCNT <= 3 AND (CNT1+CNT2) < TCNT AND (CNT3+CNT4+CNT6) = 0 THEN 0
+		              WHEN CNT1 > 0 AND CNT2 > 0 THEN 0		              
+		              WHEN CNT30 > 1 OR CNT31> 1 OR CNT32 > 1 OR CNT33 > 1 OR CNT34 > 1 THEN 0 
+		              WHEN CNT30 > 0 AND (CNT31+CNT32+CNT33+CNT34) > 0 THEN 0
+		              WHEN CNT31 = 0 AND CNT32 > 0 AND (CNT33+CNT34) > 0 AND (CNT1+CNT2+CNT4+CNT6) = 0 THEN 0
+		              WHEN (CNT31+CNT32+CNT33) >= 3 OR (CNT31+CNT32+CNT34) >= 3  OR (CNT32+CNT33+CNT34) >= 3 THEN 0		              
+		              WHEN (CNT3 > 0 AND (CNT1+CNT2) > 0 AND (CNT4+CNT6) > 1) OR TCNT = 0 THEN 0
+		              WHEN (CNT3 > 0 OR (CNT1+CNT2) > 0 ) AND (CNT4+CNT6) > 2 THEN 0
+		              WHEN (CNT4+CNT6) > 2 THEN 0 ELSE 1 END = 1 
+
+	OPTIMIZE FOR 1 ROW 
+		WITH UR
+	   ]]>
+	</entry>
+	
+	<entry key="sql.selectNine">
+		<![CDATA[
+			SELECT a.accd_no			as accdNo		
+			     , a.covr_cls			as covr
+			     , a.covr_nm			as covrNm
+			     , a.dam_order			as rankNo
+			     , a.car_no				as pibojaCarNo
+			     , a.accd_date			as accdDt
+			     , a.accd_time			as accdDttm
+			     , a.accd_place			as accdPlace
+			     , a.accd_pty_name		as damNm
+			     , a.clerk_no			as chrgClerkClerkNo
+			     , a.clerk_name			as chrgClerkNm
+			     , a.prc_dept_cmps_name	as cntrNm
+			     , a.dept_name			as teamNm
+			     , a.cmpn_tele_zone_no	as chrgClerkCntcPlc1
+			     , a.cmpn_tele_ofce_no	as chrgClerkCntcPlc2
+			     , a.cmpn_tele_no		as chrgClerkCntcPlc3
+			     , a.hand_zone_no		as chrgClerkCellphoneNo1
+			     , a.hand_ofce_no		as chrgClerkCellphoneNo2
+			     , a.hand_tele_no		as chrgClerkCellphoneNo3
+			     , a.fax_no1			as chrgClerkFaxNo1
+			     , a.fax_no2			as chrgClerkFaxNo2
+			     , a.fax_no3			as chrgClerkFaxNo3
+			     , '삼성화재'				as cmpNm
+			     , a.issStt
+			  FROM ( 
+					SELECT rownumber() over(ORDER BY ac00.rciv_date DESC, ac00.rciv_seq_num DESC) as rn  
+					     , REPLACE(CHAR(ac00.rciv_date), '-', '') || '-' || REPEAT('0', 5-LENGTH(RTRIM(CHAR(ac00.rciv_seq_num)))) || RTRIM(CHAR(ac00.rciv_seq_num)) accd_no
+					     , victim.covr_cls
+					     , CASE WHEN victim.covr_cls = '10' THEN '대인'
+					            WHEN victim.covr_cls = '30' THEN '자손'
+					            WHEN victim.covr_cls = '50' THEN '운전자'
+					            WHEN victim.covr_cls = '60' THEN '무보험'
+					       END covr_nm
+					     , victim.dam_order
+					     , ac02.car_no
+					     , REPLACE(CHAR(ac00.accd_date), '-', '') accd_date
+					     , REPLACE(REPLACE(CHAR(ac00.accd_time), ':', ''), '.', '') accd_time
+					     , '(' || SUBSTR(ac00.zip_code, 1, 3) || '-' || SUBSTR(ac00.zip_code, 4) || ') ' || ac00.city_do || ' ' || ac00.city_ku_cnty || ' ' || ac00.dong_myeon || ' ' || ac00.accd_detl_place As accd_place
+					     , victim.accd_pty_name
+					     , al01.clerk_no
+					     , stf0.clerk_name
+					     , dp00.prc_dept_cmps_name
+					     , dp00.dept_name			     
+					     , stf0.stf_contact_no1 as cmpn_tele_zone_no                                
+				  	  	 , stf0.stf_contact_no2 as cmpn_tele_ofce_no                                 
+				  	  	 , stf0.stf_contact_no3 as cmpn_tele_no		    	 
+				  	  	 , cell.contact_no1 as hand_zone_no                       
+		    			 , cell.contact_no2 as hand_ofce_no                       
+		    			 , cell.contact_no3 as hand_tele_no                       
+		    			 , fax.contact_no1 as fax_no1                              
+		    			 , fax.contact_no2 as fax_no2                              
+		    			 , fax.contact_no3 as fax_no3  		    			 
+		    			 , CASE WHEN (COALESCE((SELECT CHAR(max(sv15.issue_date)) || CHAR(max(sv15.issue_order))
+							    			      FROM pcsv15tb sv15
+							    			     WHERE sv15.bsns_cls		= victim.fk_bsns_cls
+										           AND sv15.rciv_date		= victim.fk_rciv_date
+										           AND sv15.rciv_seq_num	= victim.fk_rciv_seq_num
+										           AND sv15.covr_cls		= victim.covr_cls
+										           AND sv15.dam_order		= victim.dam_order
+										           AND sv15.issue_company   = (SELECT FK_PTY_ID
+												  						         FROM GCCE20TB
+																			    WHERE HOSPITAL_CODE = #hptlCd#
+																				  AND APPL_TER_DATE = '9999-12-31'
+																				  FETCH FIRST 1 ROWS ONLY)					           
+												   AND sv15.issue_cls		= 'E1'
+												   AND sv15.issue_method    = 'A'), ''))	 = '' THEN ''
+								WHEN (SUBSTR(COALESCE((SELECT CHAR(max(sv15.issue_date)) || CHAR(max(sv15.issue_order))
+									    			     FROM pcsv15tb sv15
+									    			    WHERE sv15.bsns_cls			= victim.fk_bsns_cls
+												          AND sv15.rciv_date		= victim.fk_rciv_date
+												          AND sv15.rciv_seq_num		= victim.fk_rciv_seq_num
+												          AND sv15.covr_cls			= victim.covr_cls
+												          AND sv15.dam_order		= victim.dam_order
+												          AND sv15.issue_company 	= (SELECT FK_PTY_ID
+																					     FROM GCCE20TB
+																						WHERE HOSPITAL_CODE = #hptlCd#
+																						  AND APPL_TER_DATE = '9999-12-31'
+																						  FETCH FIRST 1 ROWS ONLY)					           
+													      AND sv15.issue_cls		= 'E1'
+														  AND sv15.issue_method     = 'A'), ''), 1, 10)) = '0001-01-01' THEN '1'
+								ELSE '2'
+						   END       as issStt
+					  FROM pcac02tb ac02
+					     , pcac00tb ac00
+					     , pcac01tb ac01
+					     , pcac01tb victim
+					     , pcal01tb al01 
+					       LEFT OUTER JOIN staff0tb stf0 ON al01.clerk_no = stf0.clerk_no
+					       LEFT OUTER JOIN stfcnttb cell                                      
+					    		on cell.fk_staff0tbclerk_n = stf0.clerk_no                      
+					    		and cell.contact_cls = '32'                                      
+					    		and cell.appl_end_date = '9999-12-31'                            
+					       LEFT OUTER JOIN stfcnttb fax                                       
+					    		on fax.fk_staff0tbclerk_n = stf0.clerk_no                       
+					    		and fax.contact_cls = '22'                                       
+					    		and fax.appl_end_date = '9999-12-31'         
+						   LEFT OUTER JOIN dept00tb dp00 ON al01.dept_code = dp00.dept_cd
+					 WHERE ac02.car_no 				= #pibojaCarNo#
+					   AND ac02.seq_num				= 1
+					   AND ac00.accd_date BETWEEN #fromAccdDate# AND #toAccdDate#					   
+					   AND ac02.fk_bsns_cls			= ac00.bsns_cls
+					   AND ac02.fk_rciv_date   		= ac00.rciv_date
+					   AND ac02.fk_rciv_seq_num 	= ac00.rciv_seq_num
+					   AND ac01.seq_num				= 1
+					   AND ac01.pty_cls				= '1'					   
+					   AND ac00.bsns_cls			= ac01.fk_bsns_cls
+					   AND ac00.rciv_date			= ac01.fk_rciv_date
+					   AND ac00.rciv_seq_num		= ac01.fk_rciv_seq_num					   
+					   AND victim.pty_cls			= '2'
+					   AND ac00.bsns_cls			= victim.fk_bsns_cls
+					   AND ac00.rciv_date			= victim.fk_rciv_date
+					   AND ac00.rciv_seq_num		= victim.fk_rciv_seq_num					   			   
+					   AND victim.fk_bsns_cls		= al01.bsns_cls
+					   AND victim.fk_rciv_date		= al01.rciv_date
+					   AND victim.fk_rciv_seq_num 	= al01.rciv_seq_num
+					   AND al01.pcac01_pcac02_cls	= '1'                                                                                                              
+				  	   AND victim.seq_num 			= al01.pcac01_pcac02_seq                                                                                               
+				  	   AND al01.dam_cls 			= '1'                                                                                                                  
+				  	   AND al01.dam_stf_sts in ('1', '2')
+				   ) A
+			 WHERE A.rn >= #strRow#
+			   AND A.rn <= #endRow#
+			OPTIMIZE FOR 1 ROW
+			WITH UR		
+		]]>
+	</entry>
+	
+	<entry key="sql.selectTen">
+		<![CDATA[
+			SELECT
+				sum.clerk_no,
+				sum.clerk_name,
+				sum.dept_cd,
+				sum.dept_cmps_name,
+				sum.new_count,
+				sum.in_count,
+				sum.out_count,
+				(sum.new_count + sum.in_count  - sum.out_count) AS sum_new,
+				sum.no_count,
+				sum.end_count,
+				(sum.no_count + sum.end_count) AS sum_no,
+				sum.before_count,
+				sum.after_count,
+				(sum.before_count + sum.after_count) AS sum_before
+			FROM (
+				SELECT
+					staf.clerk_no,
+					staf.clerk_name,
+					staf.dept_cd,
+					staf.dept_cmps_name,
+					(
+					SELECT
+						COUNT(clerk_no) AS new_count
+					FROM
+						pcal01tb
+					WHERE
+						clerk_no = staf.clerk_no
+						AND chrg_dtbn_date >= #sDate:String#
+						AND chrg_dtbn_date <= #eDate:String#
+						AND dam_cls = '1'
+						AND seq_num = 1
+						AND bsns_cls = '1'
+						AND covr_cls = #covrCls:String#
+					),
+					(
+					SELECT
+						COUNT(clerk_no) AS in_count
+					FROM
+						pcal01tb
+					WHERE
+						clerk_no = staf.clerk_no
+						AND chrg_dtbn_date >= #sDate:String#
+						AND chrg_dtbn_date <= #eDate:String#
+						AND dam_cls = '1'
+						AND seq_num > 1
+						AND bsns_cls = '1'
+						AND covr_cls = #covrCls:String#
+					),
+					(
+					SELECT
+						COUNT(clerk_no) AS out_count
+					FROM
+						pcal01tb
+					WHERE
+						clerk_no = staf.clerk_no
+						AND chrg_dtbn_date >= #sDate:String#
+						AND chrg_dtbn_date <= #eDate:String#
+						AND dam_cls = '1'
+						AND dam_stf_sts = '3'
+						AND bsns_cls = '1'
+						AND covr_cls = #covrCls:String#
+					),
+					(
+					SELECT
+						COUNT(xmp_emp) AS no_count
+					FROM
+						pcrq14tb
+					WHERE
+						xmp_emp = staf.clerk_no
+						AND ter_date >= #sDate:String#
+						AND ter_date <= #eDate:String#
+						AND xmp_ord_num = 0
+						AND ter_cls = '2'
+						AND covr_cls = #covrCls:String#
+					),
+					(
+					SELECT
+						COUNT(xmp_emp) AS end_count
+					FROM
+						pcrq14tb
+					WHERE
+						xmp_emp = staf.clerk_no
+						AND ter_date =  #sDate:String#
+						AND ter_date =  #eDate:String#
+						AND xmp_ord_num = 0
+						AND ter_cls = '1'
+						AND covr_cls = #covrCls:String#
+					),
+					(
+					SELECT
+						COUNT(a.clerk_no) AS before_count
+					FROM
+						pcal01tb  a
+					WHERE
+						a.clerk_no = staf.clerk_no
+						AND a.chrg_dtbn_ter_date = '9999-12-31'
+						AND a.dam_cls = '1'
+						AND a.bsns_cls = '1'
+						AND a.dam_stf_sts = '1'
+						AND a.covr_cls = #covrCls:String#
+						AND not exists (
+							SELECT
+								1
+							FROM
+								pcos00tb b
+							WHERE
+								b.fk_bsns_cls = '1'
+								AND b.fk_rciv_date    = a.rciv_date
+								AND b.fk_rciv_seq_num = a.rciv_seq_num
+								AND b.fk_covr_cls     = a.covr_cls
+								AND b.fk_dam_order    = a.dam_order
+								AND b.os_rank = 1
+						)
+					),
+					(
+					SELECT
+						COUNT(a.clerk_no) AS after_count
+					FROM
+						pcal01tb  a
+					WHERE
+						a.clerk_no = staf.clerk_no
+						AND a.chrg_dtbn_ter_date = '9999-12-31'
+						AND a.dam_cls = '1'
+						AND a.bsns_cls = '1'
+						AND a.dam_stf_sts = '1'
+						AND a.covr_cls = #covrCls:String#
+						AND exists (
+							SELECT
+								1
+							FROM
+								pcos00tb b
+							WHERE
+								b.fk_bsns_cls = '1'
+								AND b.fk_rciv_date    = a.rciv_date
+								AND b.fk_rciv_seq_num = a.rciv_seq_num
+								AND b.fk_covr_cls     = a.covr_cls
+								AND b.fk_dam_order    = a.dam_order
+								AND b.os_rank = 1
+						)
+					)
+				FROM
+					staff0tb staf
+				WHERE
+					staf.nsanc_dept_cd = #keyCode:String#
+					AND staf.rt_frm_date = '9999-12-31'
+				) sum
+			ORDER BY sum.clerk_no ASC
+		WITH UR
+		]]>
+	</entry>
+	
+	<entry key="sql.selectEleven">
+	<![CDATA[
+		select RES.fk_bsns_cls              bsnsCls
+                  , RES.fk_rciv_date             rcivDate
+                  , RES.fk_rciv_seq_num          rcivSeqNum
+                  , RES.covr_cls                 covrCls
+                  , RES.dam_order                damOrder
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.coop_pty_id  END)  fctrPtyid
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.coop_pty_id  END)  partPtyid
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.coop_pty_id  END)  fixPtyid
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.coop_pty_id  END)  glssPtyid
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.coop_pty_id  END)  rentPtyid
+                    
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.rq30SeqNum ELSE 0 END)  fctrRq30SeqNum
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.rq30SeqNum ELSE 0 END)  partRq30SeqNum
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.rq30SeqNum ELSE 0 END)  fixRq30SeqNum
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.rq30SeqNum ELSE 0 END)  glssRq30SeqNum
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.rq30SeqNum ELSE 0 END)  rentRq30SeqNum   
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.req_amt ELSE 0 END)  fctrReqAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.req_amt ELSE 0 END)  partReqAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.req_amt ELSE 0 END)  fixReqAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.req_amt ELSE 0 END)  glssReqAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.req_amt ELSE 0 END)  rentReqAmt
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.req_date  END)  fctrReqDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.req_date  END)  partReqDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.req_date  END)  fixReqDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.req_date  END)  glssReqDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.req_date  END)  rentReqDate
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.req_time  END)  fctrReqTime
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.req_time  END)  partReqTime
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.req_time  END)  fixReqTime
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.req_time  END)  glssReqTime
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.req_time  END)  rentReqTime
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.formal_name  END)  fctrFormalName
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.formal_name  END)  partFormalName
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.formal_name  END)  fixFormalName
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.formal_name  END)  glssFormalName
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.formal_name  END)  rentFormalName
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.office_tel_no1  END)  fctrOfficeTelNo1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.office_tel_no1  END)  partOfficeTelNo1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.office_tel_no1  END)  fixOfficeTelNo1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.office_tel_no1  END)  glssOfficeTelNo1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.office_tel_no1  END)  rentOfficeTelNo1
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.office_tel_no2  END)  fctrOfficeTelNo2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.office_tel_no2  END)  partOfficeTelNo2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.office_tel_no2  END)  fixOfficeTelNo2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.office_tel_no2  END)  glssOfficeTelNo2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.office_tel_no2  END)  rentOfficeTelNo2
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.office_tel_no3  END)  fctrOfficeTelNo3
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.office_tel_no3  END)  partOfficeTelNo3
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.office_tel_no3  END)  fixOfficeTelNo3
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.office_tel_no3  END)  glssOfficeTelNo3
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.office_tel_no3  END)  rentOfficeTelNo3
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.ofc_zip_no  END)  fctrZipCode
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.ofc_zip_no  END)  partZipCode
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.ofc_zip_no  END)  fixZipCode
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.ofc_zip_no  END)  glssZipCode
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.ofc_zip_no  END)  rentZipCode
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.ofc_detl_address  END)  fctrOfcDetlAddress2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.ofc_detl_address  END)  partOfcDetlAddress2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.ofc_detl_address  END)  fixOfcDetlAddress2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.ofc_detl_address  END)  glssOfcDetlAddress2
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.ofc_detl_address  END)  rentOfcDetlAddress2
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.rdOfcDetlAddress  END)  fctrRdOfcDetlAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.rdOfcDetlAddress  END)  partRdOfcDetlAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.rdOfcDetlAddress  END)  fixRdOfcDetlAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.rdOfcDetlAddress  END)  glssRdOfcDetlAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.rdOfcDetlAddress  END)  rentRdOfcDetlAddress
+
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.rdOfcAddAddress  END)  fctrRdOfcAddAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.rdOfcAddAddress  END)  partRdOfcAddAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.rdOfcAddAddress  END)  fixRdOfcAddAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.rdOfcAddAddress  END)  glssRdOfcAddAddress
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.rdOfcAddAddress  END)  rentRdOfcAddAddress
+
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.zipAddr  END)  fctrOfcDetlAddress1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.zipAddr  END)  partOfcDetlAddress1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.zipAddr  END)  fixOfcDetlAddress1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.zipAddr  END)  glssOfcDetlAddress1
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.zipAddr  END)  rentOfcDetlAddress1
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.etsr_no  END)  fctrEtsrNo
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.etsr_no  END)  partEtsrNo
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.etsr_no  END)  fixEtsrNo
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.etsr_no  END)  glssEtsrNo
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.etsr_no  END)  rentEtsrNo
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.stats  END)  fctrStats
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.stats  END)  partStats
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.stats  END)  fixStats
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.stats  END)  glssStats
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.stats  END)  rentStats
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.payed_amount  END)  fctrPayedAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.payed_amount  END)  partPayedAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.payed_amount  END)  fixPayedAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.payed_amount  END)  glssPayedAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.payed_amount  END)  rentPayedAmt
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.payed_date  END)  fctrPayedDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.payed_date  END)  partPayedDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.payed_date  END)  fixPayedDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.payed_date  END)  glssPayedDate
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.payed_date  END)  rentPayedDate
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN RES.req_occ_path  END)  fctrReqOccPath
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='8'  THEN RES.req_occ_path  END)  partReqOccPath
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='F'  THEN RES.req_occ_path  END)  fixReqOccPath
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='G'  THEN RES.req_occ_path  END)  glssReqOccPath
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='R'  THEN RES.req_occ_path  END)  rentReqOccPath
+                  
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN COALESCE(RES.est_fix_amt   , 0)             END)  estFixAmt
+                  ,  MAX( CASE  WHEN RES.coop_cls  ='9'  THEN COALESCE(RES.dlvr_scdl_date, '0001-01-01')  END)  dlvrScdlDate
+                  
+                  ,  ( select  ivst_cls
+                         from  pcal06tb
+                        where  req_bsns_cls = '1'
+                          and  bsns_cls     = RES.fk_bsns_cls
+                          and  rciv_date    = RES.fk_rciv_date
+                          and  rciv_seq_num = RES.fk_rciv_seq_num
+                          AND  agt_seq_num  IN (0,1)
+                          and  covr_cls     = RES.covr_cls
+                          and  dam_order    = RES.dam_order
+                          and  app_end_date = '9999-12-31'
+                        fetch first 1 rows only
+                     ) articleInspectionReq
+                  ,  COALESCE(  (   SELECT  1
+                                      FROM  pcsp14tb
+                                     WHERE  work_cls      = '03'
+                                       AND  send_cont_cls = '01'
+                                       AND  bsns_cls      = RES.fk_bsns_cls
+                                       AND  rciv_date     = RES.fk_rciv_date
+                                       AND  rciv_seq_num  = RES.fk_rciv_seq_num
+                                       AND  agt_seq_num   = 1
+                                       AND  covr_cls      = RES.covr_cls
+                                       AND  dam_order     = RES.dam_order
+                                   FETCH FIRST 1 ROWS ONLY
+                     ),0)  paymentDelayNotice                       
+              FROM   (        
+                        SELECT REQ.fk_bsns_cls, REQ.fk_rciv_date  , REQ.fk_rciv_seq_num , REQ.covr_cls, REQ.dam_order   
+                             
+                             , REQ.coop_cls
+                             , REQ.coop_pty_id
+                             , REQ.est_fix_amt
+                             , REQ.dlvr_scdl_date
+                             
+                             , REQ.payed_amount
+                             , REQ.payed_date
+                             
+                             , REQ.rq30SeqNum
+                             , REQ.rq10SeqNum
+                             , REQ.req_amt
+                             , REQ.req_proc_stt
+                             , REQ.req_occ_path
+                             , REQ.req_date
+                             , REQ.req_time
+            				 
+                             , REQ.chkProc
+            				 
+                             , CASE WHEN  9           =  REQ.chkProc                                        THEN '4'
+                                    WHEN  '4'         =  REQ.req_proc_stt                                   THEN '6' 
+								 
+                                    WHEN  ''          <> REQ.req_proc_stt                                   THEN '3'
+								
+            				        WHEN 'R' = REQ.coop_cls    AND 0 != REQ.rq30SeqNum  AND 0 = REQ.req_amt THEN '5'
+            				        WHEN  (0 != REQ.rq30SeqNum  AND 0 != REQ.req_amt)
+            				                 OR   (0 != REQ.rq30SeqNum  AND '1' = REQ.req_occ_path)         THEN '2'
+            				        WHEN   7  = REQ.chkProc  OR 6  = REQ.chkProc                            THEN '1'
+            				        ELSE '-' END stats
+                             , cc00.formal_name         
+                             , cc00.office_tel_no1       
+                             , cc00.office_tel_no2       
+                             , cc00.office_tel_no3       
+                             , cc00.ofc_zip_no           
+                             , cc00.etsr_no              
+                             , cc00.ofc_detl_address
+                             ,case when cc00.office_nwod_cls = '01' then cc00.ofc_detl_address end as ofc_detl_address
+                             ,case when cc00.office_nwod_cls = '02' then cc00.RD_OFC_DETL_ADDR end as rdOfcDetlAddress
+                             ,case when cc00.office_nwod_cls = '02' then cc00.RD_OFC_ADD_ADDR end as rdOfcAddAddress
+                             , COALESCE( ( cczp20.output_name1||' '||cczp20.output_name2||' '
+                                    		 ||cczp20.output_name3||' '||cczp20.output_name4||' '||cczp20.output_name5||' '||cczp20.rd_name)
+                                    		,'')                zipAddr
+                           FROM (
+                                                Select  ac02.fk_bsns_cls          
+                                                     ,  ac02.fk_rciv_date       
+                                                     ,  ac02.fk_rciv_seq_num   
+                                                     ,  ac02.covr_cls           
+                                                     ,  ac02.dam_order    
+                                                     ,  ac02.seq_num
+                                                     ,  (CASE  WHEN  COALESCE(pa03.PAYED_AMOUNT, 0) = 0  THEN COALESCE(pa03.INS_MNY,  0)
+                                                               ELSE  pa03.PAYED_AMOUNT
+                                                               END )                                                   payed_amount
+                                                     ,  COALESCE(pa03.PAYED_DATE  , '0001-01-01')                      payed_date     
+                                                     
+                                                     ,  sv59.coop_cls
+                                                     ,  sv59.coop_pty_id
+                                                     ,  sv59.est_fix_amt
+                                                     ,  sv59.dlvr_scdl_date
+                                                   
+                                                     ,  COALESCE(rq30.seq_num     , 0) rq30SeqNum
+                                     				 ,  COALESCE(rq30.rq10_seq_num, 0) rq10SeqNum
+                                     				 ,  COALESCE(rq30.req_amt     , 0) req_amt          				
+                                    				 ,  rq30.req_proc_stt
+                                    				 ,  COALESCE(rq30.req_occ_path, '') req_occ_path
+                            						 , (CASE  WHEN COALESCE(rq30.req_date, '0001-01-01') = '0001-01-01' THEN COALESCE(sv59.input_date, '0001-01-01')
+                                    						  ELSE rq30.req_date
+                                    					 END)  req_date 
+                                    				 , (CASE  WHEN COALESCE(rq30.req_time, '00:00:00') = '00:00:00' THEN COALESCE(sv59.input_time, '00:00:00')
+                                    						  ELSE rq30.req_time
+                                    					END)  req_time 
+                                    				 ,  (CASE WHEN pa03.fk_bsns_cls ='1'               THEN 9
+                                    				          WHEN COALESCE(rq30.rq10_seq_num,0) > 0   THEN 8
+                                    				          WHEN COALESCE(rq30.seq_num,0)      > 0   THEN 7
+                                    				          WHEN sv59.fk_bsns_cls = '1'              THEN 6
+                                    				          ELSE 5   
+                                    				      END ) chkProc            				                     
+                                    			  from  pcac02tb ac02                 
+                                    	 	 LEFT JOIN  pcsv59tb sv59		
+                                    	 	        ON  sv59.fk_bsns_cls     = ac02.fk_bsns_cls
+                                    			   and  sv59.fk_rciv_date    = ac02.fk_rciv_date
+                                    			   and  sv59.fk_rciv_seq_num = ac02.fk_rciv_seq_num
+                                    			   and  sv59.fk_seq_num      = ac02.seq_num
+                                    			   and  sv59.appl_end_date   = '9999-12-31'
+                                    			   AND  sv59.covr_cls        = ac02.covr_cls
+                                    			   AND  sv59.dam_order       = ac02.dam_order
+                                    	     LEFT JOIN  PCRQ30TB rq30
+                                    	            ON  rq30.fk_bsns_cls     = sv59.fk_bsns_cls  
+                                    	  		   AND  rq30.fk_rciv_date    = sv59.fk_rciv_date
+                                    			   AND  rq30.fk_rciv_seq_num = sv59.fk_rciv_seq_num
+                                    			   AND  rq30.fk_seq_num      = 1
+                                    			   AND  rq30.fk_covr_cls     = sv59.covr_cls
+                                    			   AND  rq30.fk_dam_order    = sv59.dam_order
+                                    			   AND  rq30.coop_pty_id     = sv59.coop_pty_id
+                                    			   AND  rq30.req_rep_occ     = sv59.coop_cls
+                                    			   AND  rq30.req_end_date    = '9999-12-31'
+                                    			   AND  rq30.req_proc_stt    != '9'
+                                   	         LEFT JOIN  pcpa03tb pa03
+                                   	                ON  pa03.fk_bsns_cls      = rq30.fk_bsns_cls
+                                    		       AND  pa03.fk_rciv_date     = rq30.fk_rciv_date
+                                    			   AND  pa03.fk_rciv_seq_num  = rq30.fk_rciv_seq_num
+                                    			   AND  pa03.fk_agt_seq_num   = 1
+                                    			   AND  pa03.fk_covr_cls      = rq30.fk_covr_cls
+                                    			   AND  pa03.fk_dam_order     = rq30.fk_dam_order
+                                    			   AND  pa03.dtmn_cls        IN ('01','02','03','92','29','')			                                                                                                  
+                                                   AND  pa03.sanc_cls         = '2'		
+                                    			   AND  pa03.rq10_seq_num     = rq30.rq10_seq_num
+                                    			   AND  pa03.pty_no           = rq30.coop_pty_id
+                                    			   AND  pa03.pay_pty_cls      = ( CASE WHEN rq30.req_rep_occ = '9' THEN '14'
+                                    			                                       WHEN rq30.req_rep_occ = '8' THEN '15'
+                                    			                                       WHEN rq30.req_rep_occ = 'G' THEN '16'
+                                    			                                       WHEN rq30.req_rep_occ = 'F' THEN '21'
+                                    			                                       WHEN rq30.req_rep_occ = 'R' THEN '18'
+                                    			                                       else ''
+                                    			                                   END )
+                                    		    
+            			     WHERE  (ac02.fk_bsns_cls, ac02.fk_rciv_date, ac02.fk_rciv_seq_num, ac02.covr_cls, ac02.dam_order)
+            			               IN  (
+										        values  ( '$bsnsCls0$',  '$rcivDate0$',  $rcivSeqNum0$,  '$covrCls0$',  $damOrder0$ )
+					                                 ,  ( '$bsnsCls1$',  '$rcivDate1$',  $rcivSeqNum1$,  '$covrCls1$',  $damOrder1$ )
+					                                 ,  ( '$bsnsCls2$',  '$rcivDate2$',  $rcivSeqNum2$,  '$covrCls2$',  $damOrder2$ )
+					                                 ,  ( '$bsnsCls3$',  '$rcivDate3$',  $rcivSeqNum3$,  '$covrCls3$',  $damOrder3$ )
+					                                 ,  ( '$bsnsCls4$',  '$rcivDate4$',  $rcivSeqNum4$,  '$covrCls4$',  $damOrder4$ )
+					                                 ,  ( '$bsnsCls5$',  '$rcivDate5$',  $rcivSeqNum5$,  '$covrCls5$',  $damOrder5$ )
+					                                 ,  ( '$bsnsCls6$',  '$rcivDate6$',  $rcivSeqNum6$,  '$covrCls6$',  $damOrder6$ )
+					                                 ,  ( '$bsnsCls7$',  '$rcivDate7$',  $rcivSeqNum7$,  '$covrCls7$',  $damOrder7$ )
+					                                 ,  ( '$bsnsCls8$',  '$rcivDate8$',  $rcivSeqNum8$,  '$covrCls8$',  $damOrder8$ )
+					                                 ,  ( '$bsnsCls9$',  '$rcivDate9$',  $rcivSeqNum9$,  '$covrCls9$',  $damOrder9$ )
+					                                 ,  ( '$bsnsCls10$', '$rcivDate10$', $rcivSeqNum10$, '$covrCls10$', $damOrder10$ )
+					                                 ,  ( '$bsnsCls11$', '$rcivDate11$', $rcivSeqNum11$, '$covrCls11$', $damOrder11$ )
+					                                 ,  ( '$bsnsCls12$', '$rcivDate12$', $rcivSeqNum12$, '$covrCls12$', $damOrder12$ )
+					                                 ,  ( '$bsnsCls13$', '$rcivDate13$', $rcivSeqNum13$, '$covrCls13$', $damOrder13$ )
+					                                 ,  ( '$bsnsCls14$', '$rcivDate14$', $rcivSeqNum14$, '$covrCls14$', $damOrder14$ )
+            				               )
+                                         ) REQ
+                                   LEFT OUTER JOIN  gccc00tb   cc00
+                                    			ON  cc00.pty_id          = REQ.coop_pty_id
+                                   LEFT OUTER JOIN  cczp20tb  cczp20
+                                    			ON  cczp20.zip_code      = (case when cc00.office_nwod_cls = '01' then cc00.ofc_zip_no else cc00.rd_ofc_zip_no end) 
+                                    		    
+                                    		   AND  cczp20.zip_code_seq  = (case when cc00.office_nwod_cls = '01' and cc00.ofc_zip_no_seq < 1000 then 1 else cc00.rd_ofc_zip_no_seq end)
+                                    		   
+                                    		   AND  cczp20.seq_num       = 1
+                                    INNER JOIN TABLE(  SELECT  (CASE WHEN T03.fk_bsns_cls ='1'               THEN 9
+                                                                    	               WHEN COALESCE(T30.rq10_seq_num,0) > 0   THEN 8
+                                                                    	               WHEN COALESCE(T30.seq_num,0)      > 0   THEN 7
+                                    				                                   WHEN T59.fk_bsns_cls = '1'              THEN 6
+                                    				                                    ELSE 5   
+                                                                                  END ) chkProc
+                            						                        , (CASE  WHEN COALESCE(T30.req_date, '0001-01-01') = '0001-01-01' THEN COALESCE(T59.input_date, '0001-01-01')
+                                    					                      	  ELSE T30.req_date
+                                    			   	                        	 END)  req_date 
+                                    			                         	 , (CASE  WHEN COALESCE(T30.req_time, '00:00:00') = '00:00:00' THEN COALESCE(T59.input_time, '00:00:00')
+                                    				                    		  ELSE T30.req_time
+                                    			                        		END)  req_time 
+                                                                       FROM pcac02tb T02  
+                                                                  LEFT JOIN PCSV59TB T59
+                                    	 	                             ON T59.fk_bsns_cls     = T02.fk_bsns_cls
+                                    			                        and T59.fk_rciv_date    = T02.fk_rciv_date
+                                    			                        and T59.fk_rciv_seq_num = T02.fk_rciv_seq_num
+                                    			                        and T59.fk_seq_num      = T02.seq_num
+                                    			                        and T59.appl_end_date   = '9999-12-31'
+                                    			                        AND T59.covr_cls        = T02.covr_cls
+                                                       			        AND T59.dam_order       = T02.dam_order
+                                                                        AND T59.coop_cls        = REQ.coop_cls   
+                                                                  left join PCRQ30TB T30
+                                                                         ON T30.fk_bsns_cls      = T59.FK_BSNS_CLS
+                                                                        AND T30.fk_rciv_date     = T59.fk_rciv_date
+                                                                        AND T30.fk_rciv_seq_num  = T59.fk_rciv_seq_num
+                                                                        AND T30.fk_seq_num       = 1
+                                                                        AND T30.fk_covr_cls      = T59.covr_cls
+                                                                        AND T30.fk_dam_order     = T59.dam_order 
+                                                                        AND T30.coop_pty_id      = T59.coop_pty_id
+                                                                        AND T30.req_rep_occ      = T59.coop_cls
+                                                                        AND T30.req_end_date     = '9999-12-31'
+                                                                        AND T30.req_proc_stt    != '9' 
+                                                                  LEFT JOIN  pcpa03tb T03
+                                                                         ON  T03.fk_bsns_cls      = T30.fk_bsns_cls
+                                                                        AND  T03.fk_rciv_date     = T30.fk_rciv_date
+                                                                        AND  T03.fk_rciv_seq_num  = T30.fk_rciv_seq_num
+                                                                        AND  T03.fk_agt_seq_num   = 1
+                                                                        AND  T03.fk_covr_cls      = T30.fk_covr_cls
+                                                                        AND  T03.fk_dam_order     = T30.fk_dam_order
+                                                                        AND  T03.dtmn_cls        IN ('01','02','03','92','29','')			                                                                                                  
+                                                                        AND  T03.sanc_cls         = '2'		  
+					                                    			    AND  T03.rq10_seq_num     = T30.rq10_seq_num
+                                                                        AND  T03.pty_no           = T30.coop_pty_id
+                                                                        AND  T03.pay_pty_cls      = ( CASE WHEN T30.req_rep_occ = '9' THEN '14'
+                                                                                                           WHEN T30.req_rep_occ = '8' THEN '15'
+                                                                                                           WHEN T30.req_rep_occ = 'G' THEN '16'
+                                                                                                           WHEN T30.req_rep_occ = 'F' THEN '21'
+                                                                                                           WHEN T30.req_rep_occ = 'R' THEN '18'
+                                                                                                        else ''
+                                                                                                       END )
+                                    		                           WHERE  T02.fk_bsns_cls      = REQ.FK_BSNS_CLS
+                                    			                         AND  T02.fk_rciv_date     = REQ.fk_rciv_date
+                                                            			 And  T02.fk_rciv_seq_num  = REQ.fk_rciv_seq_num
+                                                            			 And  T02.SEQ_NUM          = REQ.seq_num
+                                                                    ORDER BY chkProc DESC, req_date  DESC, req_time DESC     				                           
+		                 	                                        FETCH FIRST 1 ROWS ONLY                                                                   
+                                                       ) A ON 1=1
+                                     
+                                  WHERE  REQ.chkProc  = A.chkProc
+                                   AND  REQ.req_date  = A.req_date
+                                   AND  REQ.req_time  = A.req_time
+                 ) RES         
+           group by  RES.fk_bsns_cls, RES.fk_rciv_date  , RES.fk_rciv_seq_num , RES.covr_cls, RES.dam_order 
+			OPTIMIZE FOR 1 ROW
+			FOR READ ONLY WITH UR	
+	]]>
+	</entry>
+	
+	<entry key="sql.selectTwelve">
+		<![CDATA[
+			SELECT MAX(A.SUBSC_REGN_YN)+
+		        MAX(A.NOTI_DETL_REGN_YN)+ 
+		        MAX(A.COVR_CFRM_REGN_YN)+
+		        MAX(A.CUST_CFRM_REGN_YN)+
+		        MAX(A.ETC1)+
+		        MAX(A.ETC7)+
+		        MAX(A.ETC8)+ 
+		        MAX(A.ETC9)+ 
+		        MAX(A.ETC10)+ 
+		        MAX(A.ETC11)+ 
+		        MAX(A.ETC12)+ 
+		        MAX(A.ETC13)+ 
+		        MAX(A.ETC14)+ 
+		        MAX(A.ETC15)+ 
+		        MAX(A.ETC16) TOTAL_SCAN_COUNT
+		  FROM (
+				SELECT	(CASE WHEN  SUBSC_REGN_YN=' ' THEN 0 ELSE 1 END) SUBSC_REGN_YN, 
+						(CASE WHEN  NOTI_DETL_REGN_YN=' ' THEN 0 ELSE 1 END) NOTI_DETL_REGN_YN,
+						(CASE WHEN  COVR_CFRM_REGN_YN=' ' THEN 0 ELSE 1 END) COVR_CFRM_REGN_YN,
+						(CASE WHEN  CUST_CFRM_REGN_YN=' ' THEN 0 ELSE 1 END) CUST_CFRM_REGN_YN,
+						(CASE WHEN  ETC1=' ' THEN 0 ELSE 1 END) ETC1,
+						(CASE WHEN  ETC2=' ' THEN 0 ELSE 1 END) ETC2,
+						(CASE WHEN  ETC3=' ' THEN 0 ELSE 1 END) ETC3,
+						(CASE WHEN  ETC4=' ' THEN 0 ELSE 1 END) ETC4,
+						(CASE WHEN  ETC5=' ' THEN 0 ELSE 1 END) ETC5,
+						(CASE WHEN  ETC7=' ' THEN 0 ELSE 1 END) ETC7,
+						(CASE WHEN  ETC8=' ' THEN 0 ELSE 1 END) ETC8,
+						(CASE WHEN  ETC9=' ' THEN 0 ELSE 1 END) ETC9,
+						(CASE WHEN  ETC10=' ' THEN 0 ELSE 1 END) ETC10,
+						(CASE WHEN  ETC11=' ' THEN 0 ELSE 1 END) ETC11,
+						(CASE WHEN  ETC12=' ' THEN 0 ELSE 1 END) ETC12,
+						(CASE WHEN  ETC13=' ' THEN 0 ELSE 1 END) ETC13,
+						(CASE WHEN  ETC14=' ' THEN 0 ELSE 1 END) ETC14,
+						(CASE WHEN  ETC15=' ' THEN 0 ELSE 1 END) ETC15,
+						(CASE WHEN  ETC16=' ' THEN 0 ELSE 1 END) ETC16
+				 FROM PPQT04TB   
+				WHERE BAS_DATE   = #scanResult.basDate#
+				  AND ENTY_DSGN_NO = #scanResult.relNo#
+				  AND DSGN_SEQ_NUM = #scanResult.entyDsgnSeq#
+                ) A				  
+           WITH   UR
+		]]>
+	
+	</entry>
+	
+	<entry key="sql.selectThirteen">
+	 <![CDATA[
+		SELECT TRIM(CHAR(SUM(AL.A_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.B_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.C_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.D_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.E_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.F_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.G_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.H_CNT)))       
+            FROM (
+                  SELECT COUNT(*) A_CNT,
+                         0        B_CNT,
+                         0        C_CNT,
+                         0        D_CNT,
+                         0        E_CNT,
+                         0        F_CNT,
+                         0        G_CNT,
+                         0        H_CNT               
+                    FROM PCAL01TB A, PCAC20TB B
+                   WHERE A.BSNS_CLS  = '1' 
+                     AND A.DAM_CLS   = '1'
+                     AND A.CLERK_NO   =  #loginClerkNo#
+                     AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+                     AND B.BSNS_CLS    = A.BSNS_CLS
+                     AND B.RCIV_DATE   = A.RCIV_DATE
+                     AND B.RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+                     AND B.INPUT_CLS     = '2'
+                     AND NOT EXISTS ( 
+                         SELECT 1 
+                           FROM PCOS00TB  
+                          WHERE FK_BSNS_CLS     = '1'  
+                            AND FK_RCIV_DATE    = A.RCIV_DATE 
+                            AND FK_RCIV_SEQ_NUM = A.RCIV_SEQ_NUM
+                            AND FK_COVR_CLS     = A.COVR_CLS  
+                            AND FK_DAM_ORDER    = A.DAM_ORDER 
+                            AND OS_RANK         = 1)
+                UNION ALL
+                SELECT 0        A_CNT,
+                       COUNT(*) B_CNT,
+                       0        C_CNT,
+                       0        D_CNT,
+                       0        E_CNT,
+                       0        F_CNT,
+                       0        G_CNT,
+                       0        H_CNT
+						  FROM PCAL01TB A, PCLG01TB B
+						 WHERE A.BSNS_CLS = '1'
+						   AND A.DAM_CLS = '1'
+						   AND A.CLERK_NO = #loginClerkNo#
+						   AND A.CHRG_DTBN_TER_DATE = '9999-12-31'
+						   AND B.BSNS_CLS = A.BSNS_CLS
+						   AND B.RCIV_DATE = A.RCIV_DATE
+						   AND B.RCIV_SEQ_NUM = A.RCIV_SEQ_NUM
+						   AND B.COVR_CLS = ''
+						   AND B.DAM_ORDER = 0
+						   AND B.PRC_CLS = '55'
+						   AND B.SEQ_NUM = ( SELECT MAX(SEQ_NUM)
+						                       FROM PCLG01TB C
+						                      WHERE C.BSNS_CLS     = A.BSNS_CLS
+						                        AND C.RCIV_DATE    = A.RCIV_DATE
+						                        AND C.RCIV_SEQ_NUM = A.RCIV_SEQ_NUM
+						                        AND C.COVR_CLS     = ''
+						                        AND C.DAM_ORDER    = 0
+						                        AND C.PRC_CLS      = '55'
+						                        AND C.APP_END_DATE = '9999-12-31')
+                 UNION ALL				
+                  SELECT 0        A_CNT,
+                         0        B_CNT,
+                         COUNT(*) C_CNT,
+                         0        D_CNT,
+                         0        E_CNT,
+                         0        F_CNT,
+                         0        G_CNT,
+                         0        H_CNT         
+                    FROM PCSV05TB A, (SELECT B.BSNS_CLS  
+                                            ,B.RCIV_DATE
+                                            ,B.RCIV_SEQ_NUM
+                                        FROM PCAL01TB B
+                                       WHERE B.BSNS_CLS = '1' 
+                                         AND B.DAM_CLS  = '1'
+                                         AND B.CLERK_NO =  #loginClerkNo#
+                                         AND B.CHRG_DTBN_TER_DATE  = '9999-12-31'
+                                         AND EXISTS 
+                                            (SELECT 1
+                                               FROM PCSV05TB C 
+                                              WHERE C.FK_BSNS_CLS     = B.BSNS_CLS
+                                                AND C.FK_RCIV_DATE    = B.RCIV_DATE
+                                                AND C.FK_RCIV_SEQ_NUM = B.RCIV_SEQ_NUM
+                                                AND C.CS_RSLT         = '5') ) D
+                   WHERE A.FK_BSNS_CLS  = D.BSNS_CLS  
+                     AND A.FK_RCIV_DATE = D.RCIV_DATE 
+                     AND A.FK_RCIV_SEQ_NUM = D.RCIV_SEQ_NUM    
+                     AND A.CS_RSLT         = '5'
+                   UNION ALL
+                  SELECT 0        A_CNT,
+                         0        B_CNT,
+                         0        C_CNT,
+                         COUNT(*) D_CNT,
+                         0        E_CNT,
+                         0        F_CNT,
+                         0        G_CNT,
+                         0        H_CNT   
+                    FROM PCAL01TB A, PCAC01TB C
+                   WHERE A.BSNS_CLS = '1' 
+                     AND A.DAM_CLS  = '1'
+                     AND A.CLERK_NO =  #loginClerkNo#
+                     AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+                     AND C.FK_BSNS_CLS      = A.BSNS_CLS  
+                     AND C.FK_RCIV_DATE     = A.RCIV_DATE
+                     AND C.FK_RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+                     AND C.COVR_CLS         = A.COVR_CLS 
+                     AND C.DAM_ORDER        = A.DAM_ORDER
+                     AND (DAYS(CURRENT DATE) - DAYS(C.RL_RCIV_DATE)) > 3
+                     AND NOT EXISTS 
+                        (SELECT 1
+                           FROM PCOS00TB B 
+                          WHERE B.FK_BSNS_CLS     = A.BSNS_CLS
+                            AND B.FK_RCIV_DATE    = A.RCIV_DATE
+                            AND B.FK_RCIV_SEQ_NUM = A.RCIV_SEQ_NUM
+                            AND B.FK_COVR_CLS     = A.COVR_CLS
+                            AND B.FK_DAM_ORDER    = A.DAM_ORDER
+                            AND B.OS_RANK         = 1)      
+                   UNION ALL
+                  SELECT 0        A_CNT,
+                         0        B_CNT,
+                         0        C_CNT,
+                         0        D_CNT,
+                         COUNT(*) E_CNT,
+                         0        F_CNT,
+                         0        G_CNT,
+                         0        H_CNT
+                    FROM PCAL01TB A
+                         LEFT OUTER JOIN PCAC01TB C
+                         ON  C.FK_BSNS_CLS     = A.BSNS_CLS  
+                         AND C.FK_RCIV_DATE    = A.RCIV_DATE
+                         AND C.FK_RCIV_SEQ_NUM = A.RCIV_SEQ_NUM
+                         AND C.COVR_CLS        = A.COVR_CLS 
+                         AND C.DAM_ORDER       = A.DAM_ORDER       
+                         LEFT OUTER JOIN PCAC02TB E
+                         ON  E.FK_BSNS_CLS     = A.BSNS_CLS  
+                         AND E.FK_RCIV_DATE    = A.RCIV_DATE
+                         AND E.FK_RCIV_SEQ_NUM = A.RCIV_SEQ_NUM
+                         AND E.COVR_CLS        = A.COVR_CLS 
+                         AND E.DAM_ORDER       = A.DAM_ORDER
+                         LEFT OUTER JOIN TABLE
+                        (SELECT HPTL_NM, DIAG_CLS
+                           FROM PCSV10TB
+                          WHERE FK_BSNS_CLS     = C.FK_BSNS_CLS 
+                            AND FK_RCIV_DATE    = C.FK_RCIV_DATE 
+                            AND FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM
+                            AND FK_PTY_ID       = C.PTY_ID
+                          ORDER BY SEQ_NUM DESC 
+                          FETCH FIRST ROW ONLY) D ON 1 = 1  
+                   WHERE A.BSNS_CLS  = '1' 
+                     AND A.DAM_CLS   = '1'
+                     AND A.CLERK_NO  =  #loginClerkNo#
+                     AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'                               
+              ) AL 
+      		WITH UR	 
+	 ]]>
+	</entry>
+	
+	<entry key="sql.selectFourteen">
+		<![CDATA[
+			SELECT TRIM(CHAR(SUM(AL.A_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.B_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.C_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.D_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.E_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.F_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.G_CNT)))||','||
+                 TRIM(CHAR(SUM(AL.H_CNT)))       
+            FROM (
+                  SELECT 0        A_CNT,
+                         0        B_CNT,
+                         0        C_CNT,
+                         0        D_CNT,
+                         0        E_CNT,
+                         COUNT(*) F_CNT,
+                         0        G_CNT,
+                         0        H_CNT
+                    FROM PCAL01TB A, PCAC01TB C, PCSV12TB B, PCAC00TB D, PCSV00TB E
+                   WHERE A.BSNS_CLS  = '1' 
+                     AND A.DAM_CLS   = '1'
+                     AND A.CLERK_NO  =  #loginClerkNo#
+                     AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+                     AND C.FK_BSNS_CLS      = A.BSNS_CLS  
+                     AND C.FK_RCIV_DATE     = A.RCIV_DATE
+                     AND C.FK_RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+                     AND C.COVR_CLS         = A.COVR_CLS 
+                     AND C.DAM_ORDER        = A.DAM_ORDER
+                     AND B.FK_BSNS_CLS      = C.FK_BSNS_CLS  
+                     AND B.FK_RCIV_DATE     = C.FK_RCIV_DATE
+                     AND B.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND B.FK_PTY_ID        = C.PTY_ID
+
+                     AND (B.GBHA_CLS         = '1'
+                     AND  B.END_DATE         = '9999-12-31'
+                     AND  B.RPSN_GBHA BETWEEN '0100'  AND  '0399'
+                     AND  D.BSNS_CLS         = A.BSNS_CLS 
+                     AND  D.RCIV_DATE        = A.RCIV_DATE
+                     AND  D.RCIV_SEQ_NUM     = A.RCIV_SEQ_NUM
+                     AND  D.ACCD_CLS         = '20'
+                     AND (DAYS(CURRENT DATE) - DAYS(D.ACCD_DATE)) > 180
+                     AND  E.FK_BSNS_CLS      = C.FK_BSNS_CLS 
+                     AND  E.FK_RCIV_DATE     = C.FK_RCIV_DATE
+                     AND  E.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND  E.PTY_ID           = C.PTY_ID
+                     AND  E.INJR_CLS  IN('1','4')   
+        
+                     OR   B.GBHA_CLS         = '1'
+                     AND  B.END_DATE         = '9999-12-31'
+                     AND  B.RPSN_GBHA BETWEEN '0400'  AND  '0699'
+                     AND  D.BSNS_CLS         = A.BSNS_CLS 
+                     AND  D.RCIV_DATE        = A.RCIV_DATE
+                     AND  D.RCIV_SEQ_NUM     = A.RCIV_SEQ_NUM
+                     AND  D.ACCD_CLS         = '20'
+                     AND (DAYS(CURRENT DATE) - DAYS(D.ACCD_DATE)) >  90
+                     AND  E.FK_BSNS_CLS      = C.FK_BSNS_CLS 
+                     AND  E.FK_RCIV_DATE     = C.FK_RCIV_DATE
+                     AND  E.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND  E.PTY_ID           = C.PTY_ID
+                     AND  E.INJR_CLS  IN('1','4')
+     
+                     OR   D.BSNS_CLS         = A.BSNS_CLS 
+                     AND  D.RCIV_DATE        = A.RCIV_DATE
+                     AND  D.RCIV_SEQ_NUM     = A.RCIV_SEQ_NUM
+                     AND  D.ACCD_CLS         = '20'
+                     AND (DAYS(CURRENT DATE) - DAYS(D.ACCD_DATE)) >  180
+                     AND  E.FK_BSNS_CLS      = C.FK_BSNS_CLS 
+                     AND  E.FK_RCIV_DATE     = C.FK_RCIV_DATE
+                     AND  E.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND  E.PTY_ID           = C.PTY_ID
+                     AND  E.INJR_CLS  IN('2','3') )
+    
+                     AND  NOT  EXISTS     
+                         (SELECT 1 
+                            FROM PCPA03TB F
+                           WHERE F.FK_BSNS_CLS     = C.FK_BSNS_CLS 
+                             AND F.FK_RCIV_DATE    = C.FK_RCIV_DATE 
+                             AND F.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM
+                             AND F.FK_COVR_CLS     = C.COVR_CLS
+                             AND F.FK_DAM_ORDER    = C.DAM_ORDER    
+                             AND F.PAY_TYPE        = '01')
+                   UNION ALL
+                  SELECT 0        A_CNT,
+                         0        B_CNT,
+                         0        C_CNT,
+                         0        D_CNT,
+                         0        E_CNT,
+                         0        F_CNT,
+                         COUNT(*) G_CNT,
+                         0        H_CNT
+                    FROM PCAL01TB A, PCAC01TB C, PCSV12TB B, PCAC00TB D, PCSV00TB E
+                   WHERE A.BSNS_CLS  = '1' 
+                     AND A.DAM_CLS   = '1'
+                     AND A.CLERK_NO   =  #loginClerkNo#
+                     AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+                     AND C.FK_BSNS_CLS      = A.BSNS_CLS  
+                     AND C.FK_RCIV_DATE     = A.RCIV_DATE
+                     AND C.FK_RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+                     AND C.COVR_CLS         = A.COVR_CLS 
+                     AND C.DAM_ORDER        = A.DAM_ORDER
+                     AND B.FK_BSNS_CLS      = C.FK_BSNS_CLS  
+                     AND B.FK_RCIV_DATE     = C.FK_RCIV_DATE
+                     AND B.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND B.FK_PTY_ID        = C.PTY_ID
+
+                     AND  B.GBHA_CLS         = '1'
+                     AND  B.END_DATE         = '9999-12-31'
+                     AND  B.RPSN_GBHA BETWEEN '0700'  AND  '9999'
+                     AND  D.BSNS_CLS         = A.BSNS_CLS 
+                     AND  D.RCIV_DATE        = A.RCIV_DATE
+                     AND  D.RCIV_SEQ_NUM     = A.RCIV_SEQ_NUM
+                     AND  D.ACCD_CLS         = '20'
+                     AND (DAYS(CURRENT DATE) - DAYS(D.ACCD_DATE)) >  30
+                     AND  E.FK_BSNS_CLS      = C.FK_BSNS_CLS 
+                     AND  E.FK_RCIV_DATE     = C.FK_RCIV_DATE
+                     AND  E.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND  E.PTY_ID           = C.PTY_ID
+                     AND  E.INJR_CLS IN('1','4')   
+    
+                     AND  NOT  EXISTS
+                         (SELECT 1 
+                            FROM PCPA03TB F
+                           WHERE F.FK_BSNS_CLS     = C.FK_BSNS_CLS 
+                             AND F.FK_RCIV_DATE    = C.FK_RCIV_DATE 
+                             AND F.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM
+                             AND F.FK_COVR_CLS     = C.COVR_CLS
+                             AND F.FK_DAM_ORDER    = C.DAM_ORDER    
+                             AND F.PAY_TYPE        = '01')       
+                   UNION ALL
+                  SELECT 0        A_CNT,
+                         0        B_CNT,
+                         0        C_CNT,
+                         0        D_CNT,
+                         0        E_CNT,
+                         0        F_CNT,
+                         0        G_CNT,
+                         COUNT(*) H_CNT
+                    FROM PCAL01TB A, PCPA03TB B 
+                         INNER JOIN TABLE
+                        (SELECT AGREE_DATE
+                           FROM PCPA05TB
+                          WHERE FK_BSNS_CLS     = B.FK_BSNS_CLS 
+                            AND FK_RCIV_DATE    = B.FK_RCIV_DATE
+                            AND FK_RCIV_SEQ_NUM = B.FK_RCIV_SEQ_NUM
+                            AND FK_COVR_CLS     = B.FK_COVR_CLS 
+                            AND FK_DAM_ORDER    = B.FK_DAM_ORDER 
+                            AND AGREE_DATE      > '0001-01-01'
+                          ORDER BY AGREE_DATE DESC
+                          FETCH FIRST ROW ONLY) D ON 1=1, PCAC01TB C
+                   WHERE A.BSNS_CLS  = '1' 
+                     AND A.DAM_CLS   = '1'
+                     AND A.CLERK_NO  =  #loginClerkNo#
+                     AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+                     AND C.FK_BSNS_CLS      = A.BSNS_CLS  
+                     AND C.FK_RCIV_DATE     = A.RCIV_DATE
+                     AND C.FK_RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+                     AND C.COVR_CLS         = A.COVR_CLS 
+                     AND C.DAM_ORDER        = A.DAM_ORDER
+                     AND B.FK_BSNS_CLS      = C.FK_BSNS_CLS 
+                     AND B.FK_RCIV_DATE     = C.FK_RCIV_DATE 
+                     AND B.FK_RCIV_SEQ_NUM  = C.FK_RCIV_SEQ_NUM
+                     AND B.FK_COVR_CLS      = C.COVR_CLS
+                     AND B.FK_DAM_ORDER     = C.DAM_ORDER    
+                     AND B.PAY_TYPE         = '01'  
+                     AND (DAYS(CURRENT DATE) - DAYS(D.AGREE_DATE)) > 10                                 
+              ) AL 
+      		WITH UR		
+		]]>
+	</entry>
+	
+	<entry key="sql.selectFifteen">
+		<![CDATA[
+			SELECT  (SELECT  count(*) 
+                FROM PCAL01TB A, PCAC02TB C
+	             LEFT OUTER  JOIN PCSV51TB D
+	               ON D.FK_BSNS_CLS     = C.FK_BSNS_CLS  
+	              AND D.FK_RCIV_DATE    = C.FK_RCIV_DATE 
+	              AND D.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM 
+	              AND D.FK_SEQ_NUM      = C.SEQ_NUM
+	              AND D.INPUT_CLS       = '2'
+	              AND D.APP_END_DATE    = '9999-12-31'        
+	             LEFT OUTER  JOIN  PCRQ00TB B
+	               ON B.FK_BSNS_CLS     = C.FK_BSNS_CLS  
+	              AND B.FK_RCIV_DATE    = C.FK_RCIV_DATE
+	              AND B.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM
+	              AND B.COVR_CLS        = C.COVR_CLS 
+	              AND B.DAM_ORDER       = C.DAM_ORDER       
+	       WHERE A.BSNS_CLS  = '1' 
+	         AND A.DAM_CLS   = '1'
+	         AND A.TEAM_CODE   = #teamCode#
+	         AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+	         AND C.FK_BSNS_CLS      = A.BSNS_CLS  
+	         AND C.FK_RCIV_DATE     = A.RCIV_DATE
+	         AND C.FK_RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+	         AND C.COVR_CLS         = A.COVR_CLS 
+	         AND C.DAM_ORDER        = A.DAM_ORDER
+	         AND (DAYS(CURRENT DATE) - DAYS(C.RCIV_DATE)) > 30) cnt 
+      		 ,A.RCIV_DATE     ITEM_1  
+             ,A.RCIV_SEQ_NUM  ITEM_2  
+             ,A.COVR_CLS      ITEM_3  
+             ,A.DAM_ORDER     ITEM_4  
+             ,C.CAR_NO        ITEM_5  
+             ,B.OS_INS_MNY    ITEM_6  
+             ,B.ACC_DTMN_AMT  ITEM_7
+             ,D.FCTR_NAME     ITEM_8    
+             ,(SELECT CLERK_NAME
+                 FROM STAFF0TB
+                WHERE CLERK_NO = A.CLERK_NO)         AS ITEM_9   
+             ,C.RCIV_DATE                            AS ITEM_10  
+             ,DAYS(CURRENT DATE) - DAYS(C.RCIV_DATE) AS ITEM_11
+             ,'' ITEM_12
+        FROM PCAL01TB A, PCAC02TB C
+             LEFT OUTER  JOIN PCSV51TB D
+               ON D.FK_BSNS_CLS     = C.FK_BSNS_CLS  
+              AND D.FK_RCIV_DATE    = C.FK_RCIV_DATE 
+              AND D.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM 
+              AND D.FK_SEQ_NUM      = C.SEQ_NUM
+              AND D.INPUT_CLS       = '2'
+              AND D.APP_END_DATE    = '9999-12-31'        
+             LEFT OUTER  JOIN  PCRQ00TB B
+               ON B.FK_BSNS_CLS     = C.FK_BSNS_CLS  
+              AND B.FK_RCIV_DATE    = C.FK_RCIV_DATE
+              AND B.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM
+              AND B.COVR_CLS        = C.COVR_CLS 
+              AND B.DAM_ORDER       = C.DAM_ORDER       
+       WHERE A.BSNS_CLS  = '1' 
+         AND A.DAM_CLS   = '1'
+         AND A.TEAM_CODE   = #teamCode#
+         AND A.CHRG_DTBN_TER_DATE  = '9999-12-31'
+         AND C.FK_BSNS_CLS      = A.BSNS_CLS  
+         AND C.FK_RCIV_DATE     = A.RCIV_DATE
+         AND C.FK_RCIV_SEQ_NUM  = A.RCIV_SEQ_NUM
+         AND C.COVR_CLS         = A.COVR_CLS 
+         AND C.DAM_ORDER        = A.DAM_ORDER
+         AND (DAYS(CURRENT DATE) - DAYS(C.RCIV_DATE)) > 30
+         AND A.RCIV_DATE <= #rcivDate#
+         AND (    A.RCIV_DATE < #rcivDate# 
+              OR (A.RCIV_DATE = #rcivDate# AND A.RCIV_SEQ_NUM < #rcivSeqNum#) 
+              OR (A.RCIV_DATE = #rcivDate# AND A.RCIV_SEQ_NUM = #rcivSeqNum# and A.COVR_CLS < #covrCls#)
+              OR (A.RCIV_DATE = #rcivDate# AND A.RCIV_SEQ_NUM = #rcivSeqNum# and A.COVR_CLS = #covrCls# and A.DAM_ORDER <= #damOrder#)
+             )
+       GROUP BY ADCD
+       ORDER BY A.RCIV_DATE DESC ,A.RCIV_SEQ_NUM DESC,A.COVR_CLS DESC,A.DAM_ORDER DESC
+       FETCH FIRST 9 ROWS ONLY
+       GROUP BY ACD, DCD
+
+         WITH UR
+		]]>
+	</entry>
+	
+	<entry key="sql.selectSixteen">
+	<![CDATA[
+		SELECT  SS.CLERK_NO
+                   ,BB.CLERK_NAME
+                   ,BB.FK_DEPT_CD AS DEPT_CD
+                   ,BB.FK_PART_CD AS PART_CD 
+                   ,CC.PART_NAME  AS PART_NAME 
+                   ,SS.GROUP
+            FROM  (  SELECT  VALUE(AA.OLD_CLERK_NO, AA.NEW_CLERK_NO) 	AS CLERK_NO
+                             ,AA.GROUP
+					  FROM (
+							SELECT VALUE(MIN(CASE WHEN F.ALLOC_UNIT <= B.ATT_NUM_1 
+							                       AND F.CLERK_NO   > B.CODE_KEY_4 THEN F.CLERK_NO END) 
+							            ,MIN(CASE WHEN F.ALLOC_UNIT <= 1 
+							   			           AND F.CLERK_NO   > ' ' THEN F.CLERK_NO END)) AS NEW_CLERK_NO
+							      ,MAX(ST00.OLD_CLERK_NO) AS OLD_CLERK_NO
+							      ,MAX(B.APPL_CODE)  AS GROUP
+							FROM PCCA20TB A
+							    ,PCCA20TB B
+							    ,PCCA01TB F
+								  LEFT OUTER JOIN TABLE  
+								    (SELECT  MAX(AL07.CHRG_CLERK_NO)  AS OLD_CLERK_NO 
+									  FROM  PCAL07TB AL07  
+									       ,PCCA20TB CA20
+							               ,PCCA01TB CA01
+							               ,STAFF0TB S  
+									 WHERE AL07.FK_BSNS_CLS		= #bsnsCls#
+									   AND AL07.FK_RCIV_DATE	= #rcivDate#
+									   AND AL07.FK_RCIV_SEQ_NUM = #rcivSeqNum#
+									   AND AL07.FK_PTY_ID		= #piboPtyId#  
+									   AND AL07.DTBN_TER_DATE   = '9999-12-31'
+									   AND CA20.GRP_CODE_TYPE 	= '2006'
+									   AND CA20.CODE_TYPE_1   	= '26'
+									   AND CA20.APPL_CODE   	= CA01.FK_DEPT_CD
+									   AND CA20.ATT_NUM_1		= CA01.FK_PART_CD
+									   AND CA20.APPL_END_DATE 	= '9999-12-31'
+									   AND CA01.CLERK_NO        = AL07.CHRG_CLERK_NO
+									   AND CA01.CLERK_NO        = S.CLERK_NO
+									   AND S.RT_FRM_DATE        = '9999-12-31'
+									 ) ST00  ON 1=1                
+								  ,STAFF0TB S							   
+							 WHERE A.GRP_CODE_TYPE 	= '2006'
+							   AND A.CODE_TYPE_1   	= '26'
+							   AND A.APPL_END_DATE 	= '9999-12-31'
+							   AND B.GRP_CODE_TYPE 	= '2006'
+							   AND B.CODE_TYPE_1   	= '27'
+							   AND B.APPL_CODE      = A.CODE_KEY_2 
+							   AND B.APPL_END_DATE 	= '9999-12-31'
+							   AND A.APPL_CODE   	= F.FK_DEPT_CD
+							   AND A.ATT_NUM_1		= F.FK_PART_CD
+							   AND F.ALLOC_UNIT     > 0
+							   AND F.CLERK_NO       = S.CLERK_NO
+							   AND S.RT_FRM_DATE    = '9999-12-31'
+					       ) AA
+					) SS
+					,PCCA01TB BB
+					,PCCA00TB CC
+			WHERE SS.CLERK_NO   = BB.CLERK_NO
+			  AND BB.FK_DEPT_CD = CC.DEPT_CD
+			  AND BB.FK_PART_CD = CC.PART_CD     
+			OPTIMIZE FOR 1 ROW  
+			WITH UR
+			]]>
+	</entry>
+	
+	<entry key="sql.selectSevenTeen">
+		<![CDATA[
+		SELECT   (	
+					SELECT COUNT(1) CNT
+					FROM (SELECT FK_BSNS_CLS, FK_RCIV_DATE, FK_RCIV_SEQ_NUM, PTY_ID
+						  FROM PCRQ00TB                          
+						 WHERE FK_BSNS_CLS      = #bsnsCls#             
+						   AND FK_RCIV_DATE     = #rcivDate#  
+						   AND FK_RCIV_SEQ_NUM  = #rcivSeqNum#
+						GROUP BY FK_BSNS_CLS, FK_RCIV_DATE, FK_RCIV_SEQ_NUM, PTY_ID)
+					GROUP BY FK_BSNS_CLS, FK_RCIV_DATE, FK_RCIV_SEQ_NUM   ) AS CHK_CNT1
+				,0 AS CHK_CNT2              
+				,(	
+					SELECT COALESCE(SUM(CASE WHEN DPSR_ERR_YN = '1' 
+					                          AND DPSR_REL IN ('1', '2','3','B','C')  THEN 1 ELSE 0 END),0) AS CHK
+					  FROM  PCPS00TB
+				     WHERE  FK_BSNS_CLS     = #bsnsCls#            
+			           AND  FK_RCIV_DATE    = #rcivDate#
+			           AND  FK_RCIV_SEQ_NUM = #rcivSeqNum# 
+			           AND  FK_PTY_ID       = #piboPtyId#
+			           AND  DAM_CLS         = '10'
+			           AND  END_DATE        = '9999-12-31'   ) AS CHK_CNT3
+				,0 AS CHK_CNT4   
+				,0 AS CHK_CNT5
+				,(		
+					SELECT COUNT(1) AS CNT                                            
+				  	  FROM PCPS01TB                                             
+					 WHERE FK_BSNS_CLS     = #bsnsCls#                                
+					   AND FK_RCIV_DATE    = #rcivDate#                      
+					   AND FK_RCIV_SEQ_NUM = #rcivSeqNum#                      
+					   AND FK_PTY_ID       = #piboPtyId#                          
+					   AND DAM_CLS         = '10'                               
+					   AND PROC_CLS        = '04'                               
+					   AND PRE_INFO_CLS    = 'DM501' ) AS CHK_CNT6
+			, 0 AS CHK_CNT7
+			, (
+				SELECT CASE WHEN COUNT(*) = 1 THEN 0 ELSE 1 END
+			      FROM (
+			               SELECT   COUNT(*) AS TCNT
+			 				       ,SUM(CASE WHEN SUBJECT_CODE IN ('CM201','CM202','CM203') THEN 1 ELSE 0 END) AS CNT1
+			 				       ,SUM(CASE WHEN SUBJECT_CODE IN ('CM251','CM252','CM253') THEN 1 ELSE 0 END) AS CNT2
+			 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') THEN 1 ELSE 0 END ) AS CNT3
+			 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '0' THEN 1 ELSE 0 END ) AS CNT30
+			 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '1' THEN 1 ELSE 0 END ) AS CNT31
+			 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '2' THEN 1 ELSE 0 END ) AS CNT32
+			 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '3' THEN 1 ELSE 0 END ) AS CNT33
+			 				       ,SUM(CASE WHEN CODE_TYPE_1='01' AND SUBJECT_CODE NOT IN ('CM201','CM202','CM203','CM251','CM252','CM253') AND CODE_KEY_2 = '4' THEN 1 ELSE 0 END ) AS CNT34
+			 				  FROM  PCRQ00TB RQ00
+							       ,PCOS01TB OS01        
+							       ,PCCA20TB CA20
+							 WHERE RQ00.FK_BSNS_CLS     = #bsnsCls# 
+							   AND RQ00.FK_RCIV_DATE    = #rcivDate#
+							   AND RQ00.FK_RCIV_SEQ_NUM = #rcivSeqNum#
+							   AND RQ00.PTY_ID          = #piboPtyId#   
+							   AND RQ00.FK_BSNS_CLS     = OS01.FK_BSNS_CLS
+							   AND RQ00.FK_RCIV_DATE    = OS01.FK_RCIV_DATE
+							   AND RQ00.FK_RCIV_SEQ_NUM = OS01.FK_RCIV_SEQ_NUM
+							   AND RQ00.FK_SEQ_NUM      = OS01.FK_AGT_SEQ_NUM
+							   AND RQ00.COVR_CLS        = OS01.FK_COVR_CLS
+							   AND RQ00.DAM_ORDER       = OS01.FK_DAM_ORDER
+							   AND OS01.FK_OS_RANK      = (SELECT MAX(OS_RANK)
+								                             FROM PCOS00TB OS00
+															WHERE RQ00.FK_BSNS_CLS     = OS00.FK_BSNS_CLS
+															  AND RQ00.FK_RCIV_DATE    = OS00.FK_RCIV_DATE
+															  AND RQ00.FK_RCIV_SEQ_NUM = OS00.FK_RCIV_SEQ_NUM
+															  AND RQ00.FK_SEQ_NUM      = OS00.FK_AGT_SEQ_NUM
+															  AND RQ00.COVR_CLS        = OS00.FK_COVR_CLS
+															  AND RQ00.DAM_ORDER       = OS00.FK_DAM_ORDER)
+							   AND CA20.GRP_CODE_TYPE   = '2007'
+							   AND CA20.CODE_TYPE_1     = '01'
+							   AND CA20.APPL_END_DATE   = '9999-12-31'
+							   AND CA20.APPL_CODE       = OS01.SUBJECT_CODE	
+						    ) AA
+					   WHERE CASE WHEN TCNT <= 3 AND (CNT1+CNT2) < TCNT AND CNT3 = 0 THEN 0
+					              WHEN CNT1 > 0  AND CNT2 > 0 THEN 0		              
+					              WHEN CNT30 > 1 OR CNT31> 1 OR CNT32 > 1 OR CNT33 > 1 OR CNT34 > 1 THEN 0 
+					              WHEN CNT30 > 0 AND (CNT31+CNT32+CNT33+CNT34) > 0 THEN 0
+					              WHEN CNT31 = 0 AND CNT32 > 0 AND (CNT33+CNT34) > 0 AND (CNT1+CNT2) = 0 THEN 0
+					              WHEN (CNT31+CNT32+CNT33) >= 3 OR (CNT31+CNT32+CNT34) >= 3  OR (CNT32+CNT33+CNT34) >= 3 THEN 0		              
+					              WHEN CNT3 > 0 AND (CNT1+CNT2) > 0  THEN 0 ELSE 1 END = 1    ) AS CHK_CNT8						                       					   
+		  FROM   PCPS01TB
+		 WHERE   FK_BSNS_CLS     = #bsnsCls#    
+		   AND   FK_RCIV_DATE    = #rcivDate#                    
+		   AND   FK_RCIV_SEQ_NUM = #rcivSeqNum#                        
+		   AND   FK_PTY_ID       = #piboPtyId#                 
+		   AND   DAM_CLS         = '10'
+		   AND   PROC_CLS        = 'A0'
+		   AND   PRE_INFO_CLS    = 'PR001'
+  
+		OPTIMIZE FOR 1 ROW  
+	    WITH UR
+	    ]]>
+	</entry>
+	
+	<entry key="sql.selectEightTeen">
+		 SELECT   FK_PTY_ID                                                                                                                   
+				  , SEQ_NUM                                                                                                                    
+				  , INFO_TYPE                                                                                                                  
+				  , INFO_CD
+				  , DATATYPE_CLS
+				  , INFO_VAL_TEXT
+				  , INFO_VAL_NUM
+				  , INFO_VAL_DATE
+			 FROM (                                                                                                                            
+					SELECT FK_PTY_ID
+						 , SEQ_NUM
+						 , RANK() OVER ( PARTITION BY INFO_TYPE, INFO_CD  ORDER BY SEQ_NUM DESC ) RANK
+					     , INFO_TYPE
+						 , INFO_CD
+						 , DATATYPE_CLS
+						 , INFO_VAL_TEXT
+						 , INFO_VAL_NUM
+						 , INFO_VAL_DATE
+					 FROM GCCE37TB                                                                                                             
+					WHERE FK_PTY_ID    =  #ptyId#                                                                                                    
+					  AND APPL_END_DATE = '9999-12-31'                                                                                          
+				      AND INFO_TYPE  IN ('GA001','GA002')
+  				) AS CE01                                                                                                               
+			WHERE RANK = 1	  
+			OPTIMIZE FOR 1 ROW 
+			FOR READ ONLY WITH UR
+	</entry>
+
+
+	<entry key="sql.updateOne">
+	<![CDATA[
+		UPDATE PCCA00TB AA
+ 		       SET (FNL_ALLOC_NUM, FNL_ALLOC_NM, FNL_ALLOC_UNIT)=
+		           (SELECT CASE WHEN BB.CLERK_NO = BB.MAX_CLERK THEN ''
+				                ELSE BB.CLERK_NO END 
+				          ,CASE WHEN BB.CLERK_NO = BB.MAX_CLERK THEN ''
+				                ELSE BB.CLERK_NAME END 
+						  ,CASE WHEN AA.FNL_ALLOC_UNIT = 0 THEN 1
+						        WHEN AA.FNL_ALLOC_UNIT > BB.MAX_UNIT THEN 1
+						        WHEN AA.FNL_ALLOC_UNIT = BB.MAX_UNIT 
+						         AND BB.CLERK_NO = BB.MAX_CLERK THEN 1
+						        WHEN AA.FNL_ALLOC_UNIT < BB.MAX_UNIT
+						         AND BB.CLERK_NO = BB.MAX_CLERK THEN AA.FNL_ALLOC_UNIT + 1
+						        ELSE AA.FNL_ALLOC_UNIT END               
+				      FROM TABLE (
+						SELECT  MAX(B.ALLOC_UNIT) MAX_UNIT
+						       ,MAX(CASE WHEN A.FNL_ALLOC_UNIT >= B.ALLOC_UNIT THEN B.CLERK_NO END) MAX_CLERK
+						       ,#clerkNo#||'' AS CLERK_NO
+						       ,#clerkName#||'' AS CLERK_NAME
+						  FROM 	PCCA00TB A
+						       ,PCCA01TB B
+						       ,STAFF0TB C
+						 WHERE A.DEPT_CD  = #deptCode#
+						   AND A.PART_CD  = #partCode#
+						   AND B.ABCD = CURRENT_DATE
+						   AND A.END_DATE = '9999-12-31'
+						   AND A.DEPT_CD  = B.FK_DEPT_CD
+						   AND A.PART_CD  = B.FK_PART_CD
+						   AND B.ALLOC_UNIT > 0
+						   AND B.CLERK_NO    = C.CLERK_NO
+						   AND C.RT_FRM_DATE = '9999-12-31'						   
+						) BB
+					)
+		 WHERE AA.DEPT_CD  = #deptCode#
+	       AND AA.PART_CD  = #partCode#
+		   AND AA.END_DATE = '9999-12-31'
+		   ]]>
+	</entry>
+	
+	<entry key="sql.insertOne">
+		INSERT INTO PCRV13TB (
+			FK_BSNS_CLS,
+			FK_RCV_YEAR,
+			FK_RCV_SEQ_NUM,
+			PROC_CLS,
+			SEQ_NUM,
+			LGL_PROC_CONTS,
+			BOND_SECURE_CLS,
+			INPUT_CLERK_NO,
+			INPUT_DATE,
+			INPUT_TIME,
+			APPL_START_DATE,
+			APPL_END_DATE
+		) VALUES (
+		     #bsnsCls#,                         
+		     #rcvYear#,                         
+		     #rcvSeqNum#,                       
+			#procCls#,				
+			#seqNum#,				
+			#lglProcConts#,			
+			#bondSecureCls#,		
+			#inputClerk#,			
+			CURRENT_DATE,		
+			CURRENT_TIME,			
+			CURRENT_DATE,		
+			'9999-12-31'			
+		)
+	
+	
+	</entry>
+	
+	
+	<entry key="testSQL">
+		SELECT 'ＯＫ'
+		FROM ABCD342
+	</entry>
+</properties>

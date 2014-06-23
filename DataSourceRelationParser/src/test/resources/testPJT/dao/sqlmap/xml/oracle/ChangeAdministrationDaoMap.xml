@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!--
+변화 관리 용 SQL XML 파일
+
+@sfmi.title 변화 관리 용 SQL XML 파일
+@sfmi.portal-id ehee.chae
+@sfmi.developer 채은희
+-->
+<!DOCTYPE sqlMap
+          PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+          "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ChangeAdministration">
+  <typeAlias alias="changeAdministration" type="sfmi.component.squad.itqualitybdt.ChangeAdministration"/>
+	    
+    <statement id="SELECTTEST"  parameterClass="java.util.Map" resultClass="changeAdministration">
+       SELECT COUNT(1)
+		from                   
+		(select /*+ index(t1 dpqa81tb_pk) */
+		pk_chrg_clerk_id chrg_clerk_id
+		FROM DPQA81TB T1
+		where T1.PK_WORK_DT_UPDATE(+) = #workDtUpdate#
+		group by pk_chrg_clerk_id
+		) T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+		WHERE T1.CHRG_CLERK_ID(+) = T2.CLERK_NO
+		AND T2.END_DATE(+) = '99991231'
+		AND T2.DEPT_CD = T3.DEPT_CD(+)
+		AND T3.END_DATE(+) = '99991231'
+		AND T1.CHRG_CLERK_ID IS NULL
+		AND T2.POS_CD IN ('A4', 'A5') 
+		and srf_part('name',T2.CLERK_NO)  is not null
+    </statement>
+
+
+    <!--
+      	변화관리 목록 조회(대상)
+     -->
+    <select id="selectChangeAdministrationMasterListCount"  parameterClass="java.util.Map" resultClass="int">
+		SELECT 
+			COUNT(1)
+		FROM 
+		(
+			SELECT 
+				(SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='T51' AND CD_VALUE = T1.IMDG_CLS) as imdgClsNm, 
+				T1.WORK_DT, T1.CHRG_CLERK_ID
+			FROM
+			DPQA80TB T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+			WHERE T1.WORK_DT IS NOT NULL
+            AND T1.CHRG_CLERK_ID = T2.CLERK_NO(+)
+            AND T2.END_DATE(+) = '99991231'
+            AND T2.DEPT_CD = T3.DEPT_CD(+)
+            AND T3.END_DATE(+) = '99991231'			
+		    <isNotEmpty property="pirYn">
+		    <isEqual prepend="AND" property="pirYn" compareValue="Y"> T1.PIR_INPUT IS NOT NULL</isEqual>
+		    <isEqual prepend="AND" property="pirYn" compareValue="N"> T1.PIR_INPUT IS NULL</isEqual>
+		    </isNotEmpty>	
+            <isNotEmpty prepend="AND" property="upperDeptCode"> T3.UPPER_DEPT_CD = #upperDeptCode#</isNotEmpty>
+            <isNotEmpty prepend="AND" property="deptCode"> T3.DEPT_CD = #deptCode#</isNotEmpty>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="workStDt">
+				substr(T1.WORK_ST_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="workEndDt">
+				substr(T1.WORK_END_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="applDt">
+				substr(T1.APPL_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="pirInputDate">
+				substr(T1.PIR_INPUT_DATE,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="lastUpdateDt">
+				substr(T1.LAST_UPDATE_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="fstInputDt">
+				substr(T1.FST_INPUT_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="workDtUpdate">
+				T1.WORK_DT_UPDATE between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			) C
+		WHERE C.WORK_DT IS NOT NULL
+	    <isNotEmpty property="searchKey">
+	    <isEqual prepend="AND" property="searchKey" compareValue="chrgClerkNm"> srf_part('name', C.CHRG_CLERK_ID) LIKE #searchValue# ||'%'</isEqual>
+	    <isEqual prepend="AND" property="searchKey" compareValue="imdgCls"> C.imdgClsNm = #searchValue# </isEqual>
+	    </isNotEmpty>		
+							
+    </select>
+    <select id="selectChangeAdministrationMasterList"  parameterClass="java.util.Map" resultClass="changeAdministration">
+		SELECT workDt, partClerkId, soPartClerkId, chrgClerkId, partClerkNm,
+		       soPartClerkNm, chrgClerkNm, deptCode, deptName, bsnsCls, systemNm, reqCls, reqClsNm,
+		       chrgTrgt, workStDt, workEndDt, applDt, imdgCls, imdgClsNm, lastUpdateDt,
+		       serviceCls, serviceClsNm, seqNum, workDtUpdate
+		       FROM (    
+			   SELECT
+		            T1.WORK_DT                                              as workDt, 
+		            T1.PART_CLERK_ID                                        as partClerkId, 
+		            T1.S_PART_CLERK_ID                                      as soPartClerkId,
+		            T1.CHRG_CLERK_ID                                        as chrgClerkId,
+		            srf_part('name',T1.PART_CLERK_ID)                       as partClerkNm, 
+		            srf_part('name',T1.S_PART_CLERK_ID)                     as soPartClerkNm, 
+		            srf_part('name',T1.CHRG_CLERK_ID)                       as chrgClerkNm,
+                    T3.DEPT_CD 											 	as deptCode,
+                    T3.DEPT_NAME 									     	as deptName,
+		            T1.BSNS_CLS                                             as bsnsCls,
+		            T1.SYSTEM_NM                                            as systemNm, 
+		            T1.REQ_CLS                                              as reqCls,
+		            (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C02' AND CD_VALUE = T1.REQ_CLS) 		as reqClsNm,
+		            T1.CHRG_TRGT                                            as chrgTrgt, 
+		            T1.WORK_ST_DT                                           as workStDt,
+		            TO_CHAR(TO_DATE(T1.WORK_END_DT,'YYYYMMDDHH24MI'),'YYYY-MM-DD') 	as workEndDt,
+		            TO_CHAR(TO_DATE(T1.APPL_DT,'YYYYMMDDHH24MI'),'YYYY-MM-DD') 		as applDt,
+		            T1.IMDG_CLS                                             as imdgCls,
+		            (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='T51' AND CD_VALUE = T1.IMDG_CLS) 		as imdgClsNm, 
+		            T1.LAST_UPDATE_DT                                       as lastUpdateDt,
+		            T1.SERVICE_CLS                                          as serviceCls,
+		            (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C01' AND CD_VALUE = T1.SERVICE_CLS) 	as serviceClsNm,
+		            T1.SEQ_NUM                                              as seqNum,
+		            T1.WORK_DT_UPDATE                                       as workDtUpdate,
+		            CEIL(ROWNUM / #rowCntPerPage#) AS PAGE
+				FROM DPQA80TB T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+				WHERE T1.WORK_DT IS NOT NULL
+                AND T1.CHRG_CLERK_ID = T2.CLERK_NO(+)
+                AND T2.END_DATE(+) = '99991231'
+                AND T2.DEPT_CD = T3.DEPT_CD(+)
+                AND T3.END_DATE(+) = '99991231'  				
+			    <isNotEmpty property="pirYn">
+			    <isEqual prepend="AND" property="pirYn" compareValue="Y"> T1.PIR_INPUT IS NOT NULL</isEqual>
+			    <isEqual prepend="AND" property="pirYn" compareValue="N"> T1.PIR_INPUT IS NULL</isEqual>
+			    </isNotEmpty>
+                <isNotEmpty prepend="AND" property="upperDeptCode"> T3.UPPER_DEPT_CD = #upperDeptCode#</isNotEmpty>
+                <isNotEmpty prepend="AND" property="deptCode"> T3.DEPT_CD = #deptCode#</isNotEmpty>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="workStDt">
+					substr(T1.WORK_ST_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="workEndDt">
+					substr(T1.WORK_END_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="applDt">
+					substr(T1.APPL_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="pirInputDate">
+					substr(T1.PIR_INPUT_DATE,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="lastUpdateDt">
+					substr(T1.LAST_UPDATE_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="fstInputDt">
+					substr(T1.FST_INPUT_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="workDtUpdate">
+					T1.WORK_DT_UPDATE between #frWriteDt# and #toWriteDt#
+				</isEqual>
+			) DATA
+		WHERE PAGE = #currentPage#
+	    <isNotEmpty property="searchKey">
+	    <isEqual prepend="AND" property="searchKey" compareValue="chrgClerkNm"> srf_part('name', DATA.chrgClerkId) LIKE #searchValue# ||'%'</isEqual>
+	    <isEqual prepend="AND" property="searchKey" compareValue="imdgCls"> DATA.imdgClsNm = #searchValue# </isEqual>
+	    <isEqual prepend="AND" property="searchKey" compareValue="soPartClerkNm"> DATA.soPartClerkNm = #searchValue# </isEqual>
+	    </isNotEmpty>
+	    ORDER BY DATA.workDtUpdate DESC			 																										    		
+    </select>
+    
+    <!--
+      	변화관리 목록 조회 (이력)
+     -->
+    <select id="selectChangeAdministrationHistoryListCount"  parameterClass="java.util.Map" resultClass="int">
+		SELECT 
+			COUNT(1)
+		FROM 
+		(
+			SELECT 
+				(SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='T51' AND CD_VALUE = T1.IMDG_CLS) as imdgClsNm, 
+				T1.PK_WORK_DT, T1.PK_CHRG_CLERK_ID
+			FROM
+			DPQA81TB T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+			WHERE T1.PK_WORK_DT IS NOT NULL
+            AND T1.PK_CHRG_CLERK_ID = T2.CLERK_NO(+)
+            AND T2.END_DATE(+) = '99991231'
+            AND T2.DEPT_CD = T3.DEPT_CD(+)
+            AND T3.END_DATE(+) = '99991231'			
+		    <isNotEmpty property="pirYn">
+		    <isEqual prepend="AND" property="pirYn" compareValue="Y"> T1.PIR_INPUT IS NOT NULL</isEqual>
+		    <isEqual prepend="AND" property="pirYn" compareValue="N"> T1.PIR_INPUT IS NULL</isEqual>
+		    </isNotEmpty>	
+            <isNotEmpty prepend="AND" property="upperDeptCode"> T3.UPPER_DEPT_CD = #upperDeptCode#</isNotEmpty>
+            <isNotEmpty prepend="AND" property="deptCode"> T3.DEPT_CD = #deptCode#</isNotEmpty>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="workStDt">
+				substr(T1.WORK_ST_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="workEndDt">
+				substr(T1.WORK_END_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="applDt">
+				substr(T1.APPL_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="pirInputDate">
+				substr(T1.PIR_INPUT_DATE,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="lastUpdateDt">
+				substr(T1.LAST_UPDATE_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="fstInputDt">
+				substr(T1.FST_INPUT_DT,1,8) between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			<isEqual prepend="and" property="searchDtGubun" compareValue="workDtUpdate">
+				T1.PK_WORK_DT_UPDATE between #frWriteDt# and #toWriteDt#
+			</isEqual>
+			) C
+		WHERE C.PK_WORK_DT IS NOT NULL
+	    <isNotEmpty property="searchKey">
+	    <isEqual prepend="AND" property="searchKey" compareValue="chrgClerkNm"> srf_part('name', C.PK_CHRG_CLERK_ID) LIKE #searchValue# ||'%'</isEqual>
+	    <isEqual prepend="AND" property="searchKey" compareValue="imdgCls"> C.imdgClsNm = #searchValue# </isEqual>
+	    </isNotEmpty>		
+							
+    </select>
+    <select id="selectChangeAdministrationHistoryList"  parameterClass="java.util.Map" resultClass="changeAdministration">
+		SELECT workDt, partClerkId, soPartClerkId, chrgClerkId, partClerkNm,
+		       soPartClerkNm, chrgClerkNm, deptCode, deptName, bsnsCls, systemNm, reqCls, reqClsNm,
+		       chrgTrgt, workStDt, workEndDt, applDt, imdgCls, imdgClsNm, lastUpdateDt,
+		       serviceCls, serviceClsNm, seqNum, workDtUpdate
+		       FROM (    
+			   SELECT
+		            T1.PK_WORK_DT                                           as workDt, 
+		            T1.PART_CLERK_ID                                        as partClerkId, 
+		            T1.S_PART_CLERK_ID                                      as soPartClerkId,
+		            T1.PK_CHRG_CLERK_ID                                     as chrgClerkId,
+		            srf_part('name',T1.PART_CLERK_ID)                       as partClerkNm, 
+		            srf_part('name',T1.S_PART_CLERK_ID)                     as soPartClerkNm, 
+		            srf_part('name',T1.PK_CHRG_CLERK_ID)                    as chrgClerkNm,
+                    T3.DEPT_CD 											 	as deptCode,
+                    T3.DEPT_NAME 									     	as deptName,
+		            T1.BSNS_CLS                                             as bsnsCls,
+		            T1.SYSTEM_NM                                            as systemNm, 
+		            T1.REQ_CLS                                              as reqCls,
+		            (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C02' AND CD_VALUE = T1.REQ_CLS) 		as reqClsNm,
+		            T1.CHRG_TRGT                                            as chrgTrgt, 
+		            T1.WORK_ST_DT                                           as workStDt,
+		            TO_CHAR(TO_DATE(T1.WORK_END_DT,'YYYYMMDDHH24MI'),'YYYY-MM-DD') 	as workEndDt,
+		            TO_CHAR(TO_DATE(T1.APPL_DT,'YYYYMMDDHH24MI'),'YYYY-MM-DD') 		as applDt,
+		            T1.IMDG_CLS                                             as imdgCls,
+		            (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='T51' AND CD_VALUE = T1.IMDG_CLS) 		as imdgClsNm, 
+		            T1.LAST_UPDATE_DT                                       as lastUpdateDt,
+		            T1.SERVICE_CLS                                          as serviceCls,
+		            (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C01' AND CD_VALUE = T1.SERVICE_CLS) 	as serviceClsNm,
+		            T1.PK_SEQ_NUM                                              as seqNum,
+		            T1.PK_WORK_DT_UPDATE                                       as workDtUpdate,
+		            CEIL(ROWNUM / #rowCntPerPage#) AS PAGE
+				FROM DPQA81TB T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+				WHERE T1.PK_WORK_DT IS NOT NULL
+                AND T1.PK_CHRG_CLERK_ID = T2.CLERK_NO(+)
+                AND T2.END_DATE(+) = '99991231'
+                AND T2.DEPT_CD = T3.DEPT_CD(+)
+                AND T3.END_DATE(+) = '99991231'  				
+			    <isNotEmpty property="pirYn">
+			    <isEqual prepend="AND" property="pirYn" compareValue="Y"> T1.PIR_INPUT IS NOT NULL</isEqual>
+			    <isEqual prepend="AND" property="pirYn" compareValue="N"> T1.PIR_INPUT IS NULL</isEqual>
+			    </isNotEmpty>
+                <isNotEmpty prepend="AND" property="upperDeptCode"> T3.UPPER_DEPT_CD = #upperDeptCode#</isNotEmpty>
+                <isNotEmpty prepend="AND" property="deptCode"> T3.DEPT_CD = #deptCode#</isNotEmpty>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="workStDt">
+					substr(T1.WORK_ST_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="workEndDt">
+					substr(T1.WORK_END_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="applDt">
+					substr(T1.APPL_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="pirInputDate">
+					substr(T1.PIR_INPUT_DATE,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="lastUpdateDt">
+					substr(T1.LAST_UPDATE_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="fstInputDt">
+					substr(T1.FST_INPUT_DT,1,8) between #frWriteDt# and #toWriteDt#
+				</isEqual>
+				<isEqual prepend="AND" property="searchDtGubun" compareValue="workDtUpdate">
+					T1.PK_WORK_DT_UPDATE between #frWriteDt# and #toWriteDt#
+				</isEqual>
+			) DATA
+		WHERE PAGE = #currentPage#
+	    <isNotEmpty property="searchKey">
+	    <isEqual prepend="AND" property="searchKey" compareValue="chrgClerkNm"> srf_part('name', DATA.chrgClerkId) LIKE #searchValue# ||'%'</isEqual>
+	    <isEqual prepend="AND" property="searchKey" compareValue="imdgCls"> DATA.imdgClsNm = #searchValue# </isEqual>
+	    <isEqual prepend="AND" property="searchKey" compareValue="soPartClerkNm"> DATA.soPartClerkNm = #searchValue# </isEqual>
+	    </isNotEmpty>
+	    ORDER BY DATA.workDtUpdate DESC					 																										    		
+    </select>     
+    
+    <!--
+    	 변화관리 저장 (변경대상 'Y' 일때)
+     -->
+	<insert id="createChangeAdministration80tbY" parameterClass="changeAdministration">    
+		INSERT INTO DPQA80TB (
+		    WORK_DT, CHRG_CLERK_ID, SEQ_NUM, CHRG_TRGT_YN, 
+		    FST_INPUT_DT, LAST_UPDATE_DT, S_PART_CLERK_ID,
+		    PART_CLERK_ID, BSNS_CLS, BSNS_CLS_NM, SYSTEM_NM, REQ_CLS,
+		    IMDG_CLS, SYS_IMPACT, OTH_SYS_IMPACT, ERR_BIZ_IMPACT,
+		    WORK_ST_DT, WORK_END_DT, APPL_DT, CHRG_TRGT,
+		    CHRG_TRGT_DETL, SERVICE_CLS, ATCH_FILE_ID, ATCH_FILE_NM, ATCH_FILE_SIZE, WORK_DT_UPDATE )            
+		VALUES (
+		    #workDt#, #chrgClerkId#, 
+		    (SELECT NVL(MAX(SEQ_NUM),0) + 1 FROM  DPQA80TB WHERE WORK_DT  = #workDt#
+														   AND CHRG_CLERK_ID = #chrgClerkId#), 
+			#chrgTrgtYn#,
+		    TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), #soPartClerkId#, 
+		    #partClerkId#, #bsnsCls#, #bsnsClsNm#, #systemNm#, #reqCls#, 
+		    #imdgCls#, #sysImpact#, #othSysImpact#, #errBizImpact#,
+		    #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#, 
+		    #workEndDt#||#cmbWorkEndHour#||#cmbWorkEndMin#, 
+		    #applDt#||#cmbApplHour#||#cmbApplMin#, #chrgTrgt#,
+		    #chrgTrgtDetl#, #serviceCls#, #atchFileId#, #atchFileNm#, #atchFileSize#, #workDtUpdate# )  
+    </insert>
+    
+    <!--
+    	 변화관리 저장 (변경대상 'Y' 일때) 또는 이력관리
+     -->
+	<insert id="createChangeAdministration81tbY" parameterClass="changeAdministration">    
+		INSERT INTO DPQA81TB (
+		    PK_WORK_DT, PK_CHRG_CLERK_ID, PK_SEQ_NUM, PK_WORK_DT_UPDATE, CHRG_TRGT_YN, 
+		    FST_INPUT_DT, LAST_UPDATE_DT, S_PART_CLERK_ID,
+		    PART_CLERK_ID, BSNS_CLS, BSNS_CLS_NM, SYSTEM_NM, REQ_CLS,
+		    IMDG_CLS, SYS_IMPACT, OTH_SYS_IMPACT, ERR_BIZ_IMPACT,
+		    WORK_ST_DT, WORK_END_DT, APPL_DT, CHRG_TRGT,
+		    CHRG_TRGT_DETL, SERVICE_CLS, ATCH_FILE_ID, ATCH_FILE_NM, ATCH_FILE_SIZE )            
+		VALUES (
+		    #workDt#, #chrgClerkId#,  
+		    (SELECT NVL(MAX(PK_SEQ_NUM),0) + 1 FROM DPQA81TB WHERE PK_WORK_DT  = #workDt#
+														   AND PK_CHRG_CLERK_ID = #chrgClerkId#),
+			#workDtUpdate#, #chrgTrgtYn#,
+		    TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), #soPartClerkId#, 
+		    #partClerkId#, #bsnsCls#, #bsnsClsNm#, #systemNm#, #reqCls#, 
+		    #imdgCls#, #sysImpact#, #othSysImpact#, #errBizImpact#,
+		    #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#, 
+		    #workEndDt#||#cmbWorkEndHour#||#cmbWorkEndMin#, 
+		    #applDt#||#cmbApplHour#||#cmbApplMin#, #chrgTrgt#,
+		    #chrgTrgtDetl#, #serviceCls#, #atchFileId#, #atchFileNm#, #atchFileSize# )  
+    </insert>   
+    
+    <!--
+    	 변화관리 저장 (변경대상 'N' 일때)
+     -->
+	<insert id="createChangeAdministration81tbN" parameterClass="changeAdministration">    
+		INSERT INTO DPQA81TB (
+		    PK_WORK_DT, PK_CHRG_CLERK_ID, PK_SEQ_NUM, PK_WORK_DT_UPDATE, CHRG_TRGT_YN, 
+		    FST_INPUT_DT, S_PART_CLERK_ID,
+		    PART_CLERK_ID, 
+		    WORK_ST_DT, LAST_UPDATE_DT )            
+		VALUES (
+		    #workDt#, #chrgClerkId#, 0, 
+			#workDtUpdate#, #chrgTrgtYn#,
+		    TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),  #soPartClerkId#, 
+		    #partClerkId#, 
+		    #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS') )  
+    </insert>
+    
+    <!--
+    	 변화관리 저장 (변경대상 'N' 일때)
+     -->
+	<insert id="createChangeAdministration80tbN" parameterClass="changeAdministration">    
+		INSERT INTO DPQA80TB (
+		    WORK_DT, CHRG_CLERK_ID, SEQ_NUM, CHRG_TRGT_YN, 
+		    FST_INPUT_DT, S_PART_CLERK_ID,
+		    PART_CLERK_ID, 
+		    WORK_ST_DT, LAST_UPDATE_DT )            
+		VALUES (
+		    #workDt#, #chrgClerkId#, 0, 
+			#chrgTrgtYn#,
+		    TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),  #soPartClerkId#, 
+		    #partClerkId#, 
+		    #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS') )  
+    </insert>             
+
+    <!-- 
+    	변화관리 대상 상세 조회 
+     -->    
+    <select id="selectChangeAdministrationMaster"  parameterClass="changeAdministration" resultClass="changeAdministration">
+        SELECT 
+               SRF_PART('name', T1.CHRG_CLERK_ID)          	as chrgClerkNm,
+               SRF_PART('name', T1.S_PART_CLERK_ID)     	as soPartClerkNm,
+               T1.S_PART_CLERK_ID                          	as soPartClerkId,
+               T3.DEPT_CD                             		as deptCode,
+               T3.DEPT_NAME                         		as deptName,
+               T1.BSNS_CLS_NM                             	as bsnsClsNm,
+               T1.BSNS_CLS                             		as bsnsCls,
+               T1.CHRG_TRGT_YN                         		as chrgTrgtYn,
+               T1.SYSTEM_NM                             	as systemNm,
+               TO_CHAR(TO_DATE(T1.FST_INPUT_DT,'YYYYMMDDHH24MISS'),'YYYY-MM-DD')     as fstInputDt,
+               SUBSTR(T1.WORK_ST_DT, 1, 8)             		as workStDt,
+               SUBSTR(T1.WORK_END_DT, 1, 8)            		as workEndDt,
+               SUBSTR(T1.APPL_DT, 1, 8)                		as applDt,
+               SUBSTR(T1.WORK_ST_DT, 9, 2)             		as cmbWorkStartHour,
+               SUBSTR(T1.WORK_END_DT, 9, 2)            		as cmbWorkEndHour,
+               SUBSTR(T1.APPL_DT, 9, 2)                		as cmbApplHour,
+               SUBSTR(T1.WORK_ST_DT, 11, 2)            		as cmbWorkStartMin,
+               SUBSTR(T1.WORK_END_DT, 11, 2)           		as cmbWorkEndMin,
+               SUBSTR(T1.APPL_DT, 11, 2)               		as cmbApplMin,
+               T1.SERVICE_CLS                            	as serviceCls,
+               T1.REQ_CLS                                	as reqCls,
+               T1.IMDG_CLS                                	as imdgCls,
+               (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C01' AND CD_VALUE = T1.SERVICE_CLS) as serviceClsNm,
+               (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C02' AND CD_VALUE = T1.REQ_CLS)     as reqClsNm,
+               (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='T51' AND CD_VALUE = T1.IMDG_CLS)     as imdgClsNm,               
+               TO_CHAR(TO_DATE(T1.LAST_UPDATE_DT,'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI')         as lastUpdateDt,
+               T1.SYS_IMPACT                             	as sysImpact,
+               T1.OTH_SYS_IMPACT                         	as othSysImpact,
+               T1.ERR_BIZ_IMPACT                         	as errBizImpact,
+               T1.CHRG_TRGT                             	as chrgTrgt,
+               T1.CHRG_TRGT_DETL                         	as chrgTrgtDetl,
+               T1.PIR_INPUT                             	as pirInput,
+               SUBSTR(T1.PIR_INPUT_DATE, 1, 8)         		as pirInputDate,
+               SUBSTR(T1.PIR_INPUT_DATE, 9, 2)         		as cmbPirHour,
+               SUBSTR(T1.PIR_INPUT_DATE, 11, 2)        		as cmbPirMin,               
+               T1.SEQ_NUM                             		as seqNum,
+               T1.WORK_DT                                	as workDt,
+               T1.ATCH_FILE_NM                            	as atchFileNm,
+               T1.ATCH_FILE_ID                            	as atchFileId,
+               NVL(T1.ATCH_FILE_SIZE,0)                 	as atchFileSize,
+               T1.WORK_DT_UPDATE                         	as workDtUpdate
+		FROM DPQA80TB T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+		WHERE WORK_DT  		   = #workDt#
+		AND   CHRG_CLERK_ID    = #chrgClerkId#
+		AND   T1.SEQ_NUM       = #seqNum#
+        AND   T1.CHRG_CLERK_ID = T2.CLERK_NO(+)
+        AND   T2.END_DATE(+)   = '99991231'
+        AND   T2.DEPT_CD       = T3.DEPT_CD(+)
+        AND   T3.END_DATE(+)   = '99991231'		 
+	</select>
+
+    <!-- 
+    	변화관리 이력 상세 조회 
+     -->    
+    <select id="selectChangeAdministrationHistory"  parameterClass="changeAdministration" resultClass="changeAdministration">
+        SELECT 
+               SRF_PART('name', T1.PK_CHRG_CLERK_ID)              	as chrgClerkNm,
+               SRF_PART('name', T1.S_PART_CLERK_ID)         		as soPartClerkNm,
+               T1.S_PART_CLERK_ID                              		as soPartClerkId,
+               T1.PART_CLERK_ID										as partClerkId,
+               T3.DEPT_CD                                     		as deptCode,
+               T3.DEPT_NAME                                 		as deptName,
+               T1.BSNS_CLS_NM                                 		as bsnsClsNm,
+               T1.BSNS_CLS                                     		as bsnsCls,
+               T1.CHRG_TRGT_YN                                 		as chrgTrgtYn,
+               T1.SYSTEM_NM                                 		as systemNm,
+               TO_CHAR(TO_DATE(T1.FST_INPUT_DT,'YYYYMMDDHH24MISS'),'YYYY-MM-DD')     as fstInputDt,
+               SUBSTR(T1.WORK_ST_DT, 1, 8)                     as workStDt,
+               SUBSTR(T1.WORK_END_DT, 1, 8)                    as workEndDt,
+               SUBSTR(T1.APPL_DT, 1, 8)                        as applDt,
+               SUBSTR(T1.WORK_ST_DT, 9, 2)                     as cmbWorkStartHour,
+               SUBSTR(T1.WORK_END_DT, 9, 2)                    as cmbWorkEndHour,
+               SUBSTR(T1.APPL_DT, 9, 2)                        as cmbApplHour,
+               SUBSTR(T1.WORK_ST_DT, 11, 2)                    as cmbWorkStartMin,
+               SUBSTR(T1.WORK_END_DT, 11, 2)                   as cmbWorkEndMin,
+               SUBSTR(T1.APPL_DT, 11, 2)                       as cmbApplMin,
+               T1.SERVICE_CLS                                  as serviceCls,
+               T1.REQ_CLS                                      as reqCls,
+               T1.IMDG_CLS                                     as imdgCls,
+               (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C01' AND CD_VALUE = T1.SERVICE_CLS) as serviceClsNm,
+               (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='C02' AND CD_VALUE = T1.REQ_CLS)     as reqClsNm,
+               (SELECT CD_NM FROM DPLY21TB WHERE CD_GRP_ID='T51' AND CD_VALUE = T1.IMDG_CLS)     as imdgClsNm,               
+               TO_CHAR(TO_DATE(T1.LAST_UPDATE_DT,'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI')         as lastUpdateDt,
+               T1.SYS_IMPACT                                 		as sysImpact,
+               T1.OTH_SYS_IMPACT                             		as othSysImpact,
+               T1.ERR_BIZ_IMPACT                             		as errBizImpact,
+               T1.CHRG_TRGT                                 		as chrgTrgt,
+               T1.CHRG_TRGT_DETL                             		as chrgTrgtDetl,
+               T1.PIR_INPUT                                 		as pirInput,
+               SUBSTR(T1.PIR_INPUT_DATE, 1, 8)                 		as pirInputDate,
+               SUBSTR(T1.PIR_INPUT_DATE, 9, 2)                 		as cmbPirHour,
+               SUBSTR(T1.PIR_INPUT_DATE, 11, 2)                	 	as cmbPirMin,               
+               T1.PK_SEQ_NUM                                     	as seqNum,
+               T1.PK_WORK_DT                                    	as workDt,
+               T1.ATCH_FILE_NM                                		as atchFileNm,
+               T1.ATCH_FILE_ID                                		as atchFileId,
+               NVL(T1.ATCH_FILE_SIZE,0)                     		as atchFileSize,
+               T1.PK_WORK_DT_UPDATE                             	as workDtUpdate,
+               (SELECT DECODE(MAX(T2.WORK_DT_UPDATE),NULL,'','max')  FROM DPQA80TB T2
+                WHERE WORK_DT = PK_WORK_DT
+                AND CHRG_CLERK_ID = PK_CHRG_CLERK_ID
+                AND SEQ_NUM = PK_SEQ_NUM
+                AND T2.WORK_DT_UPDATE =T1.PK_WORK_DT_UPDATE  
+                AND CHRG_CLERK_ID = #chrgClerkId#) as lastWork
+        FROM DPQA81TB T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+        WHERE PK_WORK_DT             	= #workDt#
+        AND   PK_CHRG_CLERK_ID    	 	= #chrgClerkId#
+        AND   T1.PK_SEQ_NUM       	 	= #seqNum#
+        AND   T1.PK_WORK_DT_UPDATE 	 	= #workDtUpdate#
+        AND   T1.PK_CHRG_CLERK_ID 		= T2.CLERK_NO(+)
+        AND   T2.END_DATE(+)   = '99991231'
+        AND   T2.DEPT_CD       = T3.DEPT_CD(+)
+        AND   T3.END_DATE(+)   = '99991231'		 
+	</select>
+	
+    <!--
+                변화관리 정보 수정
+     -->
+    <update id="updateChangeAdministration80tb" parameterClass="changeAdministration">	
+        UPDATE DPQA80TB
+        SET    BSNS_CLS              		= #bsnsCls#,
+               SYSTEM_NM                	= #systemNm#,
+               REQ_CLS                		= #reqCls#,
+               IMDG_CLS		                = #imdgCls#,
+               SYS_IMPACT                 	= #sysImpact#,
+               OTH_SYS_IMPACT   			= #othSysImpact#,
+               ERR_BIZ_IMPACT               = #errBizImpact#,
+               WORK_ST_DT                	= #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#,
+               WORK_END_DT                	= #workEndDt#||#cmbWorkEndHour#||#cmbWorkEndMin#,
+               APPL_DT                		= #applDt#||#cmbApplHour#||#cmbApplMin#,
+               CHRG_TRGT                	= #chrgTrgt#,
+               CHRG_TRGT_DETL               = #chrgTrgtDetl#,
+               SERVICE_CLS                	= #serviceCls#,
+               BSNS_CLS_NM                	= #bsnsClsNm#, 
+               PIR_INPUT                    = #pirInput#,
+               PIR_INPUT_DATE               = #pirInputDate#||#cmbPirHour#||#cmbPirMin#,
+               LAST_UPDATE_DT	 			= TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+		       ATCH_FILE_NM       			= #atchFileNm#,
+		       ATCH_FILE_ID       			= #atchFileId#,
+		       ATCH_FILE_SIZE     			= #atchFileSize#,
+		       WORK_DT_UPDATE				= #workDtUpdate#              
+        WHERE  WORK_DT           = #workDt# 
+        AND    CHRG_CLERK_ID 	 = #chrgClerkId#
+        AND    SEQ_NUM 			 = #seqNum#
+    </update>
+    
+    <!--
+                변화관리 정보 수정
+     -->
+    <update id="mergeChangeAdministration" parameterClass="changeAdministration">	
+		MERGE INTO DPQA81TB T1
+		      USING  (select WORK_DT, CHRG_CLERK_ID, SEQ_NUM, WORK_DT_UPDATE from DPQA80TB X2 
+		              where  X2.CHRG_CLERK_ID = #chrgClerkId#
+		              AND X2.SEQ_NUM = #seqNum#
+		              AND X2.WORK_DT = #workDt#
+		              AND X2.WORK_DT_UPDATE = #workDtUpdate#
+		              ) T2
+		      ON (T1.PK_WORK_DT = T2.WORK_DT
+		      AND T1.PK_CHRG_CLERK_ID = T2.CHRG_CLERK_ID
+		      AND T1.PK_SEQ_NUM = T2.SEQ_NUM
+		      AND T1.PK_WORK_DT_UPDATE = T2.WORK_DT_UPDATE   )
+		WHEN  MATCHED THEN
+		      UPDATE 
+		      SET    BSNS_CLS                      	= #bsnsCls#,
+		             SYSTEM_NM                     	= #systemNm#,
+		             REQ_CLS                       	= #reqCls#,
+		             IMDG_CLS                      	= #imdgCls#,
+		             SYS_IMPACT                    	= #sysImpact#,
+		             OTH_SYS_IMPACT                	= #othSysImpact#,
+		             ERR_BIZ_IMPACT                	= #errBizImpact#,
+		             WORK_ST_DT                	   	= #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#,
+		             WORK_END_DT                 	= #workEndDt#||#cmbWorkEndHour#||#cmbWorkEndMin#,
+		             APPL_DT                		= #applDt#||#cmbApplHour#||#cmbApplMin#,
+		             CHRG_TRGT                    	= #chrgTrgt#,
+		             CHRG_TRGT_DETL               	= #chrgTrgtDetl#,
+		             SERVICE_CLS                    = #serviceCls#,
+		             BSNS_CLS_NM                    = #bsnsClsNm#, 
+		             PIR_INPUT                    	= #pirInput#,
+		             PIR_INPUT_DATE               	= #pirInputDate#||#cmbPirHour#||#cmbPirMin#,
+		             LAST_UPDATE_DT                 = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+		             ATCH_FILE_NM                   = #atchFileNm#,
+		             ATCH_FILE_ID                   = #atchFileId#,
+		             ATCH_FILE_SIZE                 = #atchFileSize#
+	          WHERE  WORK_DT           		= #workDt# 
+	          AND    CHRG_CLERK_ID 	 		= #chrgClerkId#
+	          AND    SEQ_NUM 			 	= #seqNum#
+		WHEN NOT MATCHED THEN 
+		     INSERT (
+		        PK_WORK_DT, PK_CHRG_CLERK_ID, PK_SEQ_NUM, PK_WORK_DT_UPDATE, CHRG_TRGT_YN, 
+		        FST_INPUT_DT, LAST_UPDATE_DT, S_PART_CLERK_ID,
+		        PART_CLERK_ID, BSNS_CLS, BSNS_CLS_NM, SYSTEM_NM, REQ_CLS,
+		        IMDG_CLS, SYS_IMPACT, OTH_SYS_IMPACT, ERR_BIZ_IMPACT,
+		        WORK_ST_DT, WORK_END_DT, APPL_DT, CHRG_TRGT,
+		        CHRG_TRGT_DETL, SERVICE_CLS, ATCH_FILE_ID, ATCH_FILE_NM, ATCH_FILE_SIZE )            
+		     VALUES (
+		        #workDt#, #chrgClerkId#, #seqNum#,
+		        #workDtUpdate#, #chrgTrgtYn#,
+		        TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), #soPartClerkId#, 
+		        #partClerkId#, #bsnsCls#, #bsnsClsNm#, #systemNm#, #reqCls#, 
+		        #imdgCls#, #sysImpact#, #othSysImpact#, #errBizImpact#,
+		        #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#, 
+		        #workEndDt#||#cmbWorkEndHour#||#cmbWorkEndMin#, 
+		        #applDt#||#cmbApplHour#||#cmbApplMin#, #chrgTrgt#,
+		        #chrgTrgtDetl#, #serviceCls#, #atchFileId#, #atchFileNm#, #atchFileSize# )
+    </update>    
+    
+    <!--
+                변화관리 정보 수정
+     -->
+    <update id="updateChangeAdministration81tb" parameterClass="changeAdministration">	
+        UPDATE DPQA81TB
+        SET    BSNS_CLS              		= #bsnsCls#,
+               SYSTEM_NM                	= #systemNm#,
+               REQ_CLS                		= #reqCls#,
+               IMDG_CLS		                = #imdgCls#,
+               SYS_IMPACT                 	= #sysImpact#,
+               OTH_SYS_IMPACT   			= #othSysImpact#,
+               ERR_BIZ_IMPACT               = #errBizImpact#,
+               WORK_ST_DT                	= #workStDt#||#cmbWorkStartHour#||#cmbWorkStartMin#,
+               WORK_END_DT                	= #workEndDt#||#cmbWorkEndHour#||#cmbWorkEndMin#,
+               APPL_DT                		= #applDt#||#cmbApplHour#||#cmbApplMin#,
+               CHRG_TRGT                	= #chrgTrgt#,
+               CHRG_TRGT_DETL               = #chrgTrgtDetl#,
+               SERVICE_CLS                	= #serviceCls#,
+               BSNS_CLS_NM                	= #bsnsClsNm#, 
+               PIR_INPUT                    = #pirInput#,
+               PIR_INPUT_DATE               = #pirInputDate#||#cmbPirHour#||#cmbPirMin#,
+               LAST_UPDATE_DT	 			= TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+		       ATCH_FILE_NM       			= #atchFileNm#,
+		       ATCH_FILE_ID       			= #atchFileId#,
+		       ATCH_FILE_SIZE     			= #atchFileSize#,
+		       PK_WORK_DT_UPDATE			= #workDtUpdate#
+        WHERE  PK_WORK_DT          		= #workDt# 
+        AND    PK_CHRG_CLERK_ID 	 	= #chrgClerkId#
+        AND    PK_SEQ_NUM 			 	= #seqNum#
+    </update>       
+    
+    <!--
+                변화관리  PIR 입력
+   
+    <update id="updateChangeAdministrationPir" parameterClass="changeAdministration">	
+        UPDATE DPQA80TB
+        SET    PIR_INPUT                       	= #pirInput#,
+               PIR_INPUT_DATE                  	= #pirInputDate#,
+               LAST_UPDATE_DT       			= TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+        WHERE  WORK_DT           				= #workDt# 
+        AND    CHRG_CLERK_ID      				= #chrgClerkId#
+        AND    SEQ_NUM              			= #seqNum#
+    </update>  -->    
+    <!--
+                변화관리 정보 삭제
+     -->    
+	<delete id="deleteChangeAdministration" parameterClass="changeAdministration">    
+    	DELETE FROM DPQA81TB
+        WHERE  PK_WORK_DT           = #workDt# 
+        AND    PK_CHRG_CLERK_ID     = #chrgClerkId#
+        AND    PK_SEQ_NUM           = #seqNum# 
+        AND    PK_WORK_DT_UPDATE    = #workDtUpdate#
+	</delete>
+    <!--
+      	미결현황 조회
+     -->
+    <select id="selectChangeAdministrationNoRegListCount"  parameterClass="java.util.Map" resultClass="int">
+		SELECT COUNT(1)
+		from                   
+		(select /*+ index(t1 dpqa81tb_pk) */
+		pk_chrg_clerk_id chrg_clerk_id
+		FROM DPQA81TB T1
+		where T1.PK_WORK_DT_UPDATE(+) = #workDtUpdate#
+		group by pk_chrg_clerk_id
+		) T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+		WHERE T1.CHRG_CLERK_ID(+) = T2.CLERK_NO
+		AND T2.END_DATE(+) = '99991231'
+		AND T2.DEPT_CD = T3.DEPT_CD(+)
+		AND T3.END_DATE(+) = '99991231'
+		AND T1.CHRG_CLERK_ID IS NULL
+		AND T2.POS_CD IN ('A4', 'A5') 
+		and srf_part('name',T2.CLERK_NO)  is not null
+	    <isNotEmpty property="searchKey">
+	    <isEqual prepend="AND" property="searchKey" compareValue="chrgClerkNm"> srf_part('name',T2.CLERK_NO) LIKE #searchValue# ||'%'</isEqual>
+	    </isNotEmpty>
+        <isNotEmpty prepend="AND" property="upperDeptCode"> T3.UPPER_DEPT_CD = #upperDeptCode#</isNotEmpty>
+        <isNotEmpty prepend="AND" property="deptCode"> T3.DEPT_CD = #deptCode#</isNotEmpty>
+    </select>	  
+    <!--
+      	미결현황 조회
+     -->
+    <select id="selectChangeAdministrationNoRegList"  parameterClass="java.util.Map" resultClass="changeAdministration">
+        SELECT chrgClerkId, chrgClerkNm, jobGradeNm, 
+               deptCode, deptName, soPartClerkId, soPartClerkNm
+        FROM (	
+			SELECT /*+ use_nl(t2, t3, t1) */
+			        T2.CLERK_NO                         as chrgClerkId,
+			       srf_part('name',T2.CLERK_NO)     	as chrgClerkNm,
+			       srf_part('grade',T2.CLERK_NO)    	as jobGradeNm,
+			       T3.DEPT_CD                         	as deptCode,
+			       T3.DEPT_NAME                     	as deptName,
+			       T3.DEPT_CHIEF_NO                 	as soPartClerkId,
+			       srf_part('name',T3.DEPT_CHIEF_NO)    as soPartClerkNm,
+		           CEIL(ROWNUM / #rowCntPerPage#) AS PAGE
+			from                   
+			(select /*+ index(t1 dpqa81tb_pk) */
+			pk_chrg_clerk_id chrg_clerk_id
+			FROM DPQA81TB T1
+			where T1.PK_WORK_DT_UPDATE(+) = #workDtUpdate#
+			group by pk_chrg_clerk_id
+			) T1, SIDV11TB@ILM T2, SIDV09TB@ILM T3
+			WHERE T1.CHRG_CLERK_ID(+) = T2.CLERK_NO
+			AND T2.END_DATE(+) = '99991231'
+			AND T2.DEPT_CD = T3.DEPT_CD(+)
+			AND T3.END_DATE(+) = '99991231'
+			AND T1.CHRG_CLERK_ID IS NULL
+			AND T2.POS_CD IN ('A4', 'A5') 
+			and srf_part('name',T2.CLERK_NO)  is not null
+		    <isNotEmpty property="searchKey">
+		    <isEqual prepend="AND" property="searchKey" compareValue="chrgClerkNm"> srf_part('name',T2.CLERK_NO) LIKE #searchValue# ||'%'</isEqual>
+		    </isNotEmpty>
+            <isNotEmpty prepend="AND" property="upperDeptCode"> T3.UPPER_DEPT_CD = #upperDeptCode#</isNotEmpty>
+            <isNotEmpty prepend="AND" property="deptCode"> T3.DEPT_CD = #deptCode#</isNotEmpty>
+		 	)DATA
+		WHERE PAGE = #currentPage#	 					
+    </select>      
+
+</sqlMap>

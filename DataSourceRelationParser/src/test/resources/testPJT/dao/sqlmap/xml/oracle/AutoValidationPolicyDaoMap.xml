@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!-- 
+품질자동검증정책 페이지 용 SQL XML 파일
+ 
+@sfmi.title 품질자동검증정책 페이지 용 SQL XML 파일
+@sfmi.portal-id jk420.kim
+@sfmi.developer 이해봉
+-->
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="AutoValidationPolicy">
+
+	<!-- 
+	결과 매핑에 사용할 공통 타입 정의  
+	-->
+    <typeAlias alias="autoValidationPolicyItem" type="sfmi.component.squad.itqualitybdt.AutoValidationPolicyItem"/>
+    <typeAlias alias="autoValidationTarget" type="sfmi.component.squad.itqualitybdt.AutoValidationTarget"/>
+
+	<!-- 
+	품질자동검증정책 등록 
+	-->
+	<insert id="createAutoValidationPolicy" parameterClass="autoValidationPolicyItem">
+		INSERT INTO DPQA34TB (
+			VERIF_PLCY_ID
+			, QTY_CLS_CODE_VAL
+			, PLCY_CLS_CODE_VAL
+			, PLCY_CLS_FLAG
+			, INPUT_DTTM
+			, INPUT_CLERK) 
+		VALUES (
+			DPQA34TB_SEQ.NEXTVAL
+			, #qtyClsCodeVal#
+			, #plcyClsCodeVal#
+			, #plcyClsFlag#
+			, #inputDttm#
+			, #inputClerk#)
+	</insert>
+	
+	<!-- 
+	품질자동검증정책 조회 
+	-->
+	<select id="selectAutoValidationPolicy" parameterClass="java.util.Map" resultClass="autoValidationPolicyItem">
+		SELECT
+			QTY_CLS_CODE_VAL as qtyClsCodeVal
+			, PLCY_CLS_CODE_VAL as plcyClsCodeVal
+			, PLCY_CLS_FLAG as plcyClsFlag
+		FROM 
+			DPQA34TB policy
+		WHERE 
+			policy.INPUT_DTTM = ( 
+								SELECT
+									MAX(INPUT_DTTM)
+								FROM DPQA34TB 
+								WHERE QTY_CLS_CODE_VAL = policy.QTY_CLS_CODE_VAL
+								AND PLCY_CLS_CODE_VAL = policy.PLCY_CLS_CODE_VAL )
+		AND policy.QTY_CLS_CODE_VAL = #qtyClsCodeVal#
+	</select>
+	
+	<!-- 
+	품질자동검증정책 리스트 조회 
+	-->
+	<select id="selectAutoValidationPolicyList" resultClass="autoValidationPolicyItem">
+		SELECT
+			QTY_CLS_CODE_VAL as qtyClsCodeVal
+			, PLCY_CLS_CODE_VAL as plcyClsCodeVal
+			, PLCY_CLS_FLAG as plcyClsFlag
+		FROM 
+			DPQA34TB policy
+		WHERE 
+			policy.INPUT_DTTM = ( 
+								SELECT
+									MAX(INPUT_DTTM)
+								FROM DPQA34TB 
+								WHERE QTY_CLS_CODE_VAL = policy.QTY_CLS_CODE_VAL
+								AND PLCY_CLS_CODE_VAL = policy.PLCY_CLS_CODE_VAL )
+	</select>
+
+	<!-- 
+	원장변경통제 대상 여부 조회 (SR시스템)
+	-->
+	<select id="selectLedgerCtrlFromSR" parameterClass="autoValidationTarget" resultClass="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM CSYST116T
+		WHERE SR_NO = SUBSTR(#subSrId#,1,12)
+		AND SR_SUB_NO != ' '
+	</select>
+
+	<!-- 
+	고객보안정보 체크수행 여부 조회 (ILM시스템)
+	-->
+	<select id="selectCustomerSecurityCheckTargetFromILM" parameterClass="autoValidationTarget" resultClass="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM SIAP00TB@ILM
+		WHERE APP_TYPE = '14'
+		AND ENM = #fileName#
+		AND HIGH_ROOT||'/'||LOW_ROOT = #location#
+	</select>
+</sqlMap>

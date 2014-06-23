@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!--
+코드, SQL 검증 결함결과 데이터 등록 용 SQL XML 파일
+
+@sfmi.title 코드, SQL 검증 결함결과 데이터 등록 용 SQL XML 파일
+@sfmi.portal-id jk420.kim
+@sfmi.developer 박현준
+-->
+<!DOCTYPE sqlMap
+          PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+          "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="AutoValidationTestDefect">
+
+	<!--
+	결과 매핑에 사용할 공통 타입 정의
+	-->
+	<typeAlias alias="codeStandardDefect" type="sfmi.component.squad.itqualitybdt.CodeStandardDefect"/>
+	<typeAlias alias="sqlStandardDefect" type="sfmi.component.squad.itqualitybdt.SqlDefect"/>
+	<typeAlias alias="securityDefect" type="sfmi.component.squad.itqualitybdt.SecurityDefect"/>
+	<!--
+	코드표준 검증 결함 결과 등록
+	-->
+	<insert id="insertCiStandardDefect" parameterClass="codeStandardDefect">
+	    INSERT INTO DPQA20TB (
+		   FK_SUB_SR_ID, FK_ACTV_ID, FK_FILE_PATH,
+		   FK_FILE_NM, FK_FILE_VER, FK_VERIF_REQ_DATE_SI,
+		   FK_EXCT_DTTM, SEQ_NUM, RULE_ID, VERIF_LVL,
+		   PKG_NM, METHOD_NM,
+		   START_LINE_NO, INPUT_DTTM, END_LINE_NO)
+		VALUES ( #subSrId#, #activityId#, #filePath#,
+		    #fileNm#, #fileVersion#, #verifReqDateSi#,
+		    #exctDttm#, CI_STANDARD_DEFECT_SEQ.nextval, #ruleId#, #levelCdVal#,
+		    #packageNm#, #methodNm#,
+		    #beginLine#, to_char(sysdate,'yyyyMMddHH24miss'), #endLine#)
+	</insert>
+
+	<!--
+	SQL표준 검증 결함 결과 등록
+	-->
+	<insert id="insertSqlDefect" parameterClass="sqlStandardDefect">
+		INSERT INTO DPQA22TB (
+		 FK_SUB_SR_ID, FK_ACTV_ID, FK_FILE_PATH,
+		 FK_FILE_NM, FK_FILE_VER, FK_VERIF_REQ_DATE_SI,
+		 FK_EXCT_DTTM, SEQ_NUM, RULE_ID,
+		 VERIF_LVL, SQL_ID, SQL_STATEMENT,
+		 INPUT_DTTM, VIOLATION_HISTORY, VERIF_ITEM_ID)
+		VALUES ( #subSrId#, #activityId#, #filePath#,
+		    #fileName#, #fileVersion#, #verifReqDateSi#,
+		    #execDttm#, UDB_SQL_STANDARD_DEFECT_SEQ.nextval, #ruleId#,
+		    #levelCdVal#, #sqlId#, #sqlStatement#, to_char(sysdate,'yyyyMMddHH24miss'), #violationHistory#, #verifItemId#)
+	</insert>
+	<!--
+	보안취약성 검증 결함 결과 등록
+	-->
+	<insert id="insertSecurityDefect" parameterClass="securityDefect">
+		INSERT INTO DPQA39TB (
+			FK_SUB_SR_ID, FK_ACTV_ID, FK_FILE_PATH
+			, FK_FILE_NM, FK_FILE_VER, SEQ_NUM, RULE_ID
+			, VERIF_LVL, START_LINE_NO, END_LINE_NO, INPUT_DTTM, FK_EXCT_DTTM, CODE_STATEMENT)
+		VALUES ( #subSrId#, #activityId#, #filePath#, #fileNm#, #fileVersion#,
+			SECURITY_DEFECT_SEQ.nextval, #ruleId#, #levelCdVal#,
+			#beginLine#, #endLine#, to_char(sysdate,'yyyyMMddHH24miss'), #exctDttm#, #codeStatement#)
+	</insert>
+</sqlMap>

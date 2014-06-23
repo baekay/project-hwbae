@@ -1,0 +1,1185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="sql.selectTest1">
+		<![CDATA[
+select  A.BASE_DATE 
+				        ,A.CONTRACTOR_CD 
+				        ,ROW_NUMBER() OVER (PARTITION BY A.BASE_DATE, A.CONTRACTOR_CD ORDER BY A.PLCY_NO) SEQ_NUM  
+				        ,A.CONTOR_NAME 
+				        ,A.PMT_SCDL_DATE 
+				        ,A.PROD_CD 
+				        ,A.PROD_NAME
+				        ,A.PLCY_NO
+				        ,A.DATA_CLS
+				        ,A.AGRM_STT
+				        ,A.CISR_CLS
+				        ,A.PKG_CLS_TYP
+				        ,A.APPL_YMD
+				        ,A.INSU_FYMD
+				        ,A.INSU_TYMD
+				        ,A.AGRM_FRM_CLS
+				        ,A.ACTL_HQ
+				        ,A.ACTL_DEPT
+				        ,A.ACTL_SECT
+				        ,A.ACTL_CLERK
+				        ,A.COLMNY_METHOD
+				from
+				(											
+					select  SUBSTR(char(hex(A.AGRM_END_DATE)),1,6) BASE_DATE
+					        ,A.CONTOR_ID CONTRACTOR_CD                  					        
+					     
+					      ,(select FORMAL_NAME 
+					        from  gccc00tb x
+					        where x.PTY_ID = A.CONTOR_ID ) CONTOR_NAME
+					         											        											        
+					      --  ,A.CONTOR_NAME
+					        
+					        ,SUBSTR(char(hex(A.AGRM_END_DATE)),1,8) PMT_SCDL_DATE
+					        ,A.PRD_CODE AS PROD_CD                        
+					        ,(select S.PRD_NAME
+					            from SSPD01TB S
+					           where A.PRD_CODE = S.PRD_CODE ) PROD_NAME   -- 상품명          
+					        ,A.PLCY_NO				-- 증권번호
+					        ,'1' DATA_CLS			-- 자료구분	만기:1,분납:2
+					        ,A.AGRM_STT				-- 계약상태코드
+					        ,A.CISR_CLS				-- 공동인수구분
+					        ,A.PKG_CLS_TYP			-- 상품분류        
+					        ,SUBSTR(char(hex(A.AGRM_DATE)),1,8) APPL_YMD			-- 청약일자
+					        ,SUBSTR(char(hex(A.AGRM_START_DATE)),1,8) INSU_FYMD		-- 보험개시일
+					        ,SUBSTR(char(hex(A.AGRM_END_DATE)),1,8) INSU_TYMD 		-- 보험종료일
+					        ,A.AGRM_FRM_CLS                        		-- 계약형태구분	        
+					        ,(select S.BLNG_HQ
+					           from STAFF0TB S
+					          where S.CLERK_NO = A.ACTL_CLERK ) ACTL_HQ         --실적본부 	
+					        ,(select S.SANC_PRC_DEPT_CD
+					           from STAFF0TB S
+					          where S.CLERK_NO = A.ACTL_CLERK) ACTL_DEPT       --실적부서  	
+					        ,(select S.DEPT_CD
+					           from STAFF0TB S
+					          where S.CLERK_NO = A.ACTL_CLERK ) ACTL_SECT       --실적영업소  	
+					        ,A.ACTL_CLERK ACTL_CLERK      --실적사원          
+					        ,A.COLMNY_METHOD										 --집금방법	 	 
+					from PPAG01TB A
+					where 1=1
+					  and SUBSTR(char(hex(A.AGRM_END_DATE)),1,6) between ? and ?
+					  and SUBSTR(char(hex(A.AGRM_END_DATE)),1,8) <> '99991231'
+					  and A.PKG_CLS_TYP in ('1','4')  -- 화재특종보험,해상
+					  and A.PRD_CODE not like '11%'
+					  and A.PRD_CODE not like '13%'
+					  and A.PRD_CODE not in ('50021','50048','50049','50056','60008','50002',
+					  						 '50045','5045A','5045B','5045C','76026','7626A','7626B','7626C')
+					  and A.AGRM_STT not in ('06','08','09','10')
+					  and A.PLCY_NO not in (select FK_PLCY_NO 
+					               				from PPIT03TB X
+					                           where X.FK_PLCY_NO = A.PLCY_NO
+					                             and X.INFO_CD = '50113'
+					                             and  X.INFO_VAL_TEXT = '2')  																									                             											
+					UNION ALL																						
+					select  SUBSTR(char(hex(B.PMT_SCDL_DATE)),1,6) BASE_DATE			
+					        ,A.CONTOR_ID CONTRACTOR_CD        					        
+					     
+					      ,(select FORMAL_NAME 
+					         from  gccc00tb x
+					         where x.PTY_ID = A.CONTOR_ID ) CONTOR_NAME 		
+					       
+					    --   ,A.CONTOR_NAME   
+					        									        											        
+					        ,SUBSTR(char(hex(B.PMT_SCDL_DATE)),1,8) PMT_SCDL_DATE                
+					        ,A.PRD_CODE PROD_CD               
+					        ,(select S.PRD_NAME
+					            from SSPD01TB S
+					           where A.PRD_CODE = S.PRD_CODE ) PROD_NAME   -- 상품명          
+					        ,A.PLCY_NO				-- 증권번호
+					        ,'2' DATA_CLS			-- 자료구분	만기:1,분납:2
+					        ,A.AGRM_STT				-- 계약상태코드
+					        ,A.CISR_CLS				-- 공동인수구분
+					        ,A.PKG_CLS_TYP			-- 상품분류        
+					        ,SUBSTR(char(hex(A.AGRM_DATE)),1,8) APPL_YMD			-- 청약일자
+					        ,SUBSTR(char(hex(A.AGRM_START_DATE)),1,8) INSU_FYMD		-- 보험개시일
+					        ,SUBSTR(char(hex(A.AGRM_END_DATE)),1,8) INSU_TYMD 		-- 보험종료일
+					        ,A.AGRM_FRM_CLS                        		-- 계약형태구분	
+					        ,(select S.BLNG_HQ
+					           from STAFF0TB S
+					          where S.CLERK_NO = A.ACTL_CLERK ) ACTL_HQ         --실적본부 											
+					        ,(select S.SANC_PRC_DEPT_CD
+					           from STAFF0TB S
+					          where S.CLERK_NO = A.ACTL_CLERK) ACTL_DEPT       --실적부서  											
+					        ,(select S.DEPT_CD
+					           from STAFF0TB S
+					          where S.CLERK_NO = A.ACTL_CLERK ) ACTL_SECT       --실적영업소  	
+					        ,A.ACTL_CLERK ACTL_CLERK      --실적사원          
+					        ,A.COLMNY_METHOD										 --집금방법	
+					from PPAG01TB A,
+					      PPRT21TB B     
+					where 1=1
+					  and A.PLCY_NO = B.PLCY_NO    
+					  and SUBSTR(char(hex(B.PMT_SCDL_DATE)),1,6) between ? and ?
+					  and A.PKG_CLS_TYP in ('1','4')  -- 화재특종보험,해상
+					  and A.PRD_CODE not like '11%'
+					  and A.PRD_CODE not like '13%'
+					  and A.PRD_CODE not in ('50021','50048','50049','50056',
+					  						 '50045','5045A','5045B','5045C','76026','7626A','7626B','7626C')	
+					  and A.AGRM_STT not in ('06','08','09','10')
+					  and A.PLCY_NO  not in (select FK_PLCY_NO 
+					                                from PPIT03TB X 
+					                               where X.FK_PLCY_NO = A.PLCY_NO
+					                                 and X.INFO_CD = '50008'
+					                                 and X.INFO_VAL_TEXT in ('120','241','361')
+					                                 )	                                									
+				) A
+		]]>
+	</entry>
+	<entry key="sql.selectTest2">
+	<![CDATA[
+	-- 계약 납입실적테이블  union  납입예정테이블 조회
+				SELECT  'C'      AS GUBUN           -- 계약납입실적TB
+				        ,A.FK_PLCY_NO  AS PLCY_NO
+				        ,A.PROD_CD
+				        ,(SELECT PRD_NICK_NAME
+				            FROM SSPD01TB
+				           WHERE PRD_CODE = A.PROD_CD)  	AS PRD_NAME
+				        ,A.PREM_CLS
+				        ,A.SEQ_NUM
+				        ,A.PMT_SCDL_PREM
+				        ,A.PMT_SCDL_DATE
+				        ,A.PMT_DATE
+				        ,(SELECT MIN(DISTINCT ITEM_TEXT) FROM PPIS05TB
+								WHERE FK_PLCY_NO    = A.FK_PLCY_NO    
+								  AND OBJT_ITEM_CD  = '00130'
+								  AND APPL_END_DATE = '9999-12-31'         
+								  )
+															AS PRSTNSRD_ADR_CLS
+				        ,B.CISR_CLS
+				        ,B.AGRM_STT
+				        ,B.AGRM_START_DATE
+				        ,B.AGRM_END_DATE
+				        ,B.PMT_METHOD
+				        ,B.CONTOR_ID
+				        ,B.CONTOR_NAME
+				        ,B.PIBOJA_ID
+				        ,(SELECT FORMAL_NAME
+				            FROM GCCC00TB
+				           WHERE PTY_ID  = B.PIBOJA_ID)     AS  PIBOJA_NAME
+				        ,(SELECT JUMIN_NO
+				            FROM GCCC00TB
+				           WHERE PTY_ID  = B.PIBOJA_ID)     AS  PIBOJA_JUMIN
+				        ,(SELECT JUMIN_NO
+				            FROM GCCC00TB
+				           WHERE PTY_ID  = B.CONTOR_ID)     AS  CONTOR_JUMIN
+				FROM     PPRT01TB A,
+				         PPAG01TB B
+				WHERE   (A.FK_PLCY_NO        BETWEEN ?       	-- '80000000000000'       입력파라메타로
+				                             AND     ?	 )     	-- '89999999999999'       입력파라메타로
+			    AND      A.FK_PLCY_NO   = B.PLCY_NO
+				AND     (A.PMT_DATE          BETWEEN ?	 		-- 납입일자-FROM
+				                             AND     ?   )    	-- 납입일자-TO
+				AND      A.CANCEL_CLS           = ''
+				AND      A.PKG_CLS_TYP          = '1'
+				AND      A.ETSTATUS             = 'A'
+				AND      A.APPL_END_DATE        = '9999-12-31'
+				AND  A.PROD_CD    IN ('01001', '01006', '01901',
+				                    '50001', '50002',
+				                    '50007', '50008', '50009',
+				                    '50013',						-- 추가 : 홍주연 :요청
+				                    '50017', '50019',
+				                    '50021', '50024', '50030',
+				                    '50035', '50039', '50048',
+				                    '50049', 
+				                    '50050',						-- 추가(애니원상해) : 홍주연 :요청					
+				                    '50051', 
+				                    '50052',						-- 추가 : 홍주연 :요청
+				                    '50901',
+				                    '50902', '50903',
+				                    '50904',						-- 추가 : 홍주연 :요청
+				                    '60001', '60002', '60003',
+				                    '60005', '60008', '60021',
+				                    '60022', 
+				                    '60038',						-- 추가(애니원종합) :홍주연 :요청
+				                    '63001', '63002',
+				                    '63003', '63006', '63007',
+				                    '63010'							-- 추가(애니원골프) : 홍주연 :요청 
+				                    )
+				AND   A.PMT_AMT <> 0
+				AND   B.CISR_CLS IN ('','0','1','2')	--  공동인수구분(CISR-CLS ) 가 '3' 이면 제외
+				AND   LENGTH(RTRIM(B.CONTOR_ID)) <> 10			--  길이가 10 이면 제외( 개인고객만 증명서 발행대상건임 )
+				
+				UNION ALL
+				
+				SELECT   'E'      AS GUBUN
+				        ,A.PLCY_NO     AS PLCY_NO                       -- 계약납입예정  TB (골드칼라군)
+				        ,A.PROD_CD
+				        ,(SELECT PRD_NICK_NAME
+				            FROM SSPD01TB
+				           WHERE PRD_CODE = A.PROD_CD)  AS PRD_NAME
+				        ,A.PREM_CLS
+				        ,A.SEQ_NUM
+				        ,A.PMT_SCDL_PREM
+				        ,A.PMT_SCDL_DATE
+				        ,A.PMT_DATE
+				        ,(SELECT MIN(DISTINCT ITEM_TEXT) FROM PPIS05TB
+								WHERE FK_PLCY_NO    = A.PLCY_NO    
+								  AND OBJT_ITEM_CD  = '00130'
+								  AND APPL_END_DATE = '9999-12-31'         
+								  )
+															AS PRSTNSRD_ADR_CLS
+				        ,B.CISR_CLS
+				        ,B.AGRM_STT
+				        ,B.AGRM_START_DATE
+				        ,B.AGRM_END_DATE
+				        ,B.PMT_METHOD
+				        ,B.CONTOR_ID
+				        ,B.CONTOR_NAME
+				        ,B.PIBOJA_ID
+				        ,(SELECT FORMAL_NAME
+				            FROM GCCC00TB
+				           WHERE PTY_ID  = B.PIBOJA_ID)     AS  PIBOJA_NAME
+				        ,(SELECT JUMIN_NO
+				            FROM GCCC00TB
+				           WHERE PTY_ID  = B.PIBOJA_ID)     AS  PIBOJA_JUMIN
+				        ,(SELECT JUMIN_NO
+				            FROM GCCC00TB
+				           WHERE PTY_ID  = B.CONTOR_ID)     AS  CONTOR_JUMIN
+				FROM     PPRT21TB A,							-- N3SFMI.PPRT21TB A,
+				         PPAG01TB B
+				WHERE   (A.PLCY_NO           BETWEEN 	?       -- '80000000000000'       입력파라메타로
+				                             AND     	? )     -- '89999999999999'       입력파라메타로
+				AND      A.PLCY_NO   = B.PLCY_NO
+				AND      A.PMT_DATE          = '0001-01-01'
+				AND     (A.PMT_SCDL_DATE     BETWEEN 	?       -- 납입예정일자-FROM
+				                             AND        ?  )    -- 납입예정일자-TO
+				AND      A.PREM_CLS             IN ('1','2')
+				AND      A.PMT_TMS              >= 2
+				AND      A.ETSTATUS             = 'A'
+				AND      A.APPL_END_DATE        = '9999-12-31'
+				AND   A.PROD_CD    IN ('01001', '01006', '01901',
+				                    '50001', '50002',
+				                    '50007', '50008', '50009',
+				                    '50013',						-- 추가 : 홍주연 :요청
+				                    '50017', '50019',
+				                    '50021', '50024', '50030',
+				                    '50035', '50039', '50048',
+				                    '50049', 
+				                    '50050',						-- 추가(애니원상해) : 홍주연 :요청					
+				                    '50052',						-- 추가 : 홍주연 :요청
+				                    '50901',
+				                    '50902', '50903',
+				                    '50904',						-- 추가 : 홍주연 :요청
+				                    '60001', '60002', '60003',
+				                    '60005', '60008', '60021',
+				                    '60022', 
+				                    '60038',						-- 추가(애니원종합) :홍주연 :요청
+				                    '63001', '63002',
+				                    '63003', '63006', '63007',
+				                    '63010'	)						-- 추가(애니원골프) : 홍주연 :요청  
+				AND   A.PMT_SCDL_PREM <> 0
+				AND   B.AGRM_STT  = '01'
+				AND   B.CISR_CLS IN ('','0','1','2')
+				AND   LENGTH(RTRIM(B.CONTOR_ID)) <> 10
+				ORDER BY PLCY_NO , PMT_DATE
+			]]>	
+	</entry>
+	
+	<!-- +1 year 에러 테스트 -->
+	<entry key="sql.selectTest3">
+	<![CDATA[
+	 SELECT sum(a.securPremiumAmt) AS SECUR_PREMIUM, 
+               sum(a.ijPmtCount) AS IJ_PMT_COUNT
+          FROM (
+                SELECT IA10.appl_premium AS securPremiumAmt, 0 AS ijPmtCount   
+                  FROM PPIA10TB IA10
+                 WHERE IA10.fk_plcy_no = #policyNo#
+                   AND IA10.appl_end_date = '9999-12-31'
+                   AND IA10.etstatus = 'A'
+                   AND IA10.covr_cd IN ('C4217','CA506','CA507','CA508')
+                   AND exists (SELECT 'x' FROM PPIS01TB IS01 
+                                WHERE IS01.fk_plcy_no = IA10.fk_plcy_no
+                                  AND IS01.object_type = IA10.object_type
+                                  AND IS01.object_seq = IA10.object_seq
+                                  AND IS01.appl_end_date = '9999-12-31')
+                 UNION ALL
+                SELECT 0 AS securPremiumAmt, count(*) AS ijPmtCount 
+                  FROM PPRT01TB rt01, PPAG01TB ag01
+                 WHERE rt01.fk_plcy_no = ag01.plcy_no
+                   AND rt01.fk_plcy_no = #policyNo#
+                   AND rt01.prem_cls IN ('1', 'Q', 'S', 'T')
+                   AND rt01.pmt_scdl_date >= #ijFortDate#
+                   AND rt01.pmt_scdl_date < ag01.agrm_start_date + 1 year
+                   AND rt01.cancel_cls = ' '
+                   AND rt01.appl_end_date = '9999-12-31'
+                   AND rt01.etstatus = 'A'
+               ) a
+               ]]>	
+	</entry>
+	<entry key="sql.merge">
+		 MERGE INTO NCDP00TB_D A
+					USING (SELECT :DEPT_CD DEPT_CD FROM DUAL) B
+					ON (A.CORP_SYSTEM_CLS = '01' 
+					AND A.DEPT_CD = B.DEPT_CD)
+					WHEN MATCHED THEN
+					UPDATE SET
+						DEPT_NM = :DEPT_NM
+						,COMPRESSION_NAME = :COMPRESSION_NAME
+						,ORG_LEVEL_CLS = :ORG_LEVEL_CLS
+						,ORGN_DGRM_NAME = :ORGN_DGRM_NAME
+						,SANC_YN = :SANC_YN
+						,SANC_DATE = :SANC_DATE
+						,DEPT_CLS = :DEPT_CLS
+						,DEPT_BSNS_CLS = :DEPT_BSNS_CLS
+						,DEPT_BSNS_TYPE = :DEPT_BSNS_TYPE
+						,BSNS_PSBLT_YN = :BSNS_PSBLT_YN
+						,DEPT_TEL_NATL_NO = :DEPT_TEL_NATL_NO
+						,DEPT_TEL_AREA_NO = :DEPT_TEL_AREA_NO
+						,DEPT_TEL_OFC_NO = :DEPT_TEL_OFC_NO
+						,DEPT_TEL_SERIAL_NO = :DEPT_TEL_SERIAL_NO
+						,REGN_DATE = :REGN_DATE       
+						,END_DATE = :END_DATE
+						,PRC_DEPT_CD = :PRC_DEPT_CD
+						,INPUT_DATE = :INPUT_DATE       
+						,INPUT_TIME = :INPUT_TIME
+						,INPUT_CLERK = :INPUT_CLERK
+						,LAST_UPDATE_DATE = :LAST_UPDATE_DATE
+						,LAST_UPDATE_TIME = :LAST_UPDATE_TIME
+						,LAST_UPDATE_CLERK = :LAST_UPDATE_CLERK
+					WHEN NOT MATCHED THEN
+					INSERT (
+						 CORP_SYSTEM_CLS
+						,DEPT_CD
+						,DEPT_NM
+						,COMPRESSION_NAME
+						,ORG_LEVEL_CLS
+						,ORGN_DGRM_NAME
+						,SANC_YN
+						,SANC_DATE
+						,DEPT_CLS
+						,DEPT_BSNS_CLS
+						,DEPT_BSNS_TYPE
+						,BSNS_PSBLT_YN
+						,DEPT_TEL_NATL_NO
+						,DEPT_TEL_AREA_NO
+						,DEPT_TEL_OFC_NO
+						,DEPT_TEL_SERIAL_NO
+						,REGN_DATE       
+						,END_DATE       
+						,PRC_DEPT_CD
+						,INPUT_DATE       
+						,INPUT_TIME       
+						,INPUT_CLERK
+						,LAST_UPDATE_DATE       
+						,LAST_UPDATE_TIME       
+						,LAST_UPDATE_CLERK
+					) VALUES (
+						 '01'
+						,'○'
+						,'미취급적용'
+						,:COMPRESSION_NAME
+						,:ORG_LEVEL_CLS
+						,:ORGN_DGRM_NAME
+						,:SANC_YN
+						,:SANC_DATE
+						,:DEPT_CLS
+						,:DEPT_BSNS_CLS
+						,:DEPT_BSNS_TYPE
+						,:BSNS_PSBLT_YN
+						,:DEPT_TEL_NATL_NO
+						,:DEPT_TEL_AREA_NO
+						,:DEPT_TEL_OFC_NO
+						,:DEPT_TEL_SERIAL_NO
+						,:REGN_DATE       
+						,:END_DATE       
+						,:PRC_DEPT_CD
+						,:INPUT_DATE       
+						,:INPUT_TIME       
+						,:INPUT_CLERK
+						,:LAST_UPDATE_DATE       
+						,:LAST_UPDATE_TIME       
+						,:LAST_UPDATE_AAAAAA
+					)
+	</entry>
+	<entry key="sql.insert">
+	insert	into COMPANY.MSTA20TB (BASE_DATE
+										,CONTRACTOR_CD
+										,SEQ_NUM
+										,CONTOR_NAME
+										,PMT_SCDL_DATE
+										,PROD_CD
+										,PROD_NAME
+										,PLCY_NO
+										,DATA_CLS
+										,AGRM_STT
+										,CISR_CLS
+										,PKG_CLS_TYP
+										,APPL_YMD
+										,INSU_FYMD
+										,INSU_TYMD
+										,AGRM_FRM_CLS
+										,ACTL_HQ
+										,ACTL_DEPT
+										,ACTL_SECT
+										,ACTL_CLERK
+										,COLMNY_METHOD
+										,STATUS_CD
+										,INPUT_DATE
+										,INPUT_TIME
+										)										
+					values	(trim(?)
+							,trim(?)
+							,trim(?)
+							,NVL(trim(?),'-----')
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)
+							,trim(?)		
+							,'A'
+							,sysdate
+							,sysdate											
+							)
+	</entry>
+	
+	<entry key="sql.update">
+		  UPDATE ppag04tb 
+			SET endo_proc_cls = ' '
+		WHERE sale_plcy_no = #value# 
+	</entry>
+	
+	<entry key="sql.delete">
+   DELETE FROM PQRT04TB
+		 WHERE (FK_ENTY_DSGN_NO, FK_DSGN_SEQ_NUM) IN 
+		  (SELECT FK_ENTY_DSGN_NO, DSGN_SEQ_NUM 
+			 FROM PQAG01TB 
+			WHERE FK_ENTY_DSGN_NO = #planNumber#
+			  AND DSGN_SEQ_NUM = #unitPlanNumber#
+			  AND ENTY_DSGN_CLS = ( SELECT MIN(z.seq_num) FROM CCZP89TB  Z
+					                              WHERE CC02.rl_zip_code=z.zip_code
+					                              AND CC02.rl_zip_code_seq=z.zip_code_seq )
+			AND DSGN_SEQ_NUM = #unitPlanNumber# 
+			AND ABCD_EFG = #ACVDDD#)
+		AND TESTCOLUMN  = ( SELECT MIN(z.seq_num) FROM CCZP90TB  Z
+					                              WHERE CC02.rl_zip_code=z.zip_code
+					                              AND CC02.rl_zip_code_seq=z.zip_code_seq )
+		AND TESTCOLUMN22 IS NULL 
+	
+	</entry>
+	<entry key="sql.mergeTest2">
+	MERGE INTO LGCMDTTB T1
+		USING(
+			SELECT
+				 '$bsnsCd$' 		AS BSNS_CD
+				,'$sndRcivCls$' 	AS SND_RCIV_CLS
+				,'$msgNo$' 			AS MSG_NO
+				,'$occurDate$' 		AS OCCUR_DATE
+		        ,'$occurDate$'||SUBSTR(CURRENT TIMESTAMP,11) 	AS SND_RCIV_TSP
+				,'$juminNo$' 		AS JUMIN_NO
+				,'$plcyNo$' 		AS PLCY_NO
+				,'$msgMngNo$' 		AS MSG_MNG_NO
+				,'$errCd$' 			AS ERR_CD
+				,'$reProcYn$' 		AS RE_PROC_YN
+				,'$dataOccurMthd$' 	AS DATA_OCCUR_MTHD
+				,'$dataConts$'		AS DATA_CONTS
+			FROM SYSDUMMY1
+		) T2
+		ON T1.BSNS_CD 			= T2.BSNS_CD
+		AND T1.SND_RCIV_CLS 	= T2.SND_RCIV_CLS
+		AND T1.MSG_NO 			= T2.MSG_NO
+		AND T1.OCCUR_DATE 		= T2.OCCUR_DATE		
+		AND T1.PLCY_NO 			= T2.PLCY_NO		
+		WHEN MATCHED THEN
+		UPDATE SET
+			 T1.MSG_MNG_NO 		= T2.MSG_MNG_NO
+			,T1.ERR_CD 			= T2.ERR_CD
+			,T1.RE_PROC_YN 		= T2.RE_PROC_YN
+			,T1.DATA_OCCUR_MTHD = T2.DATA_OCCUR_MTHD
+			,T1.DATA_CONTS 		= T2.DATA_CONTS
+		WHEN NOT MATCHED THEN
+		INSERT(
+			 T1.BSNS_CD
+			,T1.SND_RCIV_CLS
+			,T1.MSG_NO
+			,T1.OCCUR_DATE
+			,T1.SEQ_NUM
+			,T1.SND_RCIV_TSP
+			,T1.JUMIN_NO
+			,T1.PLCY_NO
+			,T1.MSG_MNG_NO
+			,T1.ERR_CD
+			,T1.RE_PROC_YN
+			,T1.DATA_OCCUR_MTHD
+			,T1.DATA_CONTS
+		)VALUES(
+			 T2.BSNS_CD
+			,T2.SND_RCIV_CLS
+			,T2.MSG_NO
+			,T2.OCCUR_DATE
+			,(SELECT COALESCE(MAX(SEQ_NUM), 0) +1 FROM LGCMDTTB 
+			  WHERE BSNS_CD     = T2.BSNS_CD
+			  AND SND_RCIV_CLS  = T2.SND_RCIV_CLS
+			  AND MSG_NO        = T2.MSG_NO
+			  AND OCCUR_DATE    = T2.OCCUR_DATE)
+			,T2.SND_RCIV_TSP
+			,T2.JUMIN_NO
+			,T2.PLCY_NO
+			,T2.MSG_MNG_NO
+			,T2.ERR_CD
+			,T2.RE_PROC_YN
+			,T2.DATA_OCCUR_MTHD
+			,T2.DATA_CONTS
+		)
+	
+	</entry>
+	
+	<!-- withSelectQuery 1 -->
+	<entry key="sql.withSelectOne">
+	<![CDATA[
+			WITH V_AG01_UNICON AS ( SELECT FK_ENTY_DSGN_NO
+			                             , DSGN_SEQ_NUM
+			                             , LOAN_YN
+			                          FROM PQAG01TB
+			                         WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                           AND PKG_CLS_TYP = '2'
+			                         FETCH FIRST 1 ROWS ONLY )
+			   , V_IT08_CONTOR AS ( SELECT FK_ENTY_DSGN_NO
+			                             , SEQ_NUM
+			                             , VERSION
+			                             , CONTOR_CLS, CONTOR_CD_CLS
+			                             , CONTOR_ID, CONTRACTOR_REL
+			                          FROM PQIT08TB
+			                         WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                           AND VERSION IN ( 0, 1 )
+			                           AND CONTOR_CLS = '01'
+			                           AND APPL_END_DATE = '9999-12-31'
+			                           AND ETSTATUS <> 'R' )
+			SELECT CASE WHEN CEA.CNT > 0
+			             AND VR0.CONTOR_ID IS NOT NULL
+			             AND VR1.CONTOR_ID IS NOT NULL
+			            THEN 'N'
+			            ELSE 'Y'
+			        END AS JDGE_CD
+			  FROM ( SELECT COUNT ( FK_ENTY_DSGN_NO ) AS CNT
+			           FROM V_AG01_UNICON
+			          WHERE LOAN_YN = 'Y'  ) CEA LEFT OUTER JOIN
+			       ( SELECT FK_ENTY_DSGN_NO
+			              , CONTOR_ID
+			           FROM V_IT08_CONTOR
+			          WHERE VERSION = 0 ) VR0 ON 1 = 1  LEFT OUTER JOIN
+			       ( SELECT FK_ENTY_DSGN_NO
+			              , CONTOR_ID
+			           FROM V_IT08_CONTOR
+			          WHERE VERSION = 1 ) VR1 ON VR0.FK_ENTY_DSGN_NO = VR1.FK_ENTY_DSGN_NO
+			  WITH UR
+			  ]]>
+	</entry>
+	
+	<!-- withSelectQuery 3 -->
+	<entry key="sql.withSelectThree">
+	<![CDATA[
+			WITH V_UNSTND_CHOOGA ( FK_CD_KD_NO, CD_DETL_NO, CD_DETL_NAME, CD_DETL_ORGN_NAME1, ORDER0 ) AS (
+			              VALUES ( 1999, 'EX001', '주계약자'              , '주계약자'              , 0 )
+			                   , ( 1999, 'EX002', '복수계약자'            , '복수계약자'            , 0 )
+			                   , ( 1999, 'EX003', '주계약자주소구분'      , '주계약자주소구분'      , 0 )
+			                   , ( 1999, 'EX004', '만기금수익자'          , '만기금수익자'          , 0 )
+			                   , ( 1999, 'EX005', '만기금수익자법정대리인', '만기금수익자법정대리인', 0 )
+			                   , ( 1999, 'EX006', '청약일자'              , '청약일자'              , 0 )
+			                   , ( 1999, 'EX007', '개시일자'              , '개시일자'              , 0 )
+			                   , ( 1999, 'EX008', '자동이체계좌정보'      , '자동이체계좌정보'      , 0 )
+			                   , ( 1999, 'EX009', '만기금수익자주소구분'  , '만기금수익자주소구분'  , 0 ) 
+			                   , ( 1999, 'EX010', '만기중도지급계좌정보'  , '만기중도지급계좌정보'  , 0 ) )
+			   , V_DSGNNO_BASE AS ( SELECT AG06.FK_ENTY_DSGN_NO
+			                          FROM PQAG06TB AG06 LEFT OUTER JOIN PQAG01TB AG01 ON ( AG06.FK_ENTY_DSGN_NO = AG01.FK_ENTY_DSGN_NO
+			                                                                            AND AG06.FK_DSGN_SEQ_NUM = AG01.DSGN_SEQ_NUM )
+			                         WHERE AG06.REL_ENTY_DSGN_NO = #relDsgnNo#
+			                           AND AG06.REL_AGRM_CLS = 'U'
+			                           AND AG06.APPL_END_DATE = '9999-12-31'
+			                           AND AG06.ETSTATUS <> 'R'
+			                           AND AG06.FK_ENTY_DSGN_NO <> #dsgnNo#
+			                           AND AG01.DSGN_STT NOT IN ( '98', '99' )
+			                         ORDER BY
+			                               AG06.FK_ENTY_DSGN_NO DESC
+			                         FETCH FIRST 1 ROWS ONLY )
+			   , V_AG04_EX001_TRGT AS ( SELECT ENTY_DSGN_NO                    AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX001' ) AS ITM_NM
+			                                 , 'EX001'                         AS ITM_CD
+			                                 , CONTOR_ID                       AS ITM_TXT
+			                                 , 0.0                             AS ITM_NUM
+			                                 , '0001-01-01'                    AS ITM_DAT
+			                                 , 'T'                             AS DTYP_CLS
+			                              FROM PQAG04TB
+			                             WHERE ENTY_DSGN_NO = #dsgnNo# )
+			   , V_AG04_EX003_TRGT AS ( SELECT ENTY_DSGN_NO                    AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX003' ) AS ITM_NM
+			                                 , 'EX003'                         AS ITM_CD
+			                                 , CONTOR_ADDR_CLS                 AS ITM_TXT
+			                                 , 0.0                             AS ITM_NUM
+			                                 , '0001-01-01'                    AS ITM_DAT
+			                                 , 'T'                             AS DTYP_CLS
+			                              FROM PQAG04TB
+			                             WHERE ENTY_DSGN_NO = #dsgnNo# )
+			   , V_IT08_EX002_TRGT AS ( SELECT FK_ENTY_DSGN_NO
+			                                 , CONTOR_ID
+			                              FROM PQIT08TB
+			                             WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                               AND CONTOR_CLS = '05'
+			                               AND APPL_END_DATE = '9999-12-31'
+			                               AND ETSTATUS <> 'R' )
+			   , V_IT10_EX004_TRGT AS ( SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX004' ) AS ITM_NM
+			                                 , 'EX004'                         AS ITM_CD
+			                                 , TRIM ( PTY_ID ) || '|' ||
+			                                   TRIM ( CONTRACTOR_REL )         AS ITM_TXT
+			                                 , 0.0                             AS ITM_NUM
+			                                 , '0001-01-01'                    AS ITM_DAT
+			                                 , 'T'                             AS DTYP_CLS
+			                              FROM PQIT10TB
+			                             WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                               AND AGRM_PTY_CLS = '07'
+			                               AND APPL_END_DATE = '9999-12-31'
+			                               AND ETSTATUS <> 'R' )
+			   , V_IT10_EX005_TRGT AS ( SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX005' ) AS ITM_NM
+			                                 , 'EX005'                         AS ITM_CD
+			                                 , TRIM ( PTY_ID ) || '|' ||
+			                                   TRIM ( CONTRACTOR_REL )         AS ITM_TXT
+			                                 , 0.0                             AS ITM_NUM
+			                                 , '0001-01-01'                    AS ITM_DAT
+			                                 , 'T'                             AS DTYP_CLS
+			                              FROM PQIT10TB
+			                             WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                               AND AGRM_PTY_CLS = '11'
+			                               AND APPL_END_DATE = '9999-12-31'
+			                               AND ETSTATUS <> 'R' )
+			   , V_IT12_EX008_TRGT AS ( SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX008' ) AS ITM_NM
+			                                 , 'EX008'                         AS ITM_CD
+			                                 , TRIM ( DEPOSITOR_ID )       || '|' ||
+			                                   TRIM ( BANK_CD )            || '|' ||
+			                                   TRIM ( CHAR ( TRFR_DATE ) ) || '|' ||
+			                                   TRIM ( ACNT_NO )            || '|' ||
+			                                   TRIM ( DEPOSITOR_NAME )         AS ITM_TXT
+			                                 , 0.0                             AS ITM_NUM
+			                                 , '0001-01-01'                    AS ITM_DAT
+			                                 , 'T'                             AS DTYP_CLS
+			                              FROM PQIT12TB
+			                             WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                               AND APPL_END_DATE = '9999-12-31'
+			                               AND ACCOUNT_USE_CLS = '00'
+			                               AND ETSTATUS <> 'R' )
+			   , V_IT05_EX009_TRGT AS ( SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX009' ) AS ITM_NM
+			                                 , 'EX009'                         AS ITM_CD
+			                                 , INFO_VAL_TEXT                   AS ITM_TXT
+			                                 , INFO_VAL_NUM                    AS ITM_NUM
+			                                 , INFO_VAL_DATE                   AS ITM_DAT
+			                                 , DATATYPE_CLS                    AS DTYP_CLS
+			                              FROM PQIT05TB
+			                             WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                               AND INFO_CD = '56095'
+			                               AND APPL_END_DATE = '9999-12-31'
+			                               AND ETSTATUS <> 'R' )
+			   , V_IT12_EX010_TRGT AS ( SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                                 , ( SELECT CD_DETL_NAME
+			                                       FROM V_UNSTND_CHOOGA
+			                                      WHERE CD_DETL_NO = 'EX010' ) AS ITM_NM
+			                                 , 'EX010'                         AS ITM_CD
+			                                 , TRIM ( DEPOSITOR_ID )       || '|' ||
+			                                   TRIM ( BANK_CD )            || '|' ||
+			                                   TRIM ( CHAR ( TRFR_DATE ) ) || '|' ||
+			                                   TRIM ( ACNT_NO )            || '|' ||
+			                                   TRIM ( DEPOSITOR_NAME )         AS ITM_TXT
+			                                 , 0.0                             AS ITM_NUM
+			                                 , '0001-01-01'                    AS ITM_DAT
+			                                 , 'T'                             AS DTYP_CLS
+			                              FROM PQIT12TB
+			                             WHERE FK_ENTY_DSGN_NO = #dsgnNo#
+			                               AND APPL_END_DATE = '9999-12-31'
+			                               AND ACCOUNT_USE_CLS = '03'
+			                               AND ETSTATUS <> 'R' )
+			SELECT 'TX'                            AS JDGE_CD
+			     , ( SELECT FK_ENTY_DSGN_NO
+			           FROM V_DSGNNO_BASE )        AS B_DSGNPLCY_NO
+                 , 0                               AS B_ITM_SEQ
+                 , FK_ENTY_DSGN_NO                 AS T_DSGNPLCY_NO
+                 , 0                               AS T_ITM_SEQ
+			     , '복수계약자정보'                AS T_ITM_MSG
+			     , ( SELECT CD_DETL_NAME
+			           FROM V_UNSTND_CHOOGA
+			          WHERE CD_DETL_NO = 'EX002' ) AS T_ITM_NM
+			     , 'EX002'                         AS T_ITM_CD
+			     , CONTOR_ID                       AS T_ITM_TXT
+			     , 0.0                             AS T_ITM_NUM
+			     , '0001-01-01'                    AS T_ITM_DAT
+			     , 'T'                             AS T_DTYP_CLS
+			  FROM ( SELECT CASE WHEN COUNT ( V_EX002_UNION.CONTOR_ID ) = ( SELECT COUNT ( CONTOR_ID ) FROM V_IT08_EX002_TRGT )
+			                      AND COUNT ( V_EX002_UNION.CONTOR_ID ) = ( SELECT COUNT ( CONTOR_ID ) FROM V_IT08_EX002_TRGT )
+			                     THEN 'Y'
+			                     ELSE 'N'
+			                 END AS JDGE_CD
+			           FROM ( SELECT CONTOR_ID
+			                    FROM PQIT08TB
+			                   WHERE FK_ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE ) UNION
+			                  SELECT CONTOR_ID FROM V_IT08_EX002_TRGT ) V_EX002_UNION ) JDGE
+			     , ( SELECT FK_ENTY_DSGN_NO
+			              , CONTOR_ID
+			           FROM V_IT08_EX002_TRGT ) TRGT
+			 WHERE JDGE.JDGE_CD = 'N' UNION
+			SELECT JDGE_CD
+			     , B_DSGNPLCY_NO
+                 , 0 AS B_ITM_SEQ
+			     , T_DSGNPLCY_NO
+                 , 0 AS T_ITM_SEQ
+			     , CASE WHEN T_ITM_NM IS NULL OR T_ITM_NM = ''
+			            THEN B_ITM_NM
+			            ELSE T_ITM_NM
+			        END AS T_ITM_MSG
+			     , CASE WHEN T_ITM_NM IS NULL OR T_ITM_NM = ''
+			            THEN B_ITM_NM
+			            ELSE T_ITM_NM
+			        END AS T_ITM_NM
+			     , CASE WHEN T_ITM_CD IS NULL OR T_ITM_CD = ''
+			            THEN B_ITM_CD
+			            ELSE T_ITM_CD
+			        END AS T_ITM_CD
+			     , CASE WHEN T_ITM_TXT IS NULL OR T_ITM_TXT = ''
+			            THEN B_ITM_TXT
+			            ELSE T_ITM_TXT
+			        END AS T_ITM_TXT
+			     , CASE WHEN T_ITM_NUM IS NULL
+			            THEN B_ITM_NUM
+			            ELSE T_ITM_NUM
+			        END AS T_ITM_NUM
+			     , CASE WHEN T_ITM_DAT IS NULL
+			            THEN B_ITM_DAT
+			            ELSE T_ITM_DAT
+			        END AS T_ITM_DAT
+			     , CASE WHEN T_DTYP_CLS IS NULL OR T_DTYP_CLS = ''
+			            THEN B_DTYP_CLS
+			            ELSE T_DTYP_CLS
+			        END AS T_DTYP_CLS
+			  FROM ( SELECT CASE WHEN BASE.DTYP_CLS = 'T' OR TRGT.DTYP_CLS = 'T'
+			                     THEN ( CASE WHEN BASE.ITM_TXT = TRGT.ITM_TXT
+			                                 THEN 'TO'
+			                                 ELSE 'TX'
+			                             END )
+			                     WHEN BASE.DTYP_CLS = 'D' OR TRGT.DTYP_CLS = 'D'
+			                     THEN ( CASE WHEN BASE.ITM_DAT = TRGT.ITM_DAT
+			                                 THEN 'DO'
+			                                 ELSE 'DX'
+			                             END )
+			                     ELSE 'AX'
+			                 END             AS JDGE_CD
+			              , BASE.DSGNPLCY_NO AS B_DSGNPLCY_NO
+			              , BASE.ITM_NM      AS B_ITM_NM
+			              , BASE.ITM_CD      AS B_ITM_CD
+			              , BASE.ITM_TXT     AS B_ITM_TXT
+			              , BASE.ITM_NUM     AS B_ITM_NUM
+			              , BASE.ITM_DAT     AS B_ITM_DAT
+			              , BASE.DTYP_CLS    AS B_DTYP_CLS
+			              , TRGT.DSGNPLCY_NO AS T_DSGNPLCY_NO
+			              , TRGT.ITM_NM      AS T_ITM_NM
+			              , TRGT.ITM_CD      AS T_ITM_CD
+			              , TRGT.ITM_TXT     AS T_ITM_TXT
+			              , TRGT.ITM_NUM     AS T_ITM_NUM
+			              , TRGT.ITM_DAT     AS T_ITM_DAT
+			              , TRGT.DTYP_CLS    AS T_DTYP_CLS
+			           FROM ( SELECT ENTY_DSGN_NO                    AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX001' ) AS ITM_NM
+			                       , 'EX001'                         AS ITM_CD
+			                       , CONTOR_ID                       AS ITM_TXT
+			                       , 0.0                             AS ITM_NUM
+			                       , '0001-01-01'                    AS ITM_DAT
+			                       , 'T'                             AS DTYP_CLS
+			                    FROM PQAG04TB
+			                   WHERE ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE ) UNION
+			                  SELECT ENTY_DSGN_NO                    AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX003' ) AS ITM_NM
+			                       , 'EX003'                         AS ITM_CD
+			                       , CONTOR_ADDR_CLS                 AS ITM_TXT
+			                       , 0.0                             AS ITM_NUM
+			                       , '0001-01-01'                    AS ITM_DAT
+			                       , 'T'                             AS DTYP_CLS
+			                    FROM PQAG04TB
+			                   WHERE ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE ) UNION
+			                  SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX004' ) AS ITM_NM
+			                       , 'EX004'                         AS ITM_CD
+			                       , TRIM ( PTY_ID ) || '|' ||       
+			                         TRIM ( CONTRACTOR_REL )         AS ITM_TXT
+			                       , 0.0                             AS ITM_NUM
+			                       , '0001-01-01'                    AS ITM_DAT
+			                       , 'T'                             AS DTYP_CLS
+			                    FROM PQIT10TB
+			                   WHERE FK_ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE )
+			                     AND AGRM_PTY_CLS = '07'
+			                     AND APPL_END_DATE = '9999-12-31'
+			                     AND ETSTATUS <> 'R' UNION
+			                  SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX005' ) AS ITM_NM
+			                       , 'EX005'                         AS ITM_CD
+			                       , TRIM ( PTY_ID ) || '|' ||      
+			                         TRIM ( CONTRACTOR_REL )         AS ITM_TXT
+			                       , 0.0                             AS ITM_NUM
+			                       , '0001-01-01'                    AS ITM_DAT
+			                       , 'T'                             AS DTYP_CLS
+			                    FROM PQIT10TB
+			                   WHERE FK_ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE )
+			                     AND AGRM_PTY_CLS = '11'
+			                     AND APPL_END_DATE = '9999-12-31'
+			                     AND ETSTATUS <> 'R' UNION
+			                  SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX008' ) AS ITM_NM
+			                       , 'EX008'                         AS ITM_CD
+			                       , TRIM ( DEPOSITOR_ID )       || '|' ||
+			                         TRIM ( BANK_CD )            || '|' ||
+			                         TRIM ( CHAR ( TRFR_DATE ) ) || '|' ||
+			                         TRIM ( ACNT_NO )            || '|' ||
+			                         TRIM ( DEPOSITOR_NAME )         AS ITM_TXT
+			                       , 0.0                             AS ITM_NUM
+			                       , '0001-01-01'                    AS ITM_DAT
+			                       , 'T'                             AS DTYP_CLS
+			                    FROM PQIT12TB
+			                   WHERE FK_ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE )
+			                     AND APPL_END_DATE = '9999-12-31'
+			                     AND ACCOUNT_USE_CLS = '00'
+			                     AND ETSTATUS <> 'R' UNION
+			                  SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX009' ) AS ITM_NM
+			                       , 'EX009'                         AS ITM_CD
+			                       , INFO_VAL_TEXT                   AS ITM_TXT
+			                       , INFO_VAL_NUM                    AS ITM_NUM
+			                       , INFO_VAL_DATE                   AS ITM_DAT
+			                       , DATATYPE_CLS                    AS DTYP_CLS
+			                    FROM PQIT05TB
+			                   WHERE FK_ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE )
+			                     AND INFO_CD = '56095'
+			                     AND APPL_END_DATE = '9999-12-31'
+			                     AND ETSTATUS <> 'R' UNION
+			                  SELECT FK_ENTY_DSGN_NO                 AS DSGNPLCY_NO
+			                       , ( SELECT CD_DETL_NAME
+			                             FROM V_UNSTND_CHOOGA
+			                            WHERE CD_DETL_NO = 'EX010' ) AS ITM_NM
+			                       , 'EX010'                         AS ITM_CD
+			                       , TRIM ( DEPOSITOR_ID )       || '|' ||
+			                         TRIM ( BANK_CD )            || '|' ||
+			                         TRIM ( CHAR ( TRFR_DATE ) ) || '|' ||
+			                         TRIM ( ACNT_NO )            || '|' ||
+			                         TRIM ( DEPOSITOR_NAME )         AS ITM_TXT
+			                       , 0.0                             AS ITM_NUM
+			                       , '0001-01-01'                    AS ITM_DAT
+			                       , 'T'                             AS DTYP_CLS
+			                    FROM PQIT12TB
+			                   WHERE FK_ENTY_DSGN_NO = ( SELECT FK_ENTY_DSGN_NO FROM V_DSGNNO_BASE )
+			                     AND APPL_END_DATE = '9999-12-31'
+			                     AND ACCOUNT_USE_CLS = '03'
+			                     AND ETSTATUS <> 'R' ) BASE FULL OUTER JOIN ( SELECT * FROM V_AG04_EX001_TRGT UNION
+			                                                                  SELECT * FROM V_AG04_EX003_TRGT UNION
+			                                                                  SELECT * FROM V_IT10_EX004_TRGT UNION
+			                                                                  SELECT * FROM V_IT10_EX005_TRGT UNION
+			                                                                  SELECT * FROM V_IT12_EX008_TRGT UNION
+			                                                                  SELECT * FROM V_IT05_EX009_TRGT UNION
+			                                                                  SELECT * FROM V_IT12_EX010_TRGT) TRGT ON BASE.ITM_CD = TRGT.ITM_CD ) MOD_ITMS
+			 WHERE ( SELECT COUNT ( FK_ENTY_DSGN_NO ) FROM V_DSGNNO_BASE ) > 0
+               AND JDGE_CD IN ( 'TX', 'NX', 'DX', 'AX' )
+			  WITH UR
+	]]>
+	</entry>
+	
+	<entry key="sql.selectTest4">
+	<![CDATA[ 
+		SELECT
+					(
+						SELECT 
+							COUNT(RISK_GRADE) AS CNT_A					
+					     FROM PPIM16TB
+					    WHERE 1=1  AND BSNS_CLS = 'LR01'  AND RISK_GRADE = 'A'
+					         	   AND EXISTS (
+												SELECT MIN(1) 
+												FROM   PPIT03TB 
+												WHERE 1=1 AND
+													 FK_PLCY_NO = PPIM16TB.PLCY_NO  AND
+													 APPL_END_DATE='9999-12-31' AND
+													 INFO_CD='00964' AND
+													 (INFO_VAL_TEXT IN ('01','02') OR
+													 ( INFO_VAL_TEXT IN ('03','06') AND
+													 APPL_START_DATE >( 
+													SELECT
+														 (CURRENT_DATE - 3 MONTH) - DAY(CURRENT DATE) DAY 
+													FROM
+														 SYSIBM.SYSDUMMY1)))) 
+					    	       AND COLMNY_SECT = #deptCode#				     
+					    		   AND COLMNY_CLERK = #SearchTypeValue#
+							       AND AGRM_DATE BETWEEN #AgrmStartDate# AND #AgrmEndDate#
+							       AND AGRM_DATE <= #MinAgrmStartDate# 
+								   AND PLCY_NO > #minPlcyNo#				     
+								   AND PLCY_NO < #maxPlcyNo#				     
+							       AND RENEWAL_SCDL_DATE BETWEEN #RenewalStartDate# AND #RenewalEndDate#			    		    
+						GROUP BY RISK_GRADE
+					) CNT_A,
+					(	
+						SELECT 
+								COUNT(RISK_GRADE) AS CNT_B					
+					     FROM PPIM16TB
+					    WHERE 1=1  AND BSNS_CLS = 'LR01'  AND RISK_GRADE = 'B'
+					         	   AND EXISTS (
+												SELECT MIN(1) 
+												FROM   PPIT03TB 
+												WHERE 1=1 AND
+													 FK_PLCY_NO = PPIM16TB.PLCY_NO  AND
+													 APPL_END_DATE='9999-12-31' AND
+													 INFO_CD='00964' AND
+													 (INFO_VAL_TEXT IN ('01','02') OR
+													 ( INFO_VAL_TEXT IN ('03','06') AND
+													 APPL_START_DATE >( 
+													SELECT
+														 (CURRENT_DATE - 3 MONTH) - DAY(CURRENT DATE) DAY 
+													FROM
+														 SYSIBM.SYSDUMMY1)))) 
+					    	       AND COLMNY_SECT = #deptCode#				     
+					    		   AND COLMNY_CLERK = #SearchTypeValue#
+							       AND AGRM_DATE BETWEEN #AgrmStartDate# AND #AgrmEndDate#
+							       AND AGRM_DATE <= #MinAgrmStartDate# 
+								   AND PLCY_NO > #minPlcyNo#				     
+								   AND PLCY_NO < #maxPlcyNo#				     
+							       AND RENEWAL_SCDL_DATE BETWEEN #RenewalStartDate# AND #RenewalEndDate#			    		    
+						GROUP BY RISK_GRADE				
+					) CNT_B,
+					(	
+						SELECT 
+								COUNT(RISK_GRADE) AS CNT_C					
+					     FROM PPIM16TB
+					    WHERE 1=1  AND BSNS_CLS = 'LR01'  AND RISK_GRADE = 'C'
+					         	   AND EXISTS (
+												SELECT MIN(1) 
+												FROM   PPIT03TB 
+												WHERE 1=1 AND
+													 FK_PLCY_NO = PPIM16TB.PLCY_NO  AND
+													 APPL_END_DATE='9999-12-31' AND
+													 INFO_CD='00964' AND
+													 (INFO_VAL_TEXT IN ('01','02') OR
+													 ( INFO_VAL_TEXT IN ('03','06') AND
+													 APPL_START_DATE >( 
+													SELECT
+														 (CURRENT_DATE - 3 MONTH) - DAY(CURRENT DATE) DAY 
+													FROM
+														 SYSIBM.SYSDUMMY1)))) 
+					    	       AND COLMNY_SECT = #deptCode#				     
+					    		   AND COLMNY_CLERK = #SearchTypeValue#
+							       AND AGRM_DATE BETWEEN #AgrmStartDate# AND #AgrmEndDate#
+							       AND AGRM_DATE <= #MinAgrmStartDate# 
+								   AND PLCY_NO > #minPlcyNo#				     
+								   AND PLCY_NO < #maxPlcyNo#				     
+							       AND RENEWAL_SCDL_DATE BETWEEN #RenewalStartDate# AND #RenewalEndDate#			    		    
+						GROUP BY RISK_GRADE
+					)CNT_C,
+					(	
+						SELECT 
+								COUNT(RISK_GRADE) AS CNT_D					
+					     FROM PPIM16TB
+					    WHERE 1=1  AND BSNS_CLS = 'LR01'  AND RISK_GRADE = 'D'
+					         	   AND EXISTS (
+												SELECT MIN(1) 
+												FROM   PPIT03TB 
+												WHERE 1=1 AND
+													 FK_PLCY_NO = PPIM16TB.PLCY_NO  AND
+													 APPL_END_DATE='9999-12-31' AND
+													 INFO_CD='00964' AND
+													 (INFO_VAL_TEXT IN ('01','02') OR
+													 ( INFO_VAL_TEXT IN ('03','06') AND
+													 APPL_START_DATE >( 
+													SELECT
+														 (CURRENT_DATE - 3 MONTH) - DAY(CURRENT DATE) DAY 
+													FROM
+														 SYSIBM.SYSDUMMY1)))) 
+			  				       AND COLMNY_SECT = #deptCode#				     
+					    		   AND COLMNY_CLERK = #SearchTypeValue#
+							       AND AGRM_DATE BETWEEN #AgrmStartDate# AND #AgrmEndDate#
+							       AND AGRM_DATE <= #MinAgrmStartDate# 
+								   AND PLCY_NO > #minPlcyNo#				     
+								   AND PLCY_NO < #maxPlcyNo#				     
+							       AND RENEWAL_SCDL_DATE BETWEEN #RenewalStartDate# AND #RenewalEndDate#			    		    
+						GROUP BY RISK_GRADE
+					)CNT_D
+				FROM SYSIBM.SYSDUMMY1			
+ 				WITH UR
+	]]>
+	</entry>
+	
+	<entry key="sql.selectTest5">
+	<![CDATA[ 
+		SELECT
+			 cmpCd								/*회사코드*/
+			,plcyNo								/*증권번호*/
+			,agrmRelCd							/*계약관계코드*/
+			,relPrsnSno 						/*관계자일련번호*/
+			,custId								/*고객ID*/
+			,OBJECT_TYPE	objectType
+			,OBJECT_SEQ		objectSeq
+			,(CASE WHEN REL_CODE <> '01' AND REL_CODE <> '02' AND REL_CODE <> '03' AND REL_CODE <> '04'
+				   THEN '99'
+				   ELSE REL_CODE
+			 END)	AS relCd 			/*관계코드*/
+			,(SELECT SUBSTR(CD_DETL_ETC_NAME,1,5) FROM CCGR05TB WHERE FK_CD_KD_NO = 1974
+			  AND CD_DETL_NO = T1.JOB_CODE AND USE_END_DATE = '9999-12-31') AS occpCd	/*직종*/
+			,(SELECT CD_DETL_ORGN_NAME3 FROM CCGR05TB WHERE FK_CD_KD_NO = 1974
+			  AND CD_DETL_NO = T1.JOB_CODE AND USE_END_DATE = '9999-12-31') AS occpNm 	/*직종명*/		
+			,STANDARD_DATE 	AS dataBasDt 		/*자료기준일자*/
+			,PROCESS_GUBUN 	AS dataProcCls 		/*자료처리구분*/
+		FROM(
+			SELECT
+				'N08' 				AS cmpCd		/*회사코드*/
+				,PLCY_NO			AS plcyNo		/*증권번호*/
+				,'01'	 			AS agrmRelCd		/*계약관계코드*/
+				,1				AS relPrsnSno 		/*관계자일련번호*/
+				,T1.CONTOR_ID       AS custId			/*고객ID*/
+				,'' OBJECT_TYPE
+				,1 OBJECT_SEQ
+				,'01' REL_CODE /*관계코드*/
+				,'' AS JOB_CODE /*직종*/	
+				,TO_CHAR(SYSDATE,'yyyyMMdd') AS STANDARD_DATE 	/*자료기준일자*/
+				,'I' AS PROCESS_GUBUN 							/*자료처리구분*/ 
+			FROM PPAG01TB T1
+			WHERE PLCY_NO = #plcyNo#
+			UNION ALL	
+			SELECT 
+				'N08' 						AS cmpCd		/*회사코드*/
+				,T1.FK_PLCY_NO				AS plcyNo		/*증권번호*/
+				,DECODE(T1.PRIMARY_OBJECT_YN,'Y','02','03')	 AS agrmRelCd		/*계약관계코드*/
+				,(CASE WHEN PRIMARY_OBJECT_YN = 'Y' 
+					   THEN ROW_NUMBER() OVER(ORDER BY OBJECT_SEQ) 
+					   ELSE ROW_NUMBER() OVER(ORDER BY OBJECT_SEQ DESC) 
+			 	 END) AS relPrsnSno 		/*관계자일련번호*/
+				,T1.OBJT_UNQ_ID         AS custId			/*고객ID*/
+				,T1.OBJECT_TYPE
+				,T1.OBJECT_SEQ
+				,(SELECT ITEM_TEXT
+				  FROM 	PPIS05TB 
+				  WHERE FK_PLCY_NO 		=  T1.FK_PLCY_NO
+				  AND 	FK_OBJECT_TYPE 	=  T1.OBJECT_TYPE
+				  AND 	FK_OBJECT_SEQ 	=  T1.OBJECT_SEQ
+				  AND 	OBJT_ITEM_CD 	=  '00130'
+				  AND 	APPL_END_DATE 	=  '9999-12-31'
+				  AND 	ETSTATUS 		=  'A'
+				  AND   ITEM_TEXT <> '10000270004'
+				  FETCH FIRST 1 ROW ONLY) REL_CODE /*관계코드*/
+				,(SELECT ITEM_TEXT
+				  FROM 	PPIS05TB 
+				  WHERE 	FK_PLCY_NO 		=  T1.FK_PLCY_NO
+				  AND 	FK_OBJECT_TYPE 	=  T1.OBJECT_TYPE
+				  AND 	FK_OBJECT_SEQ 	=  T1.OBJECT_SEQ
+				  AND 	OBJT_ITEM_CD 	=  '00181'
+				  AND 	APPL_END_DATE 	=  '9999-12-31'
+				  AND 	ETSTATUS 		=  'A'
+				  AND   ITEM_TEXT <> '10000270004'
+				  FETCH FIRST 1 ROW ONLY) AS JOB_CODE /*직종*/	
+				,TO_CHAR(CURRENT DATE,'yyyyMMdd') 				AS STANDARD_DATE 	/*자료기준일자*/
+				,'I' 						AS PROCESS_GUBUN 	/*자료처리구분*/ 
+			FROM PPIS01TB T1
+			WHERE T1.FK_PLCY_NO            = #plcyNo#
+			AND T1.OBJT_NM                 > ''
+			AND T1.APPL_END_DATE           = '9999-12-31'
+			AND T1.OBJECT_TYPE             = 'M0001'
+			AND T1.ETSTATUS                = 'A'
+			AND T1.OBJT_UNQ_ID             <> '10000270004'  
+		) T1		
+		ORDER BY agrmRelCd,relPrsnSno
+	]]>
+	</entry>
+	
+	<entry key="sql.selectTest6">
+	<![CDATA[ 
+	 SELECT b.sale_plcy_no
+	        FROM sspd01tb a,
+                 ppag04tb b,
+  	             (SELECT x.sale_plcy_no, 
+  	                     x.colmny_clerk as colmny_clerk  
+  	                FROM
+  	                     ppag01tb x,  
+	      	             ppit03tb y
+	               WHERE x.sale_plcy_no   = #policyNumber#  
+	                 AND y.info_val_text  = #valueID#                     
+	                 AND y.appl_end_date  = '9999-12-31'
+	                 AND y.etstatus       = 'A' 
+                     AND x.plcy_no        = y.fk_plcy_no
+                     AND x.pkg_cls_typ    ='2'
+                 )  c 
+	        WHERE b.sale_plcy_no   = #policyNumber#
+	          AND b.cplx_prd_code  = a.prd_code
+	          AND b.sale_plcy_no   = c.sale_plcy_no 
+              AND b.cplx_prd_code   LIKE  'L%'
+	          AND b.agrm_stt IN ('01','02','03','04','06','82','83','84')
+	     ORDER BY b.sale_plcy_no 
+         FETCH FIRST 1 ROWS ONLY    
+         OPTIMIZE FOR 1 ROWS                            
+         FOR FETCH ONLY
+	
+	]]>
+	</entry>
+	
+	<!-- withQuery2 Test  -->
+	<entry key="sql.withSelectTwo">
+	<![CDATA[ 
+		WITH DUMMY(paymentYear,paymentPrem,idx) AS
+		(
+			SELECT 
+				 $startYear$ paymentYear 
+				,'' paymentPrem
+				,0 idx
+			FROM SYSIBM.SYSDUMMY1
+			UNION ALL
+			SELECT 
+				 paymentYear+1 paymentYear
+				,'' paymentPrem 
+				,idx+1 idx
+			FROM DUMMY
+			WHERE idx < (SELECT TO_CHAR(AGRM_DATE,'yyyy') FROM PQAG01TB
+								WHERE FK_ENTY_DSGN_NO = '$planNumber$'
+								AND DSGN_SEQ_NUM = '1')-$startYear$
+		)
+		SELECT paymentYear,paymentPrem FROM DUMMY A
+	]]>
+	</entry>
+	
+	<entry key="sql.updateTest2">
+		UPDATE PPGR01TB 
+    	    SET AGRM_STT = #policyStatus#, 
+    	    	PROC_BAS_DATE= #processBaseDate# 
+    	  WHERE ORG_NO = #number#
+    	    AND ORG_NO_SEQ= #sequence#
+	</entry>
+	
+</properties>
+ 

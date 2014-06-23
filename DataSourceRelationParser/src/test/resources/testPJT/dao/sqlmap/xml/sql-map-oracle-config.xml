@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!--
+ORACLE DB 접속 정보 및  SQL XML 파일 정보 설정
+
+@sfmi.title ORACLE DB 접속 정보 및  SQL XML 파일 정보 설정
+@sfmi.portal-id jk420.kim
+@sfmi.developer 박현준
+-->
+<!DOCTYPE sqlMapConfig
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<!-- properties resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle-sql-map-config.properties"/ -->
+	<properties resource="sfmi/common/dao/sqlmap/oracle-sql-map-config.properties"/>
+
+	<settings
+	cacheModelsEnabled="true"
+	enhancementEnabled="true"
+	lazyLoadingEnabled="true"
+	errorTracingEnabled="false"
+	maxRequests="${maxRequests}"
+	maxSessions="${maxSessions}"
+	maxTransactions="${maxTransactions}"
+	useStatementNamespaces="false"
+	/>
+
+	<transactionManager type="${transaction-manager-type}" commitRequired="true">
+		<property name="UserTransaction" value="${user-transaction}"/>
+		<dataSource type="${data-source-type}">
+			<property name="DataSource" value="${itso-data-source}"/>
+			<property name="JDBC.Driver" value="${driver}"/>
+			<property name="JDBC.ConnectionURL" value="${url}"/>
+			<property name="JDBC.Username" value="${username}"/>
+			<property name="JDBC.Password" value="${password}"/>
+			<property name="Driver.currentSchema" value="${currentSchema}"/>
+		</dataSource>
+	</transactionManager>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestPolicyDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestLevelDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestProcessDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestScenarioDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestScriptDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestStepDaoMap.xml"/>
+    <sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/MyTestDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestStatusDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestExecDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/AutoValidationTestDefectDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/CommonDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/DataQualityDaoMap.xml"/>
+
+
+	<!-- 품질검증결과============================================================================= -->
+	<!-- 품질검증결과  --> <!-- 코드표준 --> <!-- SQL표준 --> <!-- 보안취약성 --> <!-- 데이터품질 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/CIStandardRuleResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/SqlStandardRuleResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/AutoValidationResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/SecurityRuleResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/DataQualityResultDaoMap.xml"/>
+	<!-- ============================================================================= -->
+
+
+
+	<!-- 검증룰, 검증룰조회============================================================================= -->
+	<!-- 코드표준검증룰  --> <!-- SQL표준검증룰 --> <!-- 보안취약성검증룰 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/CIStandardRuleDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/SqlStandardRuleDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/SecurityRuleDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/SqlStandardVerificationItemDaoMap.xml"/>
+	<!-- ============================================================================= -->
+
+	<!-- XML-Datasource============================================================================= -->
+	<!-- XML-Datasource 매핑  --> <!-- DataSource 접속정보 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/DatasourceConnInfoDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/XmlDatasourceMappingDaoMap.xml"/>
+	<!-- ============================================================================= -->
+
+    <!-- 시스템관리-TEST============================================================================= -->
+	<!-- 품질자동검증정책관리 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/AutoValidationPolicyDaoMap.xml"/>
+    <!-- ============================================================================= -->
+
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/CommonCodeDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/AuthorityDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TableDbMappingDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/DiffResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/UdbSqlHistoryDaoMap.xml"/>
+
+	<!-- 품질 KPI -->
+    <sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityKpiDaoMap.xml"/>
+
+	<!-- 품질 통계 등록 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityStatisticDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityStatisticTemplateDaoMap.xml"/>
+
+	<!-- 품질 지표 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityIndicatorDaoMap.xml"/>
+	<!-- 품질 지표 계산 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityIndicatorCalculateDaoMap.xml"/>
+
+	<!-- 품질 KPI 수행 이력 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityKpiExecHistoryDaoMap.xml"/>
+
+	<!-- 품질 KPI 설정 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityKpiConfigDaoMap.xml"/>
+
+	<!-- 품질 KPI 추이및상세 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityKpiChartDaoMap.xml"/>
+
+	<!-- 품질지표 데시보드 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityKpiIndicatorDashBoardDaoMap.xml"/>
+
+	<!-- 품질KPI 데시보드 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityKpiDashBoardConfigDaoMap.xml"/>
+
+    <!-- ============================================================================= -->
+
+    <!-- 통계 관련 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/StatisticDaoMap.xml"/>
+    <!-- ============================================================================= -->
+
+    <sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/FailResultPlanDaoMap.xml"/>
+
+    <!-- 품질우회처리 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/QualityBypassDaoMap.xml"/>
+
+    <!-- 코드표준검증 예외항목 관리 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/CodeStandardExceptionItemDaoMap.xml"/>
+
+    <!-- SQL표준검증 예외항목 관리 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/SqlStandardExceptionItemDaoMap.xml"/>
+
+    <!-- 알림 서비스 관리 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/NoticeServiceInfoDaoMap.xml"/>
+
+    <!-- 알림 서비스 공통 메소드 관리 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/NoticeCommonMethodDaoMap.xml"/>
+
+    <!-- 알림 서비스 Notifier를 통해 notify를 위한 데이터 조회 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/NoticeServiceNotifierDaoMap.xml"/>
+	
+	<!-- 프로젝트 관리  -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectQualityDaoMap.xml"/>
+	
+    <!-- 프로젝트 ============================================================================= -->
+	<!-- 품질검증결과  --> <!-- 코드표준 --> <!-- SQL표준 --> <!-- 보안취약성 --> <!-- 데이터품질 -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectQualityResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectCIStandardRuleResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectSqlStandardRuleResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectSecurityRuleResultDaoMap.xml"/>
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectDataQualityResultDaoMap.xml"/>
+	<!-- ============================================================================= -->
+	
+	<!-- 프로젝트 파일 별 품질 통계  --> 
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectFileStatsDaoMap.xml"/>
+	
+	<!-- 프로젝트 개발자 별 품질 통계  --> 
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectDeveloperStatsDaoMap.xml"/>
+	
+	<!-- 프로젝트 ID 별 품질 통계  --> 
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ProjectIDStatsDaoMap.xml"/>
+
+    <!-- 변화관리 ============================================================================= -->
+	<!-- 변화관리  -->
+	<sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/ChangeAdministrationDaoMap.xml"/>
+	<!-- ============================================================================= -->
+		
+</sqlMapConfig>

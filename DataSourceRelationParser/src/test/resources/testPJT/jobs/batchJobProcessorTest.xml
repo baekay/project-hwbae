@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  자동차 보상 대물 종결자료 LMS 전송
+	
+  @sfmi.title       자동차 보상 대물 종결자료 LMS 전송
+  @sfmi.developer   lee won hee
+  @sfmi.portal-id   wonhee77.lee
+  
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<bean id="CCDADC.DAX1306" parent="sfmiJob">
+		<property name="steps">
+			<util:list id="stepListeners">
+			
+				<bean id="claimCarCloseBalance" parent="samToSamStep">
+					
+					<property name="inFilePath"  value="${IN_FILE_PATH}" />
+					<property name="inFile"      value="${IN_FILE_NAME}" />
+					<property name="inLayout"    value="sfmi/xdbatch/claim/carpersecond/mapping/mapping-claimendinfo.xml" />
+					<property name="inEncoding"  value="KSC5601" />
+					
+					<property name="outFilePath" value="${OUT_FILE_PATH}" />
+					<property name="outFile"     value="${OUT_FILE_NAME}" />
+					<property name="outLayout"   value="sfmi/xdbatch/claim/carpersecond/mapping/mapping-claimendinfo.xml" />
+					<property name="outEncoding"  value="KSC5601" />
+					
+					<property name="mapper"      value="sfmi.xdbatch.claim.carpersecond.mapper.ClaimEndSendResultInfoMapper" />
+										
+					<property name="processor" ref="claimEndSendResultProcessor" />
+					
+				</bean>
+				
+
+			</util:list>
+		</property>
+	</bean>	
+	
+	<bean id="claimEndSendResultProcessor" class="sfmi.xdbatch.claim.carpersecond.processor.ClaimEndSendResultProcessor" >
+		<property name="carPeriodicalDao" ref="carPeriodicalDao"/>	
+		<property name="claimCarDailyDao" ref="claimDailyDao"/>	
+	</bean>
+	
+	
+	<bean id="claimDailyDao" p:dataSource-ref="AGDBDs" class="sfmi.xdbatch.claim.cardaily.processor.dao.JdbcClaimCarDailyDao"/>
+	
+	<bean id="carPeriodicalDao" p:dataSource-ref="AGDBDs" class="sfmi.xdbatch.claim.carpersecond.processor.dao.JdbcCarPeriodicalDao"/>
+	
+	<bean id="CCDADC.DAX1306_Properties"	class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="properties">
+			<value>
+				ODATE=%0%
+				JOB_EXECUTION_ID=%1%
+				IN_FILE_PATH=%2%
+				IN_FILE_NAME=%3%
+				OUT_FILE_PATH=%4%
+				OUT_FILE_NAME=%5%
+				JOB_GUBUN=%6%
+			</value>
+		</property>
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="order" value="1" />
+	</bean>
+</beans>

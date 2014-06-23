@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="EUC-KR"?>
+<!--
+ @sfmi.title          보수교육 결과처리  JOB XML
+ @sfmi.developer      김경수
+ @sfmi.portal-id      kskim77
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	
+	<bean id="PUCRMC.CRX003" parent="sfmiJob">
+		<property name="steps">
+			<util:list id="stepListeners">
+				<bean id="PUCRMC.CRX003_Step1" parent="dbToMultiStep">
+					<property name="inDataSource" ref="AGDBDs" />
+					<property name="inHelper" value="sfmi.xdbatch.uw.crpoint.reader.CreateReeducateDbReaderHelper" />
+					<property name="mapper" value="sfmi.xdbatch.uw.crpoint.mapper.CreateReeducateDbMapper" />
+					<property name="processor" ref="createReeducateProcessor" />
+					<property name="writers">
+						<list>
+							<bean class="sfmi.xdbatch.uw.crpoint.writer.CreateReeducateCondition">
+								<property name="outDataSource" ref="AGDBDs" />
+								<property name="outDao" value="sfmi.xdbatch.uw.crpoint.writer.CreateReeducateDbWriter" />
+							</bean>
+							<bean class="sfmi.xdbatch.uw.crpoint.writer.CreateReeducateUpdateCondition">
+								<property name="outDataSource" ref="AGDBDs" />
+								<property name="outDao" value="sfmi.xdbatch.uw.crpoint.writer.CreateReeducateUpdateProcRsltDbWriter" />
+							</bean>
+						</list>
+					</property>
+				
+				</bean>
+			</util:list>
+		</property>
+	</bean>
+	
+	<bean id="createReeducateProcessor" class="sfmi.xdbatch.uw.crpoint.processor.CreateReeducateProcessor">
+	</bean>
+	
+	<bean id="PUCRMC.CRX003_properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="properties">
+			<value>
+				JOB=%0%
+				JOB_EX=%1%
+				
+				WORK_DATE=%2%
+				OUT_FILE=%3%
+				DISK_PATH=%4%
+				LOG_FILE=%5%
+			</value>
+		</property>
+		<property name="systemPropertiesModeName"
+			value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="order" value="1" />
+	</bean>
+	
+</beans>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!-- 
+별도 트랜잭션 처리를 위해 테스트 아이디 생성관련 DAO에서 사용하는 DB 접속 정보 및 SQL XML 파일 정보 설정
+ 
+@sfmi.title ORACLE DB 접속 정보 및  SQL XML 파일 정보 설정 
+@sfmi.portal-id jk420.kim
+@sfmi.developer 박현준
+-->
+<!DOCTYPE sqlMapConfig
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+  <properties resource="idgenerator-sql-map-config.properties"/>
+
+  <settings
+    cacheModelsEnabled="true"
+    enhancementEnabled="true"
+    lazyLoadingEnabled="true"
+    errorTracingEnabled="false"
+    maxRequests="${maxRequests}"
+    maxSessions="${maxSessions}"
+    maxTransactions="${maxTransactions}"
+    useStatementNamespaces="false"
+    />
+    
+  <transactionManager type="${transaction-manager-type}" commitRequired="true">
+    <property name="UserTransaction" value="${user-transaction}"/>
+    <dataSource type="${data-source-type}">
+      <property name="DataSource" value="${itso-data-source}"/>
+      <property name="JDBC.Driver" value="${driver}"/>
+      <property name="JDBC.ConnectionURL" value="${url}"/>
+      <property name="JDBC.Username" value="${username}"/>
+      <property name="JDBC.Password" value="${password}"/>
+    </dataSource>
+  </transactionManager>
+ 
+  <sqlMap resource="sfmi/component/squad/itquality/dao/sqlmap/maps/oracle/TestIdGeneratorDao.xml"/>
+</sqlMapConfig>

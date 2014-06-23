@@ -1,0 +1,1572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+          PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+          "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ChangeAdministration">
+  <typeAlias alias="changeAdministration" type="sfmi.component.squad.itqualitybdt.ChangeAdministration"/>
+    <statement id="SELECTTEST"  parameterClass="java.util.Map" resultClass="changeAdministration">
+        <![CDATA[
+			SELECT DISTINCT A.CAR_CD AS CAR_CD
+					 , A.CAR_NAME AS CAR_NAME
+					 , A.DET_NAME AS DET_NAME
+					 , A.RPSV_CAR_NAME_ABRV AS RPSV_CAR_NAME
+					 , A.MAKER AS MAKER
+			  	     , C.REL_CAR_SORT_CD AS CAR_SORT_CD
+			FROM   PPCD01TB A, PPCD45TB B, PPCD08TB C, PPCD02TB D
+			WHERE  A.CAR_CD_CLS IN (#carCdClsFrom#,#carCdClsTo#)
+			  AND A.RPSV_CAR_NAME_ABRV = #repCarName:CHAR#
+			  AND A.CAR_NAME = #carName:CHAR#
+		 ]]>
+		<isNotNull prepend="AND" property="ownBsnsCls">
+			<isEqual prepend="" property="ownBsnsCls" compareValue="1">
+				substr(CAR_CD,2,1) NOT IN ('2','4','6','8')
+			</isEqual>
+			<isEqual prepend="" property="ownBsnsCls" compareValue="2">
+				substr(CAR_CD,2,1) IN (#ownBsnsCls#,'4','6','8','9')
+			</isEqual>
+		</isNotNull>
+      <![CDATA[ 
+				AND A.CAR_CD NOT IN ('91000','92000','93000')
+				AND A.DOMESTIC_CLS = #country:CHAR#				     
+				AND A.MAKER BETWEEN #makeCompany:CHAR# AND #endMakeCompany:CHAR#	
+				AND A.VHCL_USG IN ( #vhclUsgOne:CHAR#,#vhclUsgTwo:CHAR#,#vhclUsgThree:CHAR#,#vhclUsgFour:CHAR#)
+				AND A.APPL_START_DATE <= #agrmStartDate#    
+				AND A.APPL_END_DATE  >= #agrmStartDate#
+				AND A.CAR_CD = B.FK_CAR_CD    
+				AND B.APPL_START_DATE  <= #agrmStartDate#    
+				AND B.APPL_END_DATE  > #agrmStartDate#
+		  		AND B.CAR_SORT_CD = C.CAR_SORT_CD	
+		        AND C.REL_CAR_SORT_CD NOT IN('A427', 'A527', 'A327', 'A005', 'A104', 'A204', 'A008', 'A106', 'A306', 'A406', 'A009', 'A107', 'A307', 'A407', 'A044', 'A045')
+				AND C.APPL_PTY_CLS = #applPtyCls# 
+				AND C.BSNS_CLS = '01'
+				AND C.OWN_BSNS_CLS = #ownBsnsCls2#
+				AND C.APPL_START_DATE <=  #agrmStartDate#
+				AND C.APPL_END_DATE >=  #agrmStartDate#
+				AND A.CAR_CD 	= D.FK_CAR_CD    
+			    AND D.YRTP BETWEEN #totCarYearPrev# AND #totCarYearNext#
+		        AND D.APPL_START_DATE <=  #agrmStartDate# 
+		UNION   
+			
+		SELECT DISTINCT A.CAR_CD AS CAR_CD
+				, A.CAR_NAME AS CAR_NAME
+				, A.DET_NAME AS DET_NAME
+				 , A.RPSV_CAR_NAME_ABRV AS RPSV_CAR_NAME
+				 , A.MAKER AS MAKER
+		        , C.REL_CAR_SORT_CD AS CAR_SORT_CD
+		  FROM PPCD01TB A, PPCD45TB B, PPCD08TB C
+		 WHERE A.CAR_CD_CLS ='2'
+		   AND A.RPSV_CAR_NAME_ABRV = #repCarName:CHAR#
+		   AND A.CAR_NAME = #carName:CHAR#
+	  ]]>
+		<isNotNull prepend="AND" property="ownBsnsCls">
+			<isEqual prepend="" property="ownBsnsCls" compareValue="1">
+				substr(CAR_CD,2,1) NOT IN ('2','4','6','8')
+			</isEqual>
+			<isEqual prepend="" property="ownBsnsCls" compareValue="2">
+				substr(CAR_CD,2,1) IN (#ownBsnsCls#,'4','6','8','9')
+			</isEqual>
+		</isNotNull>
+      <![CDATA[ 
+				AND A.CAR_CD NOT IN ('91000','92000','93000')
+				AND A.DOMESTIC_CLS = #country:CHAR#				     
+				AND A.MAKER BETWEEN #makeCompany:CHAR# AND #endMakeCompany:CHAR#	
+				AND A.VHCL_USG IN ( #vhclUsgOne:CHAR#,#vhclUsgTwo:CHAR#,#vhclUsgThree:CHAR#,#vhclUsgFour:CHAR#)
+				AND A.APPL_START_DATE <= #agrmStartDate#    
+				AND A.APPL_END_DATE  >= #agrmStartDate#
+				AND A.CAR_CD = B.FK_CAR_CD    
+				AND B.APPL_START_DATE  <= #agrmStartDate#    
+				AND B.APPL_END_DATE  > #agrmStartDate#
+		  		AND B.CAR_SORT_CD = C.CAR_SORT_CD	
+		        AND C.REL_CAR_SORT_CD NOT IN('A427', 'A527', 'A327', 'A005', 'A104', 'A204', 'A008', 'A106', 'A306', 'A406', 'A009', 'A107', 'A307', 'A407', 'A044', 'A045')
+				AND C.APPL_PTY_CLS = #applPtyCls#  
+				AND C.BSNS_CLS = '01'
+				AND C.OWN_BSNS_CLS = #ownBsnsCls2#
+				AND C.APPL_START_DATE <=  #agrmStartDate#
+				AND C.APPL_END_DATE >= #agrmStartDate#
+		
+		ORDER BY CAR_NAME ASC  
+        OPTIMIZE FOR 1 ROW
+        FOR FETCH ONLY
+      ]]>
+    </statement>
+
+    <select id = "abcd">
+    	SELECT
+    	    A.prdBigCd									                                                                                AS prdBigCd,		       /* 구분/대분류 */
+		    A.prdMidCd									                                                                                AS prdMidCd,		       /* 구분/중분류 */
+		    A.prdSmlCd									                                                                                AS prdSmlCd,		       /* 구분/소분류 */
+		    A.prdCode                                                                                                                   AS prdCode,		           /* SAP상품코드 */
+		    A.prdNm   									                                                                                AS prdNm,			       /* 상품명 */
+		    A.WPremAmt                                                                                                                  AS wPremAmt,               /* 원수보험료 */
+		    A.WEPremAmt                                                                                                                 AS wEPremAmt,              /* 원수경과보험료 */
+		    A.CEPremAmt                                                                                                                 AS cEPremAmt,              /* 재보경과보험료 */
+		    A.NEPremAmt                                                                                                                 AS nEPremAmt,              /* 보유경과보험료 */
+		    A.WERiskPremAmt                                                                                                             AS wERiskPremAmt,          /* 원수위험율차/예정 */
+		    A.WlossIjaeAmt                                                                                                              AS wlossIjaeAmt,           /* 원수위험율차/실제 */
+		    A.NERiskPnl                                                                                                                 AS nERiskPnl,		       /* 원수위험율차/손익 */
+		    A.NERiskLossRto                                                                                                             AS nERiskLossRto,	       /* 원수위험율차/손해율 */
+		    A.NRERiskAmt                                                                                                                AS nRERiskAmt,             /* 재보위험율차/예정 */
+		    A.ReLossAmt                                                                                                                 AS reLossAmt,              /* 재보위험율차/실제 */
+		    A.NRERiskPnl                                                                                                                AS nRERiskPnl,	           /* 재보위험율차/손익 */
+		    A.NRERiskPrftRto                                                                                                            AS nRERiskPrftRto,         /* 재보위험율차/이익율 */
+		    A.NRERiskLossRto                                                                                                            AS nRERiskLossRto,         /* 보유경과손해율 */
+		    A.WEHaeBugaAmt                                                                                                              AS wEHaeBugaAmt,           /* 원수비차/예정 */
+		    A.InExWonRealAmt                                                                                                            AS inExWonRealAmt,         /* 원수비차/실제 */
+		    A.WEBugaPnl                                                                                                                 AS wEBugaPnl,		       /* 원수비차/손익 */
+		    A.WEBugaExeRto                                                                                                              AS wEBugaExeRto,	       /* 원수비차/집행율 */
+		    A.NREBugaAmt                                                                                                                AS nREBugaAmt,             /* 재보비차/예정 */
+		    A.ReExpenseAmt                                                                                                              AS reExpenseAmt,           /* 재보비차/실제 */
+		    A.NREBugaPnl                                                                                                                AS nREBugaPnl,	           /* 재보비차/손익 */
+		    A.NREBugaExeRto                                                                                                             AS nREBugaExeRto,          /* 보유경과집행율 */
+		    A.DacIncomeAmt                                                                                                              AS dacIncomeAmt,           /* 신계약비이연손익 */
+		    A.InAaDdAmt                                                                                                                 AS inAaDdAmt,              /* 이차손익/투자수지 */
+		    A.ReserveIntHAmt                                                                                                            AS reserveIntHAmt,         /* 이차손익/부담이자 */
+		    A.IchaPnl                                                                                                                   AS ichaPnl,		           /* 이차손익/이차손익 */
+		    A.InvPrftRto                                                                                                                AS invPrftRto, 	           /* 투자이익율 */
+		    A.InterestRateAmt                                                                                                           AS interestRateAmt,        /* 부담이율 */
+		    A.RelProfitAmt                                                                                                              AS relProfitAmt,           /* 준비금관계손익 */
+		    A.EtcIcha                                                                                                                   AS etcIcha, 		       /* 기타손익/이차 */
+		    A.EtcBchaAmt                                                                                                                AS etcBchaAmt,             /* 기타손익/비차 */
+		    A.EtcRchaAmt                                                                                                                AS etcRchaAmt,             /* 기타손익/위험율차 */
+		    A.EtcTotAmt                                                                                                                 AS etcTotAmt, 	           /* 기타손익/계 */
+		    A.TotPnlAmt                                                                                                                 AS totPnlAmt, 	           /* 손익합계 */
+		    A.WPremPnlRto                                                                                                               AS wPremPnlRto, 	       /* 원수대비이익율 */
+		    A.WEPremPnlRto                                                                                                              AS wEPremPnlRto, 	       /* 원수경과이익율 */
+		    A.WEHaeBugaPnlRto                                                                                                           AS wEHaeBugaPnlRto,        /* 보유경과이익율 */
+			A.rownumber                                                                               								    AS rownumber
+		FROM (
+	    	SELECT
+	    	    A.prdBigCd									                                                                            AS prdBigCd,		       /* 구분/대분류 */
+			    A.prdMidCd									                                                                            AS prdMidCd,		       /* 구분/중분류 */
+			    A.prdSmlCd									                                                                            AS prdSmlCd,		       /* 구분/소분류 */
+			    A.prdCode                                                                                                               AS prdCode,		           /* SAP상품코드 */
+			    A.prdNm   									                                                                            AS prdNm,			       /* 상품명 */
+			    A.WPremAmt                                                                                                              AS wPremAmt,               /* 원수보험료 */
+			    A.WEPremAmt                                                                                                             AS wEPremAmt,              /* 원수경과보험료 */
+			    A.CEPremAmt                                                                                                             AS cEPremAmt,              /* 재보경과보험료 */
+			    A.NEPremAmt                                                                                                             AS nEPremAmt,              /* 보유경과보험료 */
+			    A.WERiskPremAmt                                                                                                         AS wERiskPremAmt,          /* 원수위험율차/예정 */
+			    A.WlossIjaeAmt                                                                                                          AS wlossIjaeAmt,           /* 원수위험율차/실제 */
+			    A.NERiskPnl                                                                                                             AS nERiskPnl,		       /* 원수위험율차/손익 */
+			    A.NERiskLossRto                                                                                                         AS nERiskLossRto,	       /* 원수위험율차/손해율 */
+			    A.NRERiskAmt                                                                                                            AS nRERiskAmt,             /* 재보위험율차/예정 */
+			    A.ReLossAmt                                                                                                             AS reLossAmt,              /* 재보위험율차/실제 */
+			    A.NRERiskPnl                                                                                                            AS nRERiskPnl,	           /* 재보위험율차/손익 */
+			    A.NRERiskPrftRto                                                                                                        AS nRERiskPrftRto,         /* 재보위험율차/이익율 */
+			    A.NRERiskLossRto                                                                                                        AS nRERiskLossRto,         /* 보유경과손해율 */
+			    A.WEHaeBugaAmt                                                                                                          AS wEHaeBugaAmt,           /* 원수비차/예정 */
+			    A.InExWonRealAmt                                                                                                        AS inExWonRealAmt,         /* 원수비차/실제 */
+			    A.WEBugaPnl                                                                                                             AS wEBugaPnl,		       /* 원수비차/손익 */
+			    A.WEBugaExeRto                                                                                                          AS wEBugaExeRto,	       /* 원수비차/집행율 */
+			    A.NREBugaAmt                                                                                                            AS nREBugaAmt,             /* 재보비차/예정 */
+			    A.ReExpenseAmt                                                                                                          AS reExpenseAmt,           /* 재보비차/실제 */
+			    A.NREBugaPnl                                                                                                            AS nREBugaPnl,	           /* 재보비차/손익 */
+			    A.NREBugaExeRto                                                                                                         AS nREBugaExeRto,          /* 보유경과집행율 */
+			    A.DacIncomeAmt                                                                                                          AS dacIncomeAmt,           /* 신계약비이연손익 */
+			    A.InAaDdAmt                                                                                                             AS inAaDdAmt,              /* 이차손익/투자수지 */
+			    A.ReserveIntHAmt                                                                                                        AS reserveIntHAmt,         /* 이차손익/부담이자 */
+			    A.IchaPnl                                                                                                               AS ichaPnl,		           /* 이차손익/이차손익 */
+			    A.InvPrftRto                                                                                                            AS invPrftRto, 	           /* 투자이익율 */
+			    A.InterestRateAmt                                                                                                       AS interestRateAmt,        /* 부담이율 */
+			    A.RelProfitAmt                                                                                                          AS relProfitAmt,           /* 준비금관계손익 */
+			    A.EtcIcha                                                                                                               AS etcIcha, 		       /* 기타손익/이차 */
+			    A.EtcBchaAmt                                                                                                            AS etcBchaAmt,             /* 기타손익/비차 */
+			    A.EtcRchaAmt                                                                                                            AS etcRchaAmt,             /* 기타손익/위험율차 */
+			    A.EtcTotAmt                                                                                                             AS etcTotAmt, 	           /* 기타손익/계 */
+			    A.TotPnlAmt                                                                                                             AS totPnlAmt, 	           /* 손익합계 */
+			    A.WPremPnlRto                                                                                                           AS wPremPnlRto, 	       /* 원수대비이익율 */
+			    A.WEPremPnlRto                                                                                                          AS wEPremPnlRto, 	       /* 원수경과이익율 */
+			    A.WEHaeBugaPnlRto                                                                                                       AS wEHaeBugaPnlRto,        /* 보유경과이익율 */
+			    ROW_NUMBER() OVER (ORDER BY A.prdBigCd, A.prdMidCd, A.prdSmlCd, A.prdCode ASC)           								AS rownumber
+	    	FROM (
+				SELECT
+					MAX(COALESCE(B.BIG_CLS_CD, ''))                                                                                     AS prdBigCd,               /* 구분/대분류 */
+					MAX(COALESCE(B.MID_CLS_CD, ''))                                                                                     AS prdMidCd,               /* 구분/중분류 */
+					MAX(COALESCE(B.SMALL_CLS_CD, ''))                                                                                   AS prdSmlCd,               /* 구분/소분류 */
+					A.PRD_CODE                                                                                                          AS prdCode,                /* SAP상품코드 */
+					MAX(COALESCE(B.PROD_NM, ''))                                                                                        AS prdNm,                  /* 상품명 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_PREM'           THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS wPremAmt,               /* 원수보험료 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_PREM'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS wEPremAmt,              /* 원수경과보험료 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_C_E_PREM'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS cEPremAmt,              /* 재보경과보험료 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_E_PREM'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS nEPremAmt,              /* 보유경과보험료 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_RISK_PREM'    THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS wERiskPremAmt,          /* 원수위험율차/예정 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_WLOSS_IJAE'       THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS wlossIjaeAmt,           /* 원수위험율차/실제 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_E_RISK_PNL'     THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS nERiskPnl,              /* 원수위험율차/손익 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_E_RISK_LOSS'    THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS nERiskLossRto,          /* 원수위험율차/손해율 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_RISK'       THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS nRERiskAmt,             /* 재보위험율차/예정 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_RE_LOSS'          THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS reLossAmt,              /* 재보위험율차/실제 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_RISK_PNL'   THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS nRERiskPnl,             /* 재보위험율차/손익 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_RISK_PRFT'  THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS nRERiskPrftRto,         /* 재보위험율차/이익율 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_RISK_LOSS'  THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS nRERiskLossRto,         /* 보유경과손해율 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_HAE_BUGA'     THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS wEHaeBugaAmt,           /* 원수비차/예정 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_IN_EX_WON_REAL'   THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS inExWonRealAmt,         /* 원수비차/실제 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_BUGA_PNL'     THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS wEBugaPnl,              /* 원수비차/손익 */
+                	DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_BUGA_EXE'     THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS wEBugaExeRto,           /* 원수비차/집행율 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_BUGA'       THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS nREBugaAmt,             /* 재보비차/예정 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_RE_EXPENSE'       THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS reExpenseAmt,           /* 재보비차/실제 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_BUGA_PNL'   THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS nREBugaPnl,             /* 재보비차/손익 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_N_R_E_BUGA_EXE'   THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS nREBugaExeRto,          /* 보유경과집행율 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_DAC_INCOME'       THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS dacIncomeAmt,           /* 신계약비이연손익 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_IN_AA_DD'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS inAaDdAmt,              /* 이차손익/투자수지 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_RESERVE_INT_H'    THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS reserveIntHAmt,         /* 이차손익/부담이자 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_ICHA_PNL'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS ichaPnl,                /* 이차손익/이차손익 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_INV_PRFT'         THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS invPrftRto,             /* 투자이익율 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_INTEREST_RATE'    THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS interestRateAmt,        /* 부담이율 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_REL_PROFIT'       THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS relProfitAmt,           /* 준비금관계손익 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_ETC_ICHA'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS etcIcha,                /* 기타손익/이차 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_ETC_BCHA'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS etcBchaAmt,             /* 기타손익/비차 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_ETC_RCHA'         THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS etcRchaAmt,             /* 기타손익/위험율차 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_ETC_TOT'          THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS etcTotAmt,              /* 기타손익/계 */
+					DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_TOT_PNL'          THEN A.ITEM_NUM ELSE 0 END)), 31, 0)                  AS totPnlAmt,              /* 손익합계 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_PREM_PNL'       THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS wPremPnlRto,            /* 원수대비이익율 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_PREM_PNL'     THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS wEPremPnlRto,           /* 원수경과이익율 */
+	                DECIMAL(ROUND(SUM(CASE WHEN A.ITEM_CD = 'R1_W_E_HAE_BUGA_PNL' THEN A.ITEM_NUM ELSE 0 END), 2), 31, 2)               AS wEHaeBugaPnlRto         /* 보유경과이익율 */
+				FROM EMSC10TB A	LEFT OUTER JOIN
+				(SELECT
+					DISTINCT A.SAP_CD,
+					A.BIG_CLS_CD,
+					A.MID_CLS_CD,
+					A.SMALL_CLS_CD,
+					A.PROD_NM
+				 FROM SSPD16TB A
+				 WHERE 1 = 1
+			     AND CURRENT DATE <![CDATA[ >= ]]> APPL_START_DATE
+				 AND CURRENT DATE <![CDATA[ < ]]> APPL_END_DATE) B	/* FIXME: SSPD16TB에 상품 전체 매핑시 INNER JOIN으로 변경 */
+				ON A.PRD_CODE = B.SAP_CD
+				WHERE 1 = 1
+				AND A.CFRM_YN = 'Y' /* 확정여부(Y) */
+				AND A.ITEM_CD LIKE 'R1%' /* 누계/당월여부 (누계인 경우 R1, 당월인 경우 R4) */
+				AND A.CLOSE_YYYYMM = #condCloseYyyyMm# /* 필수 Condition - 마감년월(*Key) */
+				<isNotEmpty property="condProdCd" prepend="AND">
+					A.PRD_CODE LIKE #condProdCd# || '%' /* 선택 Condition - 상품코드(*Key) */
+				</isNotEmpty>
+		        <isNotEmpty property="condInsKnd">
+		       
+				 	<isEqual property="condInsKnd" compareValue="LT"> 
+			 			AND A.PRD_GRP = 'LT' /* 상품군(LT:장기) */
+				 	</isEqual>
+				 	<isEqual property="condInsKnd" compareValue="CA"> 
+			 			AND A.PRD_GRP = 'CA' /* 상품군(CA:자동차) */
+				 	</isEqual>
+				 	<isEqual property="condInsKnd" compareValue="IL"> 
+			 			AND A.PRD_GRP = 'IL' /* 상품군(IL:일반) */
+				 	</isEqual>
+			 	</isNotEmpty>
+				<isNotEmpty property="condPrdClsParent">
+				 	<isEqual property="condPrdClsParent" compareValue="B"> 
+						<isNotEmpty property="condPrdClsChild" prepend="AND">
+							<isEqual property="condPrdClsChild" compareValue="90_91_92_95">
+								B.BIG_CLS_CD IN ('90', '91', '92', '95') /* 구분/대분류 */
+							</isEqual>
+							<isNotEqual property="condPrdClsChild" compareValue="90_91_92_95">
+								B.BIG_CLS_CD = #condPrdClsChild# /* 구분/대분류 */
+							</isNotEqual>
+						</isNotEmpty>
+				 	</isEqual>
+				 	<isEqual property="condPrdClsParent" compareValue="M"> 
+						<isNotEmpty property="condPrdClsChild" prepend="AND">
+							B.MID_CLS_CD = #condPrdClsChild# /* 구분/중분류 */
+						</isNotEmpty>
+				 	</isEqual>
+				 	<isEqual property="condPrdClsParent" compareValue="S">
+						<isNotEmpty property="condPrdClsChild" prepend="AND">
+							B.SMALL_CLS_CD = #condPrdClsChild# /* 구분/소분류 */
+						</isNotEmpty>
+				 	</isEqual>
+				</isNotEmpty>
+				GROUP BY A.PRD_CODE /* 상품코드(*Key) */
+				) A
+			) A
+	 	WHERE 1 = 1
+		AND A.rownumber BETWEEN (#currentPage:NUMBER# - 1) * #rowCntPerPage:NUMBER# + 1 AND #currentPage:NUMBER# * #rowCntPerPage:NUMBER#
+    
+    </select>
+    <insert id="insert.Test">
+    	insert into ssam50tb
+		(
+			fk_prd_code, fk_chng_elem_cls, fk_chng_elem_id, fk_cng_el_detl_cls, fk_cng_el_detl_id, 
+			fk_rlel_id, seq_num,disp_seq, disp_yn, rlel_nick_name, appl_start_date, appl_end_date, 
+			rlel_level, chng_event_no, filter_yn,variation_yn, prnt_rlel_id, last_update_clerk, 
+			last_update_ip, print_seq, print_yn, item_code,
+			rlel_eng_alias, rlel_prt_alias, rlel_prt_eng_alias, rlel_catg_cls,appl_cls
+		)	
+		(
+			select 
+				$DTAPCD$, am50.fk_chng_elem_cls, $DTSI$, am50.fk_cng_el_detl_cls, am50.fk_cng_el_detl_id, 
+				am32_2.alw_rlel_id, am50.seq_num, am50.disp_seq, am50.disp_yn, am50.rlel_nick_name, am50.appl_start_date, am50.appl_end_date, 
+				am50.rlel_level, am50.chng_event_no, am50.filter_yn, am50.variation_yn, am30_2.elem_rlel_id,  $ECK$, 	
+				$FIP$, am50.print_seq, am50.print_yn, am50.item_code,
+				am50.rlel_eng_alias, am50.rlel_prt_alias, am50.rlel_prt_eng_alias, am50.rlel_catg_cls,am50.appl_cls
+			from ssam50tb am50, ssam30tb am30_1, ssam30tb am30_2, ssam32tb am32_1, ssam32tb am32_2, ssam52tb am52
+			where
+				am50.fk_prd_code      		= #APCD#
+			and	am50.fk_chng_elem_cls 		= '02'
+	 		and am50.fk_chng_elem_id 		= #BBSI#
+	 		and am50.fk_prd_code      		=  am30_1.prd_code
+			and am50.PRNT_RLEL_ID           =  am30_1.elem_rlel_id
+			and am32_1.prd_code				=  am30_1.prd_code
+			and am32_1.alw_rlel_id 			=  am50.fk_rlel_id  
+			and am32_1.elem_code			=  am30_1.elem_code
+			
+			and am32_2.prd_code       		= #TAPCD#
+			and am32_2.elem_code    		=  am32_1.elem_code
+			and am32_2.alw_value            =  am32_1.alw_value 
+			and am32_2.prd_code				=  am30_2.prd_code
+			<isNotNull prepend="AND" property="XCDTSI">
+				<isEqual prepend="" property="XCDTSI" compareValue="UW">
+					am30_1.elem_type_code IN   ('UI000','UM000')
+				</isEqual>
+				<isNotEqual prepend="" property="XCDTSI" compareValue="UW">
+					am30_1.elem_type_code NOT   IN   ('UI000','UM000')
+				</isNotEqual>
+			</isNotNull>
+			and am30_1.elem_code			=  am30_2.elem_code
+			and am30_2.prnt_elem_rlel_id    =  0
+			
+			and am50.fk_chng_elem_cls       =  am52.fk_chng_elem_cls
+			and am52.fk_chng_elem_id		= #CDTSI#
+			and am50.fk_cng_el_detl_cls		=  am52.chng_elem_detl_cls
+			and am50.fk_cng_el_detl_id	    =  am52.chng_elem_detl_id
+		)
+    
+    
+    </insert>
+    
+    <insert id="insertTest">
+    	INSERT INTO SSPD16TB(
+			SELECT DISTINCT 
+				   TRIM(T1.PRD_CODE)||TRIM(T2.CLS_VAL1)||'0'		AS RCIV_CD					
+			     , INTEGER(COALESCE((SELECT MAX(SEQ_NUM) 
+			     					 FROM SSPD16TB 
+			     					 WHERE RCIV_CD = TRIM(T1.PRD_CODE)||TRIM(T2.CLS_VAL1)||'0'),0)
+			        ) + 1 AS SEQ_NUM															
+				 , (SELECT CD_DETL_NO 
+				    FROM   CCGR05TB 
+				    WHERE  FK_CD_KD_NO = 8505 
+				    AND    CD_DETL_NO = T1.INS_CLS_CODE) AS BIG_CLS_CD							
+				 , (SELECT CD_DETL_NO 
+				    FROM   CCGR05TB 
+				    WHERE  FK_CD_KD_NO = 8500 
+				    AND    CD_DETL_NO = T4.CPSN_VAL8) AS MID_CLS_CD								
+				 , '00' AS SMALL_CLS_CD															
+				 , T1.PRD_CODE																	
+				 , TRIM(T1.PRD_CODE)||TRIM(T2.CLS_VAL1) AS SAP_CD								
+				 , SUBSTR(T2.CONV_PROD, 1, 6) AS ACCNT_CD										
+				 , T2.CONV_PROD AS FSS_CD														
+				 , T1.PRD_NAME																	
+				 , T3.CD_DETL_ETC_NAME															
+				 , T1.SERIAL_PRD_CODE															
+				 , T4.CPSN_VAL1 AS RATE_SEQ_NUM													
+				 , CASE WHEN (SELECT ALW_VALUE 
+				 			  FROM   SSAM20TB 
+				 			  WHERE  ATT_TYPE_CODE = 'P0101' 
+							  AND    ALW_VALUE =  (SELECT ATT_VALUE_TEXT 
+							  					   FROM   SSPD08TB 
+							  					   WHERE  ATT_TYPE_CODE = 'P0101'
+												   AND    FK_PRD_CODE = T1.PRD_CODE)
+							 ) = 'Y' THEN 'Y'
+				 		ELSE 'N'
+				   END AS SAVING_CLS															
+				 , T1.SALE_DATE																	
+				 , (SELECT CD_DETL_NO 
+				    FROM   CCGR05TB 
+				    WHERE  FK_CD_KD_NO = 8501           
+					AND    CD_DETL_NO = T4.CPSN_VAL10) AS RATE_CLS_CD							
+			     , (
+			        SELECT DOUBLE(DECIMAL(ROUND(COALESCE(MAX(DATA_VAL5), 0),9), 12, 9))
+			        FROM   SSRA06TB
+			        WHERE  FK_RATE_TABLE_NO = (CASE WHEN INTEGER(T4.CPSN_VAL1) <![CDATA[ < ]]> INTEGER(1400) 
+												    THEN INTEGER(T4.CPSN_VAL1) + INTEGER(500) 
+												    ELSE INTEGER(T4.CPSN_VAL1) + INTEGER(4000) 
+										       END)
+			       ) AS MIN_RATE1																
+			     , (
+			        SELECT CASE WHEN COALESCE(MAX(DOUBLE(DECIMAL(ROUND(DATA_VAL5,9), 12, 9))), 0) = (SELECT DOUBLE(DECIMAL(ROUND(COALESCE(MAX(DATA_VAL5), 0),9), 12, 9))
+																                             		 FROM   SSRA06TB
+																                             		 WHERE  FK_RATE_TABLE_NO = (CASE WHEN INTEGER(T4.CPSN_VAL1) <![CDATA[ < ]]> INTEGER(1400) 
+																								   							         THEN INTEGER(T4.CPSN_VAL1) + INTEGER(500) 
+																														             ELSE INTEGER(T4.CPSN_VAL1) + INTEGER(4000) 
+																												                END)) 
+							    THEN 0 
+							    ELSE COALESCE(MAX(DOUBLE(DECIMAL(ROUND(DATA_VAL5,9), 12, 9))), 0)
+						   END
+			        FROM   SSRA06TB
+			        WHERE  FK_RATE_TABLE_NO = (CASE WHEN INTEGER(T4.CPSN_VAL1) <![CDATA[ < ]]> INTEGER(1400) 
+												    THEN INTEGER(T4.CPSN_VAL1) + INTEGER(500) 
+												    ELSE INTEGER(T4.CPSN_VAL1) + INTEGER(4000) 
+										      END)
+				    AND    DATA_VAL5 NOT IN (SELECT DOUBLE(DECIMAL(ROUND(COALESCE(MAX(DATA_VAL5), 0),9), 12, 9))
+				                             FROM   SSRA06TB
+				                             WHERE  FK_RATE_TABLE_NO = (CASE WHEN INTEGER(T4.CPSN_VAL1) <![CDATA[ < ]]> INTEGER(1400) 
+												   							 THEN INTEGER(T4.CPSN_VAL1) + INTEGER(500) 
+																		     ELSE INTEGER(T4.CPSN_VAL1) + INTEGER(4000) 
+																        END))
+			       ) AS MIN_RATE2																      
+			     , CASE WHEN DAYS(SALE_DATE) - DAYS('2003-10-01') <![CDATA[ < ]]> 0 
+			     		AND  SUBSTR(T1.PRD_CODE, 1,2) <![CDATA[ <> ]]> '93'
+			            THEN 'Y'
+			            ELSE 'N'
+			       END AS RSRV_AMT_TYPE															
+			     , (
+			     	SELECT ALW_VALUE 
+			     	FROM   SSAM20TB 
+			     	WHERE  ATT_TYPE_CODE = 'P0017' 
+					AND    ALW_VALUE =  (SELECT ATT_VALUE_TEXT 
+									  	 FROM   SSPD08TB 
+									  	 WHERE  ATT_TYPE_CODE = 'P0017'
+									  	 AND    FK_PRD_CODE = T1.PRD_CODE)
+					) AS DTBN_CLS																
+			     , (
+			     	SELECT ALW_VALUE 
+			     	FROM   SSAM20TB 
+			     	WHERE  ATT_TYPE_CODE = 'P0016' 
+					AND    ALW_VALUE =  (SELECT ATT_VALUE_TEXT 
+									  	 FROM   SSPD08TB 
+									  	 WHERE  ATT_TYPE_CODE = 'P0016'
+									  	 AND    FK_PRD_CODE = T1.PRD_CODE)
+					) AS STLM_CLS																		
+				 , CASE WHEN (SELECT ATT_VALUE_TEXT 
+				 			  FROM   SSPD08TB 
+				 			  WHERE  ATT_TYPE_CODE = 'P0002'
+				 			  AND    FK_PRD_CODE = T1.PRD_CODE ) = '리젠트'
+				 		THEN 'Y'
+				 		ELSE 'N'
+				   END AS RGNT_CLS																
+			     , (
+			     	SELECT ALW_VALUE 
+			     	FROM   SSAM20TB 
+			     	WHERE  ATT_TYPE_CODE = 'P0040' 
+					AND    ALW_VALUE =  (SELECT ATT_VALUE_TEXT 
+									  	 FROM   SSPD08TB 
+									  	 WHERE  ATT_TYPE_CODE = 'P0040'
+									  	 AND    FK_PRD_CODE = T1.PRD_CODE)
+					) AS CHNL_PRVT_CLS															
+				 , COALESCE((SELECT ATT_VALUE_NUM 
+							 FROM   SSPD08TB
+							 WHERE  ATT_TYPE_CODE = 'P0098'
+							 AND    FK_PRD_CODE = T1.PRD_CODE), 1) AS RATE_FLCT_CYCL			
+				 , (
+				 	SELECT CD_DETL_NO
+					FROM   CCGR05TB 
+					WHERE  FK_CD_KD_NO = 8503           
+					AND    CD_DETL_NO = (SELECT ATT_VALUE_TEXT 
+										 FROM   SSPD08TB 
+										 WHERE  ATT_TYPE_CODE = 'P0015' 
+										 AND FK_PRD_CODE = T1.PRD_CODE)         
+					) AS ACCM_SEPR_DTLC															
+				 , T4.CPSN_VAL5 AS ACCM_RATE_KEY												
+				 , CASE WHEN T4.CPSN_VAL6 = '00A'
+				 		THEN 'Y'
+				 		ELSE 'N'
+				   END AS ADD_PMT_YN															
+				 , CASE WHEN T1.SERIAL_PRD_CODE in ('95033', '95062')
+				 		THEN 'Y'
+				 		ELSE 'N'
+				   END AS OTNS_MTHD																
+				 , COALESCE((SELECT CD_DETL_NO 
+			        FROM   CCGR05TB
+				    WHERE  FK_CD_KD_NO = 8504
+				    AND    CD_DETL_NO = (SELECT ATT_VALUE_TEXT
+									     FROM   SSPD08TB 
+									     WHERE  ATT_TYPE_CODE = 'P0115'
+									     AND    FK_PRD_CODE = T1.PRD_CODE)
+				   ), '3') AS LMT_AMT_SET_YN													
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN 'Y'
+			        	   	    ELSE 'N'
+			     		   END
+			        FROM   SSPD08TB 
+			        WHERE  ATT_TYPE_CODE = 'P0133'
+					AND    FK_PRD_CODE = T1.PRD_CODE
+					) AS LAMT_PREM_DC_PROD														
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN 'Y'
+			        	   	    ELSE 'N'
+			     		   END
+			        FROM   SSPD08TB 
+			        WHERE  ATT_TYPE_CODE = 'P0179'
+					AND    FK_PRD_CODE = T1.PRD_CODE
+					) AS NACCD_DC_PROD															
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN 'Y'
+			        	   	    ELSE 'N'
+			     		   END
+			        FROM   SSPD08TB 
+			        WHERE  ATT_TYPE_CODE = 'P0190'
+					AND    FK_PRD_CODE = T1.PRD_CODE
+					) AS LAMT_DETH_COVR_DC														
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN 'Y'
+			        	   	    ELSE 'N'
+			     		   END
+			        FROM   SSPD08TB 
+			        WHERE  ATT_TYPE_CODE = 'P0185'
+					AND    FK_PRD_CODE = T1.PRD_CODE
+					) AS LTRM_MNTN_DC															
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN 'Y'
+			        	   	    ELSE 'N'
+			     		   END
+			        FROM   SSRA06TB 
+			        WHERE  FK_RATE_TABLE_NO = 30004
+					AND    CPSN_VAL1 = T1.PRD_CODE
+					) AS CAR_CONN_DC															
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN 'Y'
+			        	   	    ELSE 'N'
+			     		   END
+			        FROM   SSPD08TB 
+			        WHERE  ATT_TYPE_CODE = 'P0181'
+					AND    FK_PRD_CODE = T1.PRD_CODE
+					) AS FREE_PMT_TERM															
+			     , (
+			     	SELECT CASE WHEN COUNT(*) <![CDATA[ > ]]> 0
+			        	   	    THEN (SELECT ATT_VALUE_TEXT
+			        	   	    	  FROM   SSPD08TB
+			        	   	    	  WHERE  ATT_TYPE_CODE = 'P0182'
+			        	   	    	  AND    FK_PRD_CODE = T1.PRD_CODE)
+			        	   	    ELSE '0'
+			     		   END
+			        FROM   SSPD08TB 
+			        WHERE  ATT_TYPE_CODE = 'P0182'
+					AND    FK_PRD_CODE = T1.PRD_CODE
+					) AS FREE_LBLT_PMT_TERM																
+				 , ' '																			
+				 , ' '																			
+				 , ' '																			
+				 , ' '																			
+				 , ' '																			
+				 , CURRENT DATE
+				 , '9999-12-31'
+				 , cast(#lastUpdateClerk# as varchar(10))										
+				 , CURRENT DATE																	
+				 , cast(#lastUpdateIp# as varchar(30))											
+			FROM   SSPD01TB T1
+			     , PRCVDTTB T2 
+			     , CCGR05TB T3
+			     , SSRA06TB T4
+			WHERE  T1.PRD_CODE = T2.PROD_CD
+			AND    T1.PRD_CODE = T3.CD_DETL_NO
+			AND    T1.PRD_CODE = T4.CPSN_VAL2
+			AND    T1.PRD_CODE LIKE '9%'
+			AND    T1.PRD_CODE NOT LIKE '98%'
+			AND    T3.FK_CD_KD_NO = 260
+			AND    T4.FK_RATE_TABLE_NO = 1960
+			AND    T2.CLS_VAL2 = (CASE WHEN (SELECT COUNT(*) FROM PRCVDTTB WHERE PROD_CD = T1.PRD_CODE) <![CDATA[ > ]]> 1 THEN 'AA' ELSE CLS_VAL2 END)
+			AND    TRIM(T1.PRD_CODE)||TRIM(T2.CLS_VAL1)||'0' NOT IN (SELECT RCIV_CD 
+									   								 FROM   SSPD16TB 
+									   								 WHERE  CURRENT DATE <![CDATA[ >= ]]> APPL_START_DATE
+		        						   							 AND    CURRENT DATE <![CDATA[ < ]]> APPL_END_DATE
+		        						   							 GROUP  BY RCIV_CD)
+		    AND    DATE(SUBSTR(T4.CPSN_VAL3,1,4) || '-' ||  SUBSTR(T4.CPSN_VAL3,5,2) || '-' || SUBSTR(T4.CPSN_VAL3,7,2)) <![CDATA[ <= ]]> CURRENT_DATE
+			AND    DATE(SUBSTR(T4.CPSN_VAL4,1,4) || '-' ||  SUBSTR(T4.CPSN_VAL4,5,2) || '-' || SUBSTR(T4.CPSN_VAL4,7,2)) <![CDATA[ > ]]> CURRENT_DATE
+			AND    TRIM(T1.PRD_CODE)||TRIM(T2.CLS_VAL1)||'0' IN <iterate property="rcivCd" open="(" close=")" conjunction=",">#rcivCd[]#</iterate>
+		)
+    </insert>
+    
+    <select id="SS.Layout.selectAddUpValidationLayout" parameterClass="java.util.Map" resultMap="select-layout-for-add-up">
+		WITH V_TEMP AS ( SELECT A.RISK_RT_CD
+		                      , A.RISK_RT_NM
+		                      , A.COVR_OBJT_CLS
+		                      , A.FACTOR_CHNG_STT_CD
+		                      , A.COEF_CLS
+		                      , B.FACTOR_CD
+		                      , B.FACTOR_NM
+		                      , CASE WHEN '0000' = B.FACTOR_GRP_CD
+		                             THEN B.SORT
+		                             ELSE MIN ( B.SORT ) OVER ( PARTITION BY B.FACTOR_GRP_CD )
+		                         END AS SORT
+		                      , B.FACTOR_GRP_CD
+		                   FROM ( SELECT A.RISK_RT_CD
+		                               , A.RISK_RT_NM
+		                               , A.COVR_OBJT_CLS
+		                               , A.FACTOR_CHNG_STT_CD
+		                               , B.COEF_CLS
+		                               , C.CPSN_FACTOR_CD
+		                            FROM SSRM02TB A INNER JOIN SSRM01TB B ON A.RISK_RT_IDNT_CD = B.RISK_RT_IDNT_CD
+		                                       LEFT OUTER JOIN SSRM05TB C ON A.RISK_RT_CD = C.RISK_RT_CD
+		                           WHERE A.RISK_RT_CD IN <iterate property="codes" open="( " close=" )" conjunction=", ">#codes[]#</iterate>
+		                        ) A LEFT OUTER JOIN SSRM11TB B ON A.CPSN_FACTOR_CD = B.FACTOR_CD
+		               )
+		  SELECT '' AS RISK_RT_CD
+		       , '' AS RISK_RT_NM
+		       , '' AS COVR_OBJT_CLS
+		       , '' AS FACTOR_CHNG_STT_CD
+		       , '' AS COEF_CLS
+		       , FACTOR_CD
+		    FROM V_TEMP
+		   WHERE FACTOR_CD IS NOT NULL
+		   GROUP
+		      BY FACTOR_CD
+		   UNION ALL
+		  SELECT RISK_RT_CD
+		       , RISK_RT_NM
+		       , COVR_OBJT_CLS
+		       , FACTOR_CHNG_STT_CD
+		       , COEF_CLS
+		       , '' AS FACTOR_CD
+		    FROM V_TEMP
+		   GROUP
+		      BY RISK_RT_CD
+		       , RISK_RT_NM
+		       , COVR_OBJT_CLS
+		       , FACTOR_CHNG_STT_CD
+		       , COEF_CLS
+		    WITH UR
+    </select>
+    
+    <select id="TC.selectPrintContentsEdit" parameterClass="java.util.Map" resultClass="printContents">
+		/* selectPrintContentsEdit CR_Consulting/ConsultingPlan 안종원 */
+		SELECT 
+			    clerk_no		clerkNo
+			   ,cust_id			custId
+			   ,opni_cls_detl   opniClsDetl
+		       ,clobconts       conts
+		        
+		  FROM CNRD03TB
+		 WHERE clerk_no = #clerkNo#
+		   AND cust_id  = #custId#
+		   AND opni_cls = #opniCls#
+	   	   AND opni_cls_detl 	<iterate prepend = "IN" property="opniClsDetlList" open="(" close=")" conjunction =",">
+	   							 #opniClsDetlList[]#
+	   						    </iterate>   
+	</select>
+	
+	 <select id="SS.Layout.selectMultiLayoutValueOfLayout" parameterClass="java.util.Map" resultClass="java.util.HashMap">
+	   WITH XTABLE AS(
+		    SELECT A.RISK_RT_CD,
+	               A.RISK_RT_NM,
+	               A.CPSN_FACTOR_CD,
+	               A.FACTOR_NM,
+	               A.SORT,
+	               ROW_NUMBER() OVER ( PARTITION BY A.RISK_RT_CD ORDER BY A.SORT  ) AS GRPNUMBER, 
+	               DENSE_RANK() OVER(ORDER BY A.SORT) AS ROWNUMBER
+	        
+	        FROM (
+			        SELECT A.RISK_RT_CD,
+			               A.RISK_RT_NM,
+			               B.CPSN_FACTOR_CD,
+			               CASE WHEN C.FACTOR_GRP_CD = '0000'
+			                    THEN C.FACTOR_NM
+			                    ELSE D.COMM_CD_NM
+			               END AS FACTOR_NM,
+			               CASE WHEN C.FACTOR_GRP_CD = '0000'
+			                    THEN C.SORT
+			                    ELSE MIN(C.SORT) OVER(PARTITION BY C.FACTOR_GRP_CD)
+			               END AS SORT			               
+			        FROM   SSRM02TB A,
+			               SSRM05TB B,
+			               SSRM11TB C,
+			               SSRM09TB D
+			        WHERE  A.RISK_RT_CD = B.RISK_RT_CD
+			        AND    A.RISK_RT_CD  IN <iterate property="codes" open="(" close=")" conjunction=",">#codes[]#</iterate>
+			        AND    B.CPSN_FACTOR_CD = C.FACTOR_CD
+			        AND    D.CLSF_CD='RR99'
+			        AND    C.USE_YN = 'Y'
+			        AND    A.COVR_OBJT_CLS = #type#
+			        AND    C.FACTOR_GRP_CD = D.COMM_CD
+	        	) A
+	     )
+	     SELECT A.RISK_RT_CD,
+			    A.RISK_RT_NM,
+			    CHAR(A.RISK_RT_01) AS RISK_RT_01,
+              	A.OBJT_ATTR_01,
+              	A.OBJT_ATTR_02,
+              	A.OBJT_ATTR_03,
+              	A.OBJT_ATTR_04,
+              	A.OBJT_ATTR_05,
+              	A.OBJT_ATTR_06,
+              	A.OBJT_ATTR_07,
+              	A.OBJT_ATTR_08,
+              	A.OBJT_ATTR_09,
+              	A.OBJT_ATTR_10,
+              	A.SEQ_NUM
+	     FROM 
+		     ( 
+			     SELECT A.RISK_RT_CD
+			          , B.RISK_RT_NM
+		         	  ,	A.RISK_RT_01
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_01||','|| CHAR( CASE WHEN C.GRPNUMBER =1
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_01
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_02||','|| CHAR( CASE WHEN C.GRPNUMBER =2
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_02
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_03||','|| CHAR( CASE WHEN C.GRPNUMBER =3
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_03
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_04||','|| CHAR( CASE WHEN C.GRPNUMBER =4
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_04
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_05||','|| CHAR( CASE WHEN C.GRPNUMBER =5
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_05
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_06||','|| CHAR( CASE WHEN C.GRPNUMBER =6
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_06
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_07||','|| CHAR( CASE WHEN C.GRPNUMBER =7
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_07
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_08||','|| CHAR( CASE WHEN C.GRPNUMBER =8
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_08
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_09||','|| CHAR( CASE WHEN C.GRPNUMBER =9
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_09
+			          , VARCHAR(
+			                    MAX(A.OBJT_ATTR_10||','|| CHAR( CASE WHEN C.GRPNUMBER =10
+			                                           		         THEN C.ROWNUMBER
+			                                           		   		 ELSE 0
+			                                      		 		 END  
+			                                      		 	   )	   
+			                       ) 
+			                    ) AS OBJT_ATTR_10
+	   				  , CHAR(A.SEQ_NUM) SEQ_NUM    
+			     FROM   SSRM06TB A , 
+			            SSRM02TB B ,
+			            XTABLE C
+			     WHERE  A.RISK_RT_CD IN <iterate property="codes" open="(" close=")" conjunction=",">#codes[]#</iterate>
+			     AND    A.RISK_RT_CD = B.RISK_RT_CD
+			     AND    A.RISK_RT_CD = C.RISK_RT_CD
+			     AND    B.COVR_OBJT_CLS = #type#
+			     <isNotNull property="pageInfo.firstKey">
+			     	<isNotEmpty property="pageInfo.firstKey.code" prepend="AND"> 
+			     	 ((A.RISK_RT_CD = #pageInfo.firstKey.code#  AND A.SEQ_NUM > CAST(#pageInfo.firstKey.no# AS INTEGER) ) OR (A.RISK_RT_CD > #pageInfo.firstKey.code#   ))
+			     	</isNotEmpty>
+		        </isNotNull>
+			     GROUP BY  A.RISK_RT_CD
+			             , B.RISK_RT_NM
+			             , A.RISK_RT_01
+			             , A.SEQ_NUM
+			     ORDER BY  A.RISK_RT_CD,A.SEQ_NUM
+			     FETCH FIRST $pageInfo.rowCntPerPage$ ROWS ONLY
+		     ) A
+	     UNION ALL
+	     SELECT '' AS RISK_RT_CD 
+	          , '' AS RISK_RT_NM
+	          , '' AS RISK_RT_01
+			  , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =1 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_01
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =2 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_02
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =3 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_03
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =4 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_04
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =5 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_05
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =6 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_06
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =7 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_07
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =8 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_08
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =9 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_09
+
+		     , VARCHAR( 
+		                MAX(
+		     				CASE WHEN ROWNUMBER =10 
+		                	     THEN FACTOR_NM
+		                	     ELSE  ''
+		                   	END 
+		             	   )
+		             ) AS OBJT_ATTR_10
+
+              , '' AS SEQ_NUM	     
+      FROM   XTABLE
+      WITH UR
+    </select>
+    
+    <select id="PU.selectCrPointPenalizationConfirmRate" parameterClass="map" resultMap="PU.selectRequestPenalizationConfirmRate.resultMap">
+	select
+		<isEqual property="deptCls" compareValue="ALL">
+		stf.BLNG_HQ						deptCode
+		,MAX(stf.BLNG_HQ_NAME)			deptName
+		</isEqual>
+		<isEqual property="deptCls" compareValue="BLNG_HQ">
+		stf.sanc_prc_dept_cd			deptCode
+		,MAX(stf.prc_dept_cmps_name)	deptName
+		</isEqual>
+		<isEqual property="deptCls" compareValue="NSNC_PRC_DEPT">
+		stf.dept_cd						deptCode
+		,MAX(stf.dept_cmps_name)		deptName
+		</isEqual>
+		<isEqual property="deptCls" compareValue="DEPT">
+		stf.clerk_no					deptCode
+		,MAX(stf.clerk_name)			deptName
+		</isEqual>
+		,a.guide_lmt_grade		guideLine
+		,count(a.guide_lmt_grade) target
+		,sum(
+			case a.consider_yn
+			when 'N' then 1
+			else 0 end
+		)						confirm
+	from pucr27tb a, staff0tb stf
+	where a.hndl_clerk = stf.clerk_no
+	and eval_woldo between #startMonth# and #endMonth#
+	and a.cfrm_lmt_grade not in ('11', '12')
+	and a.guide_lmt_grade != '14'
+	<isEqual property="deptCls" compareValue="ALL">
+	group by stf.BLNG_HQ, a.guide_lmt_grade
+	</isEqual>
+	<isEqual property="deptCls" compareValue="BLNG_HQ">
+	and stf.BLNG_HQ = #deptCode#
+	group by stf.sanc_prc_dept_cd, a.guide_lmt_grade
+	</isEqual>
+	<isEqual property="deptCls" compareValue="NSNC_PRC_DEPT">
+	and stf.sanc_prc_dept_cd = #deptCode#
+	group by stf.dept_cd, a.guide_lmt_grade
+	</isEqual>
+	<isEqual property="deptCls" compareValue="DEPT">
+	and stf.dept_cd = #deptCode#
+	group by stf.clerk_no, a.guide_lmt_grade
+	</isEqual>
+	</select>
+	
+	
+
+	<select id="PU.selectPenalizationStatisticDtlList" parameterClass="searchCond" resultMap="PU.selectPenalizationStatisticDtlList.resultMap">
+	SELECT piece.type
+	   ,piece.blng_hq
+       ,piece.blng_hq_name
+       ,piece.sanc_prc_dept_cd
+       ,piece.sanc_dept_org_name
+       ,piece.dept_cd
+       ,piece.dept_cmps_name
+       ,piece.clerk_name
+       ,piece.clerk_no
+       ,piece.eval_woldo
+       ,piece.vlt_type
+       ,piece.detl_vlt_type
+       ,piece.cr_cfrm_point_sum
+       ,piece.accd_no
+       ,piece.accd_type
+       ,piece.exmp_type
+       ,piece.amt
+       ,piece.rcvry_pcnt
+       ,piece.appr_no
+       ,piece.guide_lmt_grade
+       ,piece.guide_line
+       ,piece.cfrm_lmt_grade
+       ,piece.confirm_grade
+	FROM (
+		SELECT total.type
+		   ,total.blng_hq
+	       ,total.blng_hq_name
+	       ,total.sanc_prc_dept_cd
+	       ,total.sanc_dept_org_name
+	       ,total.dept_cd
+	       ,total.dept_cmps_name
+	       ,total.clerk_name
+	       ,total.clerk_no
+	       ,total.eval_woldo
+	       ,total.vlt_type
+	       ,total.detl_vlt_type
+	       ,total.cr_cfrm_point_sum
+	       ,total.accd_no
+	       ,total.accd_type
+	       ,total.exmp_type
+	       ,total.amt
+	       ,total.RCVRY_PCNT
+	       ,total.appr_no
+	       ,total.guide_lmt_grade
+	       ,total.guide_line
+	       ,total.cfrm_lmt_grade
+	       ,total.confirm_grade
+	       ,ROW_NUMBER()OVER(ORDER BY total.blng_hq_name, total.type, total.sanc_dept_org_name, total.dept_cmps_name, total.clerk_name) rownum
+		FROM (
+			<isNotEqual property="crPointCls" compareValue="ETC">
+			SELECT 'C/R' AS type
+			   ,b.blng_hq
+		       ,b.blng_hq_name
+		       ,b.sanc_prc_dept_cd
+		       ,b.sanc_dept_org_name
+		       ,b.dept_cd
+		       ,b.dept_cmps_name
+		       ,b.clerk_name
+		       ,b.clerk_no
+		       ,a.eval_woldo
+		       ,'C/R Point' AS vlt_type
+		       ,'C/R Point' AS detl_vlt_type
+		       ,a.cr_cfrm_point_sum
+		       ,'-' AS accd_no
+		       ,'-' AS ACCD_TYPE
+		       ,'-' AS exmp_type
+		       ,0 AS amt
+		       ,0 AS RCVRY_PCNT
+		       ,'-' AS appr_no
+		       ,a.guide_lmt_grade
+		       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.guide_lmt_grade) AS guide_line
+		       ,a.cfrm_lmt_grade
+		       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.cfrm_lmt_grade) AS confirm_grade
+			  FROM pucr27tb a, staff0tb b
+			 WHERE a.bsns_cls = 'CRPL'
+			   AND a.eval_woldo BETWEEN #searchPeriodInfo.startMonth# AND #searchPeriodInfo.endMonth#
+			   AND a.hndl_clerk = b.clerk_no
+			   AND a.guide_lmt_grade != '14'
+		    <isEqual property="gradeCls" compareValue="Review">
+		    AND a.cfrm_lmt_grade = '12'
+		    </isEqual>
+		    <isEqual property="gradeCls" compareValue="CompanyIvst">
+		    AND a.cfrm_lmt_grade = '11'
+		    </isEqual>
+		    <isEqual property="gradeCls" compareValue="Observance">
+		    AND a.consider_yn = 'N'
+		    AND a.cfrm_lmt_grade NOT IN ('11', '12')
+		    </isEqual>
+		    <isEqual property="gradeCls" compareValue="Consider">
+		    AND a.consider_yn = 'Y'
+		    AND a.cfrm_lmt_grade NOT IN ('11', '12')
+		    </isEqual>
+			<isEqual property="clerkCondition.deptCls" compareValue="RC" prepend="AND ">b.clerk_no = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="DEPT" prepend="AND ">b.dept_cd = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="NSNC_PRC_DEPT" prepend="AND ">b.sanc_prc_dept_cd = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="BLNG_HQ" prepend="AND ">b.blng_hq = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="ALL" prepend="AND ">1 = 1</isEqual>
+			</isNotEqual>
+			
+			<isEqual property="crPointCls" compareValue="">
+			UNION ALL
+			</isEqual>
+			
+			<isNotEqual property="crPointCls" compareValue="CR">
+			SELECT 'C/R外' AS type
+				   ,b.blng_hq
+			       ,b.blng_hq_name
+			       ,b.sanc_prc_dept_cd
+			       ,b.sanc_dept_org_name
+			       ,b.dept_cd
+			       ,b.dept_cmps_name
+			       ,b.clerk_name
+			       ,b.clerk_no
+			       ,SUBSTR(REPLACE((c.pnlty_start_date - 1 MONTH), '-', ''), 1, 6) AS eval_woldo
+				   ,a.VLT_TYPE			vlt_type
+				   ,a.DETL_VLT_TYPE		detl_vlt_type
+    			   ,0 AS cr_cfrm_point_sum
+			       ,a.accd_no
+				   ,a.ACCD_TYPE			ACCD_TYPE
+			       ,a.exmp_type
+			       ,CASE SUBSTR(a.appr_no, 1, 1) 
+			            WHEN 'A' THEN a.fls_req_amt
+			            WHEN 'D' THEN a.loss_amt
+			            WHEN 'G' THEN a.tot_amt
+			        ELSE '_'
+			        END amt
+			       ,a.rcvry_pcnt
+			       ,a.appr_no
+			       ,a.guide_lmt_from guide_lmt_grade
+			       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.guide_lmt_from) AS guide_line
+			       ,a.cfrm_lmt_grade
+			       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.cfrm_lmt_grade) AS confirm_grade
+			  FROM pucr33tb a, staff0tb b, pucr38tb c
+			 WHERE a.delete_yn = 'N'
+			   AND a.appr_stt_cd = '04'
+			   AND a.hndl_clerk_no = b.clerk_no
+			   AND a.appr_no = c.appr_no
+			   AND a.hndl_clerk_no = c.clerk_no
+			   AND (c.pnlty_start_date - 1 MONTH) BETWEEN #searchPeriodInfo.startDate# AND #searchPeriodInfo.endDate#
+			<isEqual property="gradeCls" compareValue="Review">
+			AND a.cfrm_lmt_grade = '12'
+			</isEqual>
+			<isEqual property="gradeCls" compareValue="CompanyIvst">
+			AND a.cfrm_lmt_grade = '11'
+			</isEqual>
+			<isEqual property="gradeCls" compareValue="Observance">
+			AND a.guide_lmt_from = a.cfrm_lmt_grade
+			AND a.cfrm_lmt_grade NOT IN ('11', '12')
+			</isEqual>
+			<isEqual property="gradeCls" compareValue="Consider">
+			AND a.guide_lmt_from != a.cfrm_lmt_grade
+			AND a.cfrm_lmt_grade NOT IN ('11', '12')
+			</isEqual>
+			<isEqual property="clerkCondition.deptCls" compareValue="RC" prepend="AND ">b.clerk_no = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="DEPT" prepend="AND ">b.dept_cd = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="NSNC_PRC_DEPT" prepend="AND ">b.sanc_prc_dept_cd = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="BLNG_HQ" prepend="AND ">b.blng_hq = #clerkCondition.deptCode#</isEqual> 
+			<isEqual property="clerkCondition.deptCls" compareValue="ALL" prepend="AND ">1 = 1</isEqual> 
+		    </isNotEqual>
+		) total
+	) piece
+	WHERE piece.rowNum BETWEEN #pageStart# AND #pageEnd#
+	OPTIMIZE FOR 1 ROW
+	</select>
+	
+	<select id="PU.selectCrPointPenalizationConfirmRate" parameterClass="map" resultMap="PU.selectRequestPenalizationConfirmRate.resultMap">
+	select
+		<isEqual property="deptCls" compareValue="ALL">
+		stf.BLNG_HQ						deptCode
+		,MAX(stf.BLNG_HQ_NAME)			deptName
+		</isEqual>
+		<isEqual property="deptCls" compareValue="BLNG_HQ">
+		stf.sanc_prc_dept_cd			deptCode
+		,MAX(stf.prc_dept_cmps_name)	deptName
+		</isEqual>
+		<isEqual property="deptCls" compareValue="NSNC_PRC_DEPT">
+		stf.dept_cd						deptCode
+		,MAX(stf.dept_cmps_name)		deptName
+		</isEqual>
+		<isEqual property="deptCls" compareValue="DEPT">
+		stf.clerk_no					deptCode
+		,MAX(stf.clerk_name)			deptName
+		</isEqual>
+		,a.guide_lmt_grade		guideLine
+		,count(a.guide_lmt_grade) target
+		,sum(
+			case a.consider_yn
+			when 'N' then 1
+			else 0 end
+		)						confirm
+	from pucr27tb a, staff0tb stf
+	where a.hndl_clerk = stf.clerk_no
+	and eval_woldo between #startMonth# and #endMonth#
+	and a.cfrm_lmt_grade not in ('11', '12')
+	and a.guide_lmt_grade != '14'
+	<isEqual property="deptCls" compareValue="ALL">
+	group by stf.BLNG_HQ, a.guide_lmt_grade
+	</isEqual>
+	<isEqual property="deptCls" compareValue="BLNG_HQ">
+	and stf.BLNG_HQ = #deptCode#
+	group by stf.sanc_prc_dept_cd, a.guide_lmt_grade
+	</isEqual>
+	<isEqual property="deptCls" compareValue="NSNC_PRC_DEPT">
+	and stf.sanc_prc_dept_cd = #deptCode#
+	group by stf.dept_cd, a.guide_lmt_grade
+	</isEqual>
+	<isEqual property="deptCls" compareValue="DEPT">
+	and stf.dept_cd = #deptCode#
+	group by stf.clerk_no, a.guide_lmt_grade
+	</isEqual>
+	</select>
+	
+	<select id="PU.selectPenalizationStatisticDtlAllCount" parameterClass="searchCond" resultMap="PU.selectPenalizationStatisticDtlAllCount.resultMap">
+	select count(1) total
+	,COALESCE(sum(case when consider = 'Y' and cfrm_lmt_grade not in ('11', '12') then 1 else 0 end), 0) consider
+	,COALESCE(sum(case when consider != 'Y' and cfrm_lmt_grade not in ('11', '12') then 1 else 0 end), 0) observance
+	,COALESCE(sum(case when cfrm_lmt_grade = '12' then 1 else 0 end), 0) review
+	,COALESCE(sum(case when cfrm_lmt_grade = '11' then 1 else 0 end), 0) companyIvst
+	FROM (
+	<isNotEqual property="crPointCls" compareValue="ETC">
+	SELECT 'C/R' AS type
+		   ,b.blng_hq
+	       ,b.blng_hq_name
+	       ,b.sanc_prc_dept_cd
+	       ,b.sanc_dept_org_name
+	       ,b.dept_cd
+	       ,b.dept_cmps_name
+	       ,b.clerk_name
+	       ,b.clerk_no
+	       ,a.eval_woldo
+	       ,'C/R Point' AS vlt_type
+	       ,'C/R Point' AS detl_vlt_type
+	       ,a.cr_cfrm_point_sum
+	       ,'-' AS accd_no
+	       ,'-' AS exmp_type
+	       ,0 AS amt
+	       ,0 AS RCVRY_PCNT
+	       ,'-' AS appr_no
+	       ,a.guide_lmt_grade
+	       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.guide_lmt_grade) AS guide_line
+	       ,a.cfrm_lmt_grade
+	       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.cfrm_lmt_grade) AS confirm_grade
+	       ,a.consider_yn consider
+	  FROM pucr27tb a, staff0tb b
+	 WHERE a.bsns_cls = 'CRPL'
+	   AND a.eval_woldo BETWEEN #searchPeriodInfo.startMonth# AND #searchPeriodInfo.endMonth#
+	   AND a.hndl_clerk = b.clerk_no
+	   AND a.guide_lmt_grade != '14'
+	<isEqual property="clerkCondition.deptCls" compareValue="RC" prepend="AND ">b.clerk_no = #clerkCondition.deptCode#</isEqual> <!-- RC -->
+	<isEqual property="clerkCondition.deptCls" compareValue="DEPT" prepend="AND ">b.dept_cd = #clerkCondition.deptCode#</isEqual> <!-- 지점 -->
+	<isEqual property="clerkCondition.deptCls" compareValue="NSNC_PRC_DEPT" prepend="AND ">b.sanc_prc_dept_cd = #clerkCondition.deptCode#</isEqual> <!-- 지역단 -->
+	<isEqual property="clerkCondition.deptCls" compareValue="BLNG_HQ" prepend="AND ">b.blng_hq = #clerkCondition.deptCode#</isEqual> <!-- 사업부 -->
+	<isEqual property="clerkCondition.deptCls" compareValue="ALL" prepend="AND ">1 = 1</isEqual> <!-- 회사계 -->
+	</isNotEqual>
+	
+	<isEqual property="crPointCls" compareValue="">
+	UNION ALL
+	</isEqual>
+	
+	<isNotEqual property="crPointCls" compareValue="CR">
+	SELECT 'C/R外' AS type
+		   ,b.blng_hq
+	       ,b.blng_hq_name
+	       ,b.sanc_prc_dept_cd
+	       ,b.sanc_dept_org_name
+	       ,b.dept_cd
+	       ,b.dept_cmps_name
+	       ,b.clerk_name
+	       ,b.clerk_no
+	       ,SUBSTR(REPLACE((c.pnlty_start_date - 1 MONTH), '-', ''), 1, 6) AS eval_woldo
+	       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VLTTYPE' AND cd.code = a.vlt_type) AS vlt_type
+	       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VLTDETL' AND cd.code = a.detl_vlt_type) AS detl_vlt_type
+		   ,0 AS cr_cfrm_point_sum
+	       ,a.accd_no
+	       ,a.exmp_type
+	       ,CASE SUBSTR(a.appr_no, 1, 1) 
+	            WHEN 'A' THEN a.fls_req_amt
+	            WHEN 'D' THEN a.loss_amt
+	            WHEN 'G' THEN a.tot_amt
+	        ELSE '_'
+	        END amt
+	       ,a.rcvry_pcnt
+	       ,a.appr_no
+	       ,a.guide_lmt_from guide_lmt_grade
+	       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.guide_lmt_from) AS guide_line
+	       ,a.cfrm_lmt_grade
+	       ,(SELECT cd.code_nm FROM pucr28tb cd WHERE cd.code_cls = 'VIOLVL' AND cd.code = a.cfrm_lmt_grade) AS confirm_grade
+	       ,(case a.guide_lmt_from
+				when a.cfrm_lmt_grade then 'N'
+				else 'Y'
+				end) consider
+	  FROM pucr33tb a, staff0tb b, pucr38tb c
+	 WHERE a.delete_yn = 'N'
+	   AND a.appr_stt_cd = '04'
+	   AND a.hndl_clerk_no = b.clerk_no
+	   AND a.appr_no = c.appr_no
+	   AND a.hndl_clerk_no = c.clerk_no
+	   AND (c.pnlty_start_date - 1 MONTH) BETWEEN #searchPeriodInfo.startDate# AND #searchPeriodInfo.endDate#
+	<isEqual property="clerkCondition.deptCls" compareValue="RC" prepend="AND ">b.clerk_no = #clerkCondition.deptCode#</isEqual> <!-- RC -->
+	<isEqual property="clerkCondition.deptCls" compareValue="DEPT" prepend="AND ">b.dept_cd = #clerkCondition.deptCode#</isEqual> <!-- 지점 -->
+	<isEqual property="clerkCondition.deptCls" compareValue="NSNC_PRC_DEPT" prepend="AND ">b.sanc_prc_dept_cd = #clerkCondition.deptCode#</isEqual> <!-- 지역단 -->
+	<isEqual property="clerkCondition.deptCls" compareValue="BLNG_HQ" prepend="AND ">b.blng_hq = #clerkCondition.deptCode#</isEqual> <!-- 사업부 -->
+	<isEqual property="clerkCondition.deptCls" compareValue="ALL" prepend="AND ">1 = 1</isEqual> <!-- 회사계 -->
+    </isNotEqual>
+	) total
+	</select>
+	
+	<!-- C/R Point 外 제재대상 조회 -->
+	<select id="PU.selectPenaltyApprovalPartyList" parameterClass="searchCond" resultMap="PU.selectPenalizationRequestList.resultMap">
+	select saupbuCd
+		,saupbuNm
+		,jijumCd
+		,jijumNm
+		,deptCd
+		,deptNm
+		,hndlClerkNm
+		,hndlClerk
+		,rcType
+		,rtFrmDate
+		,reviewYn
+		,guideFrom
+		,guideTo
+		,confirmGrade
+		,approvalNo
+		,accidentType
+		,exemptionType
+		,violationType
+		,detailViolationType
+	from (
+		select stf.blng_hq			saupbuCd
+			,stf.blng_hq_name		saupbuNm
+			,stf.sanc_prc_dept_cd	jijumCd
+			,stf.sanc_dept_org_name	jijumNm
+			,stf.dept_cd			deptCd
+			,stf.dept_cmps_name		deptNm
+			,stf.agency_name		hndlClerkNm
+			,stf.clerk_no			hndlClerk
+			,stf.character_cls		rcType
+			,stf.rt_frm_date		rtFrmDate
+			,trgt.review_yn			reviewYn
+			,trgt.guide_lmt_from	guideFrom
+			,trgt.guide_lmt_to		guideTo
+			,trgt.cfrm_lmt_grade	confirmGrade
+			,trgt.APPR_NO			approvalNo
+			,trgt.ACCD_TYPE			accidentType
+			,trgt.EXMP_TYPE			exemptionType
+			,trgt.VLT_TYPE			violationType
+			,trgt.DETL_VLT_TYPE		detailViolationType
+			,row_number()over() rowNum
+		from (
+			SELECT A.APPR_NO
+				,A.HNDL_CLERK_NO
+				,A.REVIEW_YN
+				,A.GUIDE_LMT_FROM
+				,A.GUIDE_LMT_TO
+				,A.CFRM_LMT_GRADE
+				,A.ACCD_TYPE
+				,A.EXMP_TYPE
+				,A.VLT_TYPE
+				,A.DETL_VLT_TYPE
+			FROM PUCR33TB A left outer join PUCR38TB B on A.APPR_NO = B.APPR_NO
+			WHERE A.APPR_STT_CD = '04'
+			AND B.CLERK_NO is NULL
+			AND A.DELETE_YN = 'N'
+			AND A.APPR_CMPL_DATE != '0001-01-01'
+			<!-- 전사심의 조회 -->
+			<isEqual property="searchCls" compareValue="true">
+			AND A.CFRM_LMT_GRADE = '11'
+			AND A.APPR_CMPL_DATE + 1 MONTH BETWEEN #searchPeriodInfo.startDate# AND #searchPeriodInfo.endDate#
+			</isEqual>
+			<!-- 사업부심의 조회 -->
+			<isEqual property="searchCls" compareValue="false">
+			AND A.APPR_CMPL_DATE BETWEEN #searchPeriodInfo.startDate# AND #searchPeriodInfo.endDate#
+			</isEqual>
+			<isNotNull property="clerkCondition.hndlClerk">
+			AND A.HNDL_CLERK_NO = #clerkCondition.hndlClerk#
+			</isNotNull>
+		) trgt, staff0tb stf, STFETCTB etc
+		WHERE trgt.HNDL_CLERK_NO = stf.CLERK_NO
+		AND stf.CLERK_NO = etc.FK_STAFF0TBCLERK_N
+		<isNotNull property="clerkCondition.deptCls">
+		<isEqual property="clerkCondition.deptCls" compareValue="RC">AND trgt.HNDL_CLERK = #clerkCondition.deptCode#</isEqual> <!-- RC -->
+		<isEqual property="clerkCondition.deptCls" compareValue="DEPT">AND stf.DEPT_CD = #clerkCondition.deptCode#</isEqual> <!-- 지점 -->
+		<isEqual property="clerkCondition.deptCls" compareValue="NSNC_PRC_DEPT">AND stf.sanc_prc_dept_cd = #clerkCondition.deptCode#</isEqual> <!-- 지역단 -->
+		<isEqual property="clerkCondition.deptCls" compareValue="BLNG_HQ">AND stf.BLNG_HQ = #clerkCondition.deptCode#</isEqual> <!-- 사업부 -->
+		<isEqual property="clerkCondition.deptCls" compareValue="ALL"></isEqual> <!-- 회사계 -->
+		</isNotNull>
+		
+		<!-- RC인격 -->
+		<isNotNull property="clerkCondition.riskConsultantCls">
+		AND
+			<isEqual property="clerkCondition.riskConsultantCls" compareValue="ALL">
+			stf.character_cls IN ('', '01', '02')
+			</isEqual>
+			<isEqual property="clerkCondition.riskConsultantCls" compareValue="INDV">
+			stf.character_cls IN ('', '01')
+			<!-- 개인 조회시 "일반법인 대리점 사용인"과 "TM법인 대리점 사용인"은 제외함.-->
+			AND ((select blng_agency from staff0tb where clerk_no = trgt.hndl_clerk_no) IN ('', trgt.hndl_clerk_no)<!-- 개인대리점 포함 -->
+				OR (select agency_chct from staff0tb where clerk_no = (select blng_agency from staff0tb where clerk_no = trgt.hndl_clerk_no)) IN ('02', '03')
+			)
+			</isEqual>
+			<isEqual property="clerkCondition.riskConsultantCls" compareValue="CORP">
+			(
+				stf.character_cls = '02'
+				<!-- "일반법인 대리점 사용인"과 "TM법인 대리점 사용인" 포함 -->
+				OR (
+					(select agency_chct from staff0tb where clerk_no = (
+				     		select blng_agency
+				     		from staff0tb
+				     		where clerk_no = stf.clerk_no
+				     		and blng_agency != clerk_no
+				     		and stf.character_cls != '02'
+						)
+					) NOT IN ('02', '03')
+				)
+			)
+			</isEqual>
+		</isNotNull>
+		
+		<isNotNull property="orgCls">
+		<!-- 대면조직 -->
+		<isEqual property="orgCls" compareValue="INTV">
+		AND etc.COMM_SALE_CLS != '1'
+		</isEqual>
+		<!-- 통신판매조직 -->
+		<isEqual property="orgCls" compareValue="TM">
+		AND etc.COMM_SALE_CLS = '1'
+		AND stf.BLNG_HQ IN ('0038', '0972')
+		</isEqual>
+		</isNotNull>
+	) rslt
+	WHERE rslt.ROWNUM BETWEEN #pageStart# and #pageEnd#
+	OPTIMIZE FOR 1 ROW
+	</select>
+	
+	 <select id="CS.RV01selectBundleInquiryMain04" parameterClass="java.util.HashMap" resultMap="result-recoveryBundleInquiryList-map">
+    <![CDATA[
+    SELECT
+        A01.SEDM_DOC_APPR_DATE,
+        A01.DOC_APPR_DATE,
+        A01.FK_RCIV_DATE, A01.FK_RCIV_SEQ_NUM, A01.AGRM_SEQ_NUM,
+        A01.AGRM_NO,
+        A01.PA_AGR_INS_NM,
+        A01.ACC_DTMN_AMT,
+        A01.TIME_BAR,
+        A01.BOJONG,
+        A01.DOC_RTN_DATE,
+        A01.RCV_LGL_YN,
+        A05.CLERK_NAME as MARINE_CLERK_NAME,
+        A07.CLERK_NAME as LAW_CLERK_NAME,
+        A08.RCV_TGT1,
+        A08.ACCD_CONTS,
+        A09.RCV_EXP_FR_CLS, A09.RCV_EXP_AMT, A09.RCV_EXP_DATE,
+        A10.CONS_CO_NAME,
+        A11.TER_DATE
+    FROM(    
+	    select  A01.SEDM_DOC_APPR_DATE,
+                A01.DOC_APPR_DATE,
+                A03.FK_RCIV_DATE, A03.FK_RCIV_SEQ_NUM, A03.AGRM_SEQ_NUM as AGRM_SEQ_NUM,
+                A03.AGRM_NO,
+                A03.PA_AGR_INS_NM,
+                value(h.ACC_DTMN_AMT,0) + value(g.os_ins_mny,0) AS ACC_DTMN_AMT,
+                A01.TIME_BAR,
+                case
+                    when substr(A03.PRD_CODE,1,2) = '11'
+                        then '적하'
+                    when substr(A03.PRD_CODE,1,2) = '12'
+                        then '선박'
+                    when substr(A03.PRD_CODE,1,2) = '13'
+                        then '운송'
+                    when substr(A03.PRD_CODE,1,2) = '14'
+                        then '항공'
+                    when substr(A03.PRD_CODE,1,2) = '15'
+                        then '해상기타'
+                    when substr(A03.PRD_CODE,1,2) = '16'
+                        then '위성'
+                    else A03.PRD_CODE
+                end as BOJONG,
+                A01.DOC_RTN_DATE,
+                case
+                    when A01.RCV_LGL_YN = 'Y'
+                        then '소송'
+                    when A01.RCV_LGL_YN = 'N'
+                        then '클레임'
+                    else A01.RCV_LGL_YN
+                end as RCV_LGL_YN,
+                A01.BSNS_CLS,
+                A01.RCV_YEAR,
+                A01.RCV_SEQ_NUM 	
+	      from  PMRV00TB A01
+                inner join PMAC03TB A03
+                on ( A03.FK_BSNS_CLS     = A01.BSNS_CLS
+                and  A03.FK_RCIV_DATE    = A01.AC00_RCIV_DATE
+                and  A03.FK_RCIV_SEQ_NUM = A01.AC00_RCIV_SEQ_NUM)
+                  
+                left outer join table
+                (SELECT decimal( SUM( CASE WHEN A.DTMN_CLS NOT IN ('10', '12', '20', '21') THEN  
+                            ( CASE WHEN D.FRGN_CRCY_CLS = 'KRW' THEN D.PAY_PTY_MNY 
+                              ELSE D.PAY_PTY_MNY_FR * D.EXCHNG_RATE END ) 
+                        ELSE 0 END ) 
+                     -  
+                     SUM( CASE WHEN A.DTMN_CLS IN ('10', '12', '20', '21') THEN  
+                            ( CASE WHEN D.FRGN_CRCY_CLS = 'KRW' THEN D.PAY_PTY_MNY 
+                              ELSE D.PAY_PTY_MNY_FR * D.EXCHNG_RATE END ) 
+                        ELSE 0 END ) ) as acc_dtmn_amt  
+                FROM PMPA01TB A, PMPA03TB C, PMPA04TB D 
+                WHERE A.FK_BSNS_CLS = C.FK_BSNS_CLS 
+                AND   A.FK_RCIV_DATE = C.FK_RCIV_DATE 
+                AND   A.FK_RCIV_SEQ_NUM = C.FK_RCIV_SEQ_NUM 
+                AND   A.FK_AGRM_SEQ_NUM = C.FK_AGRM_SEQ_NUM 
+                AND   A.FK_COVR_CLS = C.FK_COVR_CLS 
+                AND   A.FK_DAM_ORDER = C.FK_DAM_ORDER 
+                AND   A.PMT_DTMN_SER = C.PA01_PMT_DTMN_SER 
+                AND   C.FK_BSNS_CLS = D.FK_BSNS_CLS 
+                AND   C.FK_RCIV_DATE = D.FK_RCIV_DATE 
+                AND   C.FK_RCIV_SEQ_NUM = D.FK_RCIV_SEQ_NUM 
+                AND   C.FK_AGRM_SEQ_NUM = D.FK_AGRM_SEQ_NUM 
+                AND   C.FK_COVR_CLS = D.FK_COVR_CLS 
+                AND   C.FK_DAM_ORDER = D.FK_DAM_ORDER 
+                AND   C.SEQ_NUM = D.FK_SEQ_NUM 
+                AND   C.PA01_PMT_DTMN_SER = D.PA01_PMT_DTMN_SER 
+                AND   C.PAYED_DATE != '0001-01-01' 
+                AND   D.MNPV_CLS NOT LIKE '806%' 
+                AND   A.FK_BSNS_CLS = A03.FK_BSNS_CLS
+                AND   A.FK_RCIV_DATE = A03.FK_RCIV_DATE
+                AND   A.FK_RCIV_SEQ_NUM = A03.FK_RCIV_SEQ_NUM
+                AND   A.FK_AGRM_SEQ_NUM = A03.AGRM_SEQ_NUM
+                AND   A.FK_COVR_CLS = '90' 
+                AND   A.FK_DAM_ORDER = 1
+                )h on 1=1  
+	
+	            left outer join table
+	            (select 
+	                decimal(sum(os_ins_mny * exchng_rate)) as os_ins_mny
+	            from pmos01tb g
+	            where g.fk_bsns_cls     = A01.BSNS_CLS
+	            AND   g.fk_rciv_date    = A01.AC00_RCIV_DATE
+	            AND   g.fk_rciv_seq_num = A01.AC00_RCIV_SEQ_NUM
+	            and   g.fk_covr_cls     = '90'
+	            and   g.fk_dam_order    = 1
+	            and   g.mnpv_cls       != '80600'
+	            and   g.fk_os_rank = (SELECT max(fk_os_rank)
+	                                FROM pmos01tb z
+	                                WHERE z.fk_bsns_cls     = g.fk_bsns_cls
+	                                AND   z.fk_rciv_date    = g.fk_rciv_date
+	                                AND   z.fk_rciv_seq_num = g.fk_rciv_seq_num
+	                                AND   z.fk_agrm_seq_num = g.fk_agrm_seq_num
+	                                and   z.fk_covr_cls     = g.fk_covr_cls
+	                                and   z.fk_dam_order    = g.fk_dam_order)                                
+	            )g on 1=1    
+	
+	     where  A01.BSNS_CLS        = '3'
+	       and  A01.RCV_LGL_YN      between #IsLawsuitFrom# and #IsLawsuitTo#
+	       and  A01.RCV_TER_YN      between #IsCloseCaseFrom# and #IsCloseCaseTo#
+	       and  A01.TIME_BAR        between #timeBarFrom# and #timeBarTo#
+	       and  (A01.SEDM_DOC_APPR_DATE    between #documentReturnDateFrom# and #documentReturnDateTo#
+	         or  A01.DOC_APPR_DATE    between #documentReturnDateFrom# and #documentReturnDateTo#)
+	       and  ( case when ( A01.rcv_main_cls = '1'  and A01.DOC_RTN_DATE = '9999-12-31' )
+	                       then 'law'
+	                   when (( A01.SEDM_DOC_APPR_DATE <> '0001-01-01' ) or ( A01.DOC_APPR_DATE <> '0001-01-01' and A01.DOC_RTN_DATE <> '9999-12-31' ))
+	                       then 'marine'
+	              end ) <> #reveseDeptInCharge#
+	       and  (    A01.$orderValue1$ < #pageKey1#
+	            or ( A01.$orderValue1$ = #pageKey1# and A03.FK_RCIV_DATE < #pageKey2# )
+	            or ( A01.$orderValue1$ = #pageKey1# and A03.FK_RCIV_DATE = #pageKey2# and A03.FK_RCIV_SEQ_NUM < #pageKey3# )
+	            or ( A01.$orderValue1$ = #pageKey1# and A03.FK_RCIV_DATE = #pageKey2# and A03.FK_RCIV_SEQ_NUM = #pageKey3# and A03.AGRM_SEQ_NUM <= #pageKey4# ) )
+	              
+	    ]]>              
+	    
+	      <dynamic>   
+	          <isNotEmpty property="clerkNo">
+	           and  exists ( select  1
+	                           from  PMRV01TB
+	                          where  FK_BSNS_CLS    = A01.BSNS_CLS
+	                            and  FK_RCV_YEAR    = A01.RCV_YEAR
+	                            and  FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+	                            and  RCV_DTBN_CLS   in ('01', '02')
+	                            and  DTBN_TER_DATE  = '9999-12-31'
+	                            and  CLERK_NO       = #clerkNo# )
+	          </isNotEmpty>               
+	      </dynamic>
+	
+	     order by  A01.$orderValue1$ desc,A01.$orderValue2$ desc, A03.FK_RCIV_DATE desc, A03.FK_RCIV_SEQ_NUM desc, A03.AGRM_SEQ_NUM desc
+     )A01   
+		left outer join PMRV01TB A04
+		on ( A04.FK_BSNS_CLS    = A01.BSNS_CLS
+		and  A04.FK_RCV_YEAR    = A01.RCV_YEAR
+		and  A04.FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+		and  A04.RCV_DTBN_CLS   = '01'
+		and  A04.DTBN_TER_DATE  = '9999-12-31' )
+		left outer join STAFF0TB A05
+		on ( A05.CLERK_NO = A04.CLERK_NO )
+		left outer join PMRV01TB A06
+		on ( A06.FK_BSNS_CLS    = A01.BSNS_CLS
+		and  A06.FK_RCV_YEAR    = A01.RCV_YEAR
+		and  A06.FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+		and  A06.RCV_DTBN_CLS   = '02'
+		and  A06.DTBN_TER_DATE  = '9999-12-31' )
+		left outer join STAFF0TB A07
+		on ( A07.CLERK_NO = A06.CLERK_NO )
+		left outer join PMRV06TB A08
+		on ( A08.FK_BSNS_CLS    = A01.BSNS_CLS
+		and  A08.FK_RCV_YEAR    = A01.RCV_YEAR
+		and  A08.FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+		and  A08.END_DATE       = '9999-12-31' )
+		left outer join PMRV07TB A09
+		on ( A09.FK_BSNS_CLS    = A01.BSNS_CLS
+		and  A09.FK_RCV_YEAR    = A01.RCV_YEAR
+		and  A09.FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+		and  A09.END_DATE       = '9999-12-31' )
+		left outer join PMRV30TB A10
+		on ( A10.FK_BSNS_CLS    = A01.BSNS_CLS
+		and  A10.FK_RCV_YEAR    = A01.RCV_YEAR
+		and  A10.FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+		and  A10.APPL_END_DATE  = '9999-12-31' )
+		left outer join PMRV03TB A11
+		on ( A11.FK_BSNS_CLS    = A01.BSNS_CLS
+		and  A11.FK_RCV_YEAR    = A01.RCV_YEAR
+		and  A11.FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+		and  A11.TER_CANC_DATE  = '0001-01-01'
+		and  A11.TER_DATE       != '9999-12-31' )        
+     WHERE  A01.ACC_DTMN_AMT    between #totalClaimsPaidFrom# and #totalClaimsPaidTo#
+	 FETCH  FIRST $rowCntPerPage$ ROWS ONLY
+     OPTIMIZE FOR 1 ROW
+
+
+    </select>
+
+    </sqlMap>
+    

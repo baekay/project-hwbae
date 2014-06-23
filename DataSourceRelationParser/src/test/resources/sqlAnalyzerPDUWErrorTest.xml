@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="sql.selectOne">
+	 <![CDATA[
+		SELECT FK_ENDO_TYPE||'$$'||CHAR(ENDO_TYPE_SEQ)||'$$'||MID_CLS_NM||'$$'||DETL_CLS_NM||'$$'||
+				CHAR(DISP_SEQ)||'$$'||DESC||'$$'||CHAR(APPL_START_DATE)||'$$'||
+				CHAR(APPL_END_DATE)
+		FROM PPCD53TB
+		WHERE FK_ENDO_TYPE=#endorsementType#	 
+	 ]]>
+	</entry>
+	
+	<entry key="sql.selectTwo">
+		SELECT FK_ENDO_TYPE
+		FROM PPCD53TB
+		WHERE FK_ENDO_TYPE=#endorsementType#
+		ORDER BY START_DATE, END_DATE	 
+	</entry>
+	
+	<entry key="sql.selectThree">
+		<![CDATA[
+		 	SELECT distinct t4.conts_no,
+				'' dm_cd,      
+				t4.conts_reg_date,
+				t4.conts_title,      
+				'' conts_use_yn,
+				'' send_type,      
+				'' ai_rpt_name,      
+				'' dm_cd_name,
+				t3.prt_order
+			FROM	(SELECT t1.dm_cd,t1.prc_is_cd, t1.dm_cd_name, level depth,
+						  (SELECT s1.dm_cd_name FROM mpdm50tb s1 WHERE s1.dm_cd = t1.prc_is_cd) prc_is_cd_name,
+						  SYS_CONNECT_BY_PATH(t1.dm_cd, '/') mapPath
+					  FROM mpdm50tb t1
+					  START WITH t1.dm_cd= 'CT10000'
+					  CONNECT BY PRIOR t1.dm_cd = t1.prc_is_cd
+					) t2,   
+				mpdm02tb t3,
+				mpdm00tb t4
+			WHERE t2.dm_cd = t3.dm_cd
+			AND t3.conts_no = t4.conts_no 
+			AND rownum <= #contsCount#
+			AND mapPath like '%'||#dmCd#||'%'	
+			ORDER BY t3.prt_order, t4.conts_reg_date desc
+			]]>
+	</entry>
+	
+	<entry key="sql.selectFour">
+	<![CDATA[
+		SELECT
+            TOP.CLERK_NO,
+            NVL(TOP.SEND_GOODS_CNT,'0') SEND_GOODS_CNT,
+            NVL(TOP.SEND_TYPE, '') SEND_TYPE,
+            NVL(TOP.PKG_GOODS_NO, '0') PKG_GOODS_NO,
+            NVL(TOP.CUST_COUNT, '0') CUST_COUNT,
+            NVL(TOP.ORDER_NO, '')      ORDER_NO,
+            NVL(TOP.GOODS_NO, '')     GOODS_NO,
+            NVL(TOP.GOODS_NAME, '')   GOODS_NAME,
+            NVL(TOP.SEND_SCDL_DATE, '') SEND_SCDL_DATE,
+            NVL(TOP.PRICE, 0)        PRICE,
+            NVL(TOP.TOTAL_AMT, 0)    TOTAL_AMT,
+            TOP.HDS_AMT,
+            TOP.POST_AMT,
+            NVL(TOP.SEND_COUNT, 0)   SEND_COUNT,
+            TOP.ADD_OPTION,
+            TOP.GD_FIELD,
+            NVL(TOP.ORDERER_NAME, '')  ORDERER_NAME,
+            NVL(TOP.ORDERER_ADDR, '주소없음')  ORDERER_ADDR,
+            NVL(TOP.GRT_CONTS, '')     GRT_CONTS,
+            NVL(TOP.LEVEL_DM_CD_1, '') LEVEL_DM_CD_1,
+            NVL(TOP.LEVEL_DM_CD_2, '') LEVEL_DM_CD_2,
+            NVL(TOP.LEVEL_DM_CD_3, '')  LEVEL_DM_CD_3,
+            TOP.OPTION_CD, 
+            TOP.HDS_FREE_AMT,
+            TOP.COUNT_CUST,
+            TOP.SND_CENTER,
+            TOP.IS_CASH_POINT,
+            TOP.IS_POINT,
+            TOP.IS_CARD,
+            TOP.IS_BANKING,
+            TOP.IS_BANK_BOOK
+        FROM(
+            SELECT
+                BOT.CLERK_NO,
+                BOT.ORDER_NO,
+                BOT.GOODS_NO,
+                BOT.GOODS_NAME,
+                BOT.SEND_SCDL_DATE,
+                BOT.SEND_GOODS_CNT,
+                BOT.SEND_TYPE,
+                BOT.PKG_GOODS_NO,                                                                                          
+                BOT.PRICE,                                                                                              
+                BOT.TOTAL_AMT,
+                BOT.HDS_AMT,
+                BOT.POST_AMT,
+                BOT.SEND_COUNT,
+                BOT.ADD_OPTION,
+                BOT.GD_FIELD,
+                BOT.ORDERER_NAME,
+                BOT.ORDERER_ADDR,
+                BOT.GRT_CONTS,
+                BOT.CUST_COUNT,
+                ( SELECT MIN(DECODE(LEVEL, '3', t50.DM_CD, '')) dmCd FROM  MPDM50TB t50 WHERE t50.DM_CD != '1' and t50.DM_CD != 'GD00' START WITH t50.DM_CD = BOT.LINK_DM_CD CONNECT BY PRIOR  t50.PRC_IS_CD =  t50.DM_CD ) LEVEL_DM_CD_1,
+                ( SELECT MIN(DECODE(LEVEL, '2', t50.DM_CD, '')) dmCd FROM  MPDM50TB t50 WHERE t50.DM_CD != '1' and t50.DM_CD != 'GD00' START WITH t50.DM_CD = BOT.LINK_DM_CD CONNECT BY PRIOR  t50.PRC_IS_CD =  t50.DM_CD ) LEVEL_DM_CD_2,
+                ( SELECT MIN(DECODE(LEVEL, '1', t50.DM_CD, '')) dmCd FROM  MPDM50TB t50 WHERE t50.DM_CD != '1' and t50.DM_CD != 'GD00' START WITH t50.DM_CD = BOT.LINK_DM_CD CONNECT BY PRIOR  t50.PRC_IS_CD =  t50.DM_CD ) LEVEL_DM_CD_3,
+                BOT.OPTION_CD, 
+                BOT.HDS_FREE_AMT,
+                BOT.COUNT_CUST,
+                BOT.SND_CENTER,
+                BOT.IS_CASH_POINT,
+                BOT.IS_POINT,
+                BOT.IS_CARD,
+                BOT.IS_BANKING,
+                BOT.IS_BANK_BOOK
+            FROM(
+                SELECT
+                      T60.CLERK_NO,    
+                      T60.ORDER_NO,                                                                                       
+                      T60.GOODS_NO,                                                                                           
+                      T10.GOODS_NAME,
+                      ( SELECT T64.SEND_SCDL_DATE
+                        FROM MPDM64TB T64
+                        WHERE T60.ORDER_NO = T64.ORDER_NO
+                        AND T60.CLERK_NO = T64.CLERK_NO
+                           AND ROWNUM = 1
+                      ) SEND_SCDL_DATE,
+                      T60.SEND_GOODS_CNT,                                                                                     
+                      T60.SEND_TYPE,
+                      T60.PKG_GOODS_NO,                                                                                          
+                      NVL((CASE  WHEN t10.st_qty1 <= t60.send_goods_cnt AND t10.end_qty1 >= t60.send_goods_cnt THEN  t10.unit_cost1
+                                 WHEN t10.st_qty2 <= t60.send_goods_cnt AND t10.end_qty2 >= t60.send_goods_cnt THEN  t10.unit_cost2
+                                 WHEN t10.st_qty3 <= t60.send_goods_cnt AND t10.end_qty3 >= t60.send_goods_cnt THEN  t10.unit_cost3
+                                 ELSE 0
+                                 END
+                      ), 0) PRICE,
+                      T60.TOTAL_AMT,
+                      NVL(T10.HDS_AMT, 0)HDS_AMT,
+                      NVL(( SELECT BASIC_AMT FROM MPDM51TB WHERE POST_PRICE_NO = T10.POST_PRICE_NO), 0) POST_AMT,
+                      (    SELECT COUNT(1)
+                        FROM MPDM64TB
+                        WHERE CLERK_NO = T60.CLERK_NO
+                        AND   ORDER_NO = T60.ORDER_NO 
+                      ) SEND_COUNT,
+                      NVL((SELECT SUM(OPTION_VALUE)
+                        FROM MPDM61TB
+                        WHERE CLERK_NO  = T60.CLERK_NO
+                        AND ORDER_NO  = T60.ORDER_NO 
+                        AND OPTION_CLS  = 'OP00'), 0) ADD_OPTION,
+                      NVL((    SELECT SUM(OPTION_VALUE)
+                        FROM MPDM61TB
+                        WHERE CLERK_NO = T60.CLERK_NO
+                        AND ORDER_NO = T60.ORDER_NO 
+                        AND OPTION_CLS = 'F000'), 0) GD_FIELD,
+                      T60.ORDERER_NAME,
+                      ( 
+                      SELECT A.RCVR_ADDR1 FROM
+                      (  SELECT T65.RCVR_ADDR1 FROM MPDM65TB T65, MPDM60TB T60
+                         WHERE T65.CLERK_NO = #clerkNo#
+                         AND T65.CLERK_NO = T60.CLERK_NO
+                         AND T65.ORDER_NO = T60.ORDER_NO
+                         AND T65.RCVR_ADDR1 is not null
+                         ORDER BY T65.APP_START_DATE DESC
+                      ) A
+                      WHERE ROWNUM = 1
+                      ) ORDERER_ADDR,
+                      T60.GRT_CONTS,
+                      (  SELECT COUNT(1) FROM MPDM65TB T65
+                         WHERE T65.CLERK_NO = T60.CLERK_NO 
+                         AND T65.ORDER_NO = T60.ORDER_NO 
+                      ) CUST_COUNT,
+                      (
+                         SELECT T15.DM_CD 
+                         FROM MPDM15TB T15
+                         WHERE T15.GOODS_NO = T60.GOODS_NO
+                         and rownum = '1'     
+                      ) LINK_DM_CD,
+                       NVL((    SELECT OPTION_CD
+                            FROM MPDM12TB T12
+                            WHERE T12.GOODS_NO = T60.GOODS_NO
+                            AND OPTION_CLS = 'U000'), 0) OPTION_CD,
+                      NVL((T10.HDS_FREE_AMT), 0) HDS_FREE_AMT,
+                      (  SELECT COUNT(1) FROM MPDM65TB T65
+                         WHERE T65.CLERK_NO = T60.CLERK_NO 
+                         AND T65.ORDER_NO = T60.ORDER_NO 
+                         AND T65.CUST_ID = T65.CLERK_NO
+                      ) COUNT_CUST,
+                      NVL(T10.SND_CENTER, '') SND_CENTER,
+                      (  SELECT DECODE(COUNT(1),0,'N',1,'Y','N') 
+                           FROM MPDM12TB T12
+                          WHERE T12.GOODS_NO = T60.GOODS_NO
+                            AND T12.OPTION_CD = 'C004') IS_CASH_POINT,
+                      (  SELECT DECODE(COUNT(1),0,'N',1,'Y','N') 
+                           FROM MPDM12TB T12
+                          WHERE T12.GOODS_NO = T60.GOODS_NO
+                            AND T12.OPTION_CD = 'C005') IS_POINT,
+                      (  SELECT DECODE(COUNT(1),0,'N',1,'Y','N') 
+                           FROM MPDM12TB T12
+                          WHERE T12.GOODS_NO = T60.GOODS_NO
+                            AND T12.OPTION_CD = 'C001') IS_CARD,
+                      (  SELECT DECODE(COUNT(1),0,'N',1,'Y','N') 
+                           FROM MPDM12TB T12
+                          WHERE T12.GOODS_NO = T60.GOODS_NO
+                            AND T12.OPTION_CD = 'C002') IS_BANKING,
+                      (  SELECT DECODE(COUNT(1),0,'N',1,'Y','N') 
+                           FROM MPDM12TB T12
+                          WHERE T12.GOODS_NO = T60.GOODS_NO
+                            AND T12.OPTION_CD = 'C003') IS_BANK_BOOK
+                FROM MPDM10TB T10, MPDM60TB T60
+                WHERE T10.GOODS_NO = T60.GOODS_NO
+                AND  T60.CLERK_NO = #clerkNo#
+                AND  T60.PROC_STATUS = '4' 
+                AND  substr(T60.SETTLE_REQ_DATE,0,8) = TO_CHAR(SYSDATE,'YYYYMMDD')
+                AND  T60.SEQ_NUM IS NULL
+                ORDER BY T60.ORDER_NO
+            )BOT  
+        )TOP
+	]]>
+	</entry>
+	
+	<entry key="sql.selectFive">
+	<![CDATA[
+		SELECT COUNT(1) total_count
+			      FROM
+			           (
+			            SELECT
+			                   a.pty_id,
+			                   a.car_no,
+			                   a.seq_num,
+			                   a.cust_name,
+			                   a.enty_company_name,
+			                   a.exprtn_date expire_date,
+			                   a.input_date,
+			                   a.yeyak_cd,
+			                   a.inquiry_date,
+			                   a.customer_cls,
+			                   DECODE(c.pol_no, '', '0', NULL, '0', '1') chegyul_yn
+			              FROM (
+			                    SELECT
+			                           a.clerk_no, 
+			                           a.pty_id, 
+			                           a.seq_num,
+			                           a.car_no,
+			                           c.cust_name, 
+			                           a.exprtn_date, 
+			                           a.input_date,
+			                           a.yeyak_cd, 
+			                           a.inquiry_c_date inquiry_date,
+			                           b.code_name enty_company_name,
+			                           '1' customer_cls,
+			                           a.update_date
+			                      FROM
+			                           gric03vw a,
+			                           wcomm900t b,
+			                           gric00vw c
+			                     WHERE a.clerk_no = #clerkNo#
+			                       AND a.Exprtn_Date like '____' || SUBSTR(#searchDate#, 5, 2) || '__'
+			                       AND length(a.pty_id) = decode('','1',11,'2',99,'',11)
+			                       AND a.yeyak_cd LIKE '%'
+			                       AND b.code_id(+) = TRIM(a.company)
+			                       AND b.code_group_id(+) = '31'
+			                       AND c.clerk_no = a.clerk_no
+			                       AND c.pty_id = a.pty_id
+			                     UNION ALL
+			                    SELECT
+			                           a.clerk_no, 
+			                           a.pty_id,
+			                           a.seq_num, 
+			                           a.car_no,
+			                           c.dler_nm cust_name, 
+			                           a.exprtn_date, 
+			                           a.input_date,
+			                           a.yeyak_cd, 
+			                           a.inquiry_c_date inquiry_date,
+			                           b.code_name enty_company_name,
+			                           '2' customer_cls,
+			                           a.update_date
+			                      FROM
+			                           gric03vw a,
+			                           wcomm900t b,
+			                           gric20vw c
+			                     WHERE a.clerk_no = #clerkNo#
+			                       AND a.Exprtn_Date like '____' || SUBSTR(#searchDate#, 5, 2) || '__'
+			                       AND length(a.pty_id) = decode('','1',99,'2',10,'',10)
+			                       AND a.yeyak_cd LIKE '%'
+			                       AND b.code_id(+) = TRIM(a.company)
+			                       AND b.code_group_id(+) = '31'
+			                       AND c.clerk_no = a.clerk_no
+			                       AND c.dler_cd = a.pty_id
+			                   ) a,
+			                   cgde04tb c
+			             WHERE c.clerk_no(+) = a.clerk_no 
+			               AND c.pty_id(+) = a.pty_id 
+			               AND replace(c.bojong_name(+),' ','') = replace(a.car_no,' ','')
+			               AND c.chung_ymd(+) BETWEEN TO_CHAR(ADD_MONTHS(TO_DATE(#searchDate#,'YYYYMM'),-1),'YYYYMM')||'01' AND (#searchDate# ||'31')        
+			               AND c.volunt_appl_prem(+)  > 0
+			               AND TO_DATE(a.update_date, 'YYYYMMDD') + 3 < TO_DATE(c.input_ymd(+), 'YYYYMMDD')
+			           ) a
+	]]>
+	</entry>
+	
+	<entry key="sql.selectSix">
+		<![CDATA[ 
+			SELECT GBN_OZ 
+		     , DEPT_CD
+		     , DEPT_NM
+		     , TO_CHAR(CNST_USE_RATE, '990.9') CNST_USE_RATE
+		     , NVL(PLCY_ANAL_CNT, 0) PLCY_ANAL_CNT
+		     , NVL(PLCY_ANAL_PROP_CNT, 0) PLCY_ANAL_PROP_CNT
+		     , NVL(PLCY_REMD_CNT, 0) PLCY_REMD_CNT
+		     , NVL(CNST_PLAN_CNT, 0) CNST_PLAN_CNT
+		     , NVL(CNST_PLAN_PROP_CNT, 0) CNST_PLAN_PROP_CNT
+		     , NVL(CONC_CNST_CNT, 0) CONC_CNST_CNT
+		     , TO_CHAR(NVL(PLCY_ANAL_RATE, 0), '990.9') PLCY_ANAL_RATE
+		     , TO_CHAR(NVL(PLCY_ANAL_PROP_RATE, 0), '990.9') PLCY_ANAL_PROP_RATE
+		     , TO_CHAR(NVL(CNST_PLAN_RATE, 0), '990.9') CNST_PLAN_RATE
+		     , TO_CHAR(NVL(CNST_PLAN_PROP_RATE, 0), '990.9') CNST_PLAN_PROP_RATE
+		     , TO_CHAR(NVL(CONC_CNST_RATE, 0), '990.9') CONC_CNST_RATE
+		     , rnum
+		  FROM (
+		        SELECT GBN_OZ 
+		             , DEPT_CD
+		             , DEPT_NM
+		             , CNST_USE_RATE
+		             , PLCY_ANAL_CNT
+		             , PLCY_ANAL_PROP_CNT
+		             , PLCY_REMD_CNT
+		             , CNST_PLAN_CNT
+		             , CNST_PLAN_PROP_CNT
+		             , CONC_CNST_CNT
+		             , PLCY_ANAL_RATE
+		             , PLCY_ANAL_PROP_RATE
+		             , CNST_PLAN_RATE
+		             , CNST_PLAN_PROP_RATE
+		             , CONC_CNST_RATE
+		             , ROWNUM rnum
+		          FROM (
+		                SELECT DECODE(G_ID, 0, '0', '8') GBN_OZ
+		                     , DEPT_CD
+		                     , DECODE(G_ID, 0, DEPT_NM, '') DEPT_NM 
+		                     , DECODE(USE_TOT_CNT, 0, 0, ROUND(USE_CNST_CNT/USE_TOT_CNT*100, 1)) CNST_USE_RATE
+		                     , PLCY_ANAL_CNT
+		                     , PLCY_ANAL_PROP_CNT
+		                     , PLCY_REMD_CNT
+		                     , CNST_PLAN_CNT
+		                     , CNST_PLAN_PROP_CNT
+		                     , USE_TOT_CNT
+		                     , CONC_CNST_CNT
+		                     , DECODE(USE_TOT_CNT, 0, 0, ROUND(PLCY_ANAL_CNT/USE_TOT_CNT, 1)) PLCY_ANAL_RATE
+		                     , DECODE(USE_TOT_CNT, 0, 0, ROUND(PLCY_ANAL_PROP_CNT/USE_TOT_CNT, 1)) PLCY_ANAL_PROP_RATE
+		                     , DECODE(USE_TOT_CNT, 0, 0, ROUND(CNST_PLAN_CNT/USE_TOT_CNT, 1)) CNST_PLAN_RATE
+		                     , DECODE(USE_TOT_CNT, 0, 0, ROUND(CNST_PLAN_PROP_CNT/USE_TOT_CNT, 1)) CNST_PLAN_PROP_RATE
+		                     , DECODE(USE_TOT_CNT, 0, 0, ROUND(CONC_CNST_CNT/USE_TOT_CNT, 1)) CONC_CNST_RATE
+		                  FROM (
+		                        SELECT GROUPING_ID(BONBU_CD) G_ID
+		                             , DECODE (GROUPING_ID(BONBU_CD),0,BONBU_CD,'') DEPT_CD
+		                             , MAX(BONBU_NM) DEPT_NM
+		                             , SUM(PLCY_ANAL_CNT) PLCY_ANAL_CNT
+		                             , SUM(PLCY_ANAL_PROP_CNT) PLCY_ANAL_PROP_CNT
+		                             , SUM(PLCY_REMD_CNT) PLCY_REMD_CNT
+		                             , SUM(CNST_PLAN_CNT) CNST_PLAN_CNT
+		                             , SUM(CNST_PLAN_PROP_CNT) CNST_PLAN_PROP_CNT
+		                             , SUM(USE_CNST_CNT) USE_CNST_CNT
+		                             , SUM(USE_TOT_CNT) USE_TOT_CNT
+		                             , SUM(CONC_CNST_CNT) CONC_CNST_CNT
+		                          FROM CNCA03TB
+		                         WHERE CLOSE_MONTH = #searchMonth#
+		                           AND GBN_OZ = '8'
+		                           AND BONBU_CD = #searchDeptCode#
+		                           AND BSNS_CLS IN ( DECODE(#rcChctClsS#,'S','S',''),
+		                                             DECODE(#rcChctClsN#,'N','N',''),
+		                                             DECODE(#rcChctClsP#,'P','P','')
+		                                           )
+		                           AND NEW_OLD_CLS = DECODE(#newOldCls#,'2',NEW_OLD_CLS,#newOldCls#)
+		                           AND DEPT_GUBUN IN ( DECODE(#charClsS#,'S','S',''),
+		                                             DECODE(#charClsS#,'S','B',''),
+		                                             DECODE(#charClsE#,'E','E','')
+		                                           )
+		                           AND DEPT_GUBUN != 'T'
+		                       GROUP BY ROLLUP(BONBU_CD)
+		                       ORDER BY BONBU_CD NULLS FIRST
+		                       )
+		              )
+		        WHERE ROWNUM <= #maxRowNum#
+		       )
+		 WHERE RNUM >= #minRowNum#
+		
+		
+		]]>
+	
+	</entry>
+	
+	<entry key="sql.selectSeven">
+		SELECT COUNT(1) FROM
+		(
+			SELECT
+				COVR_CD, ENTY_AMT, EXPR_DT, SUB_PIBOJA_ID
+			FROM CNAP01TB
+			WHERE
+				      CLERK_NO = #clerkNo#
+				AND CUST_ID  = #custId#
+				AND PLCY_NO = #plcyNo#
+				AND CMP_OUR_CLS = #cmpOurCls#
+				AND PLCY_SEQ = #plcySeq#
+				AND SUB_PIBOJA_ID	= #subPibojaId#
+			MINUS
+			SELECT
+				COVR_CD, ENTY_AMT, EXPR_DT, SUB_PIBOJA_ID
+			FROM CNAP01TB
+			WHERE
+				      CLERK_NO = #clerkNo#
+				AND CUST_ID  = #custId#
+				AND PLCY_NO = #plcyNo#
+				AND CMP_OUR_CLS = #cmpOurCls#
+				AND PLCY_SEQ = #remodelingPlcySeq#
+				AND SUB_PIBOJA_ID	= #subPibojaId#
+		)
+	</entry>
+	
+	<entry key="sql.selectEight">
+		<![CDATA[
+			select
+				 a.term_cls 
+				 ,a.st01+a.st02+a.st03  cntMarinPend
+				 ,a.st01 cntMarinPAPend
+				 ,a.st02 cntMarinGAPend
+				 ,a.st03 cntMarinOverSeaPend
+				 ,a.st04+a.st05  cntShipPend
+				 ,a.st04 cntShipDomesticPend
+				 ,a.st05 cntShipOverSeaPend
+				 ,a.st06+a.st07+a.st08+a.st09+a.st10+a.st11+a.st12  cntPlanePend
+				 ,a.st06 cntPlaneDomesticPend 
+				 ,a.st07 cntPlaneOverSeaPend
+				 ,a.st08 cntTrsPend
+				 ,a.st09 cntMMIPPend
+				 ,a.st10 cntReDeductPend
+				 ,a.st11 cntFrontPend
+				 ,a.st12 cntOthrCmpPend
+				FROM (
+					select 
+						value(sum((case when prd_cls = '11' and prd_detl_cls='03' then 1 end)),0) st01,
+						value(sum((case when prd_cls = '11' and prd_detl_cls='04' then 1 end)),0) st02,
+						value(sum((case when prd_cls = '11' and prd_detl_cls='02' then 1 end)),0) st03,
+						value(sum((case when prd_cls = '12' and prd_detl_cls='01' then 1 end)),0) st04,
+						value(sum((case when prd_cls = '12' and prd_detl_cls='02' then 1 end)),0) st05,
+						value(sum((case when prd_cls = '14' and prd_detl_cls='01' then 1 end)),0) st06,
+						value(sum((case when (prd_cls = '14' and prd_detl_cls='02') or prd_cls = '16' then 1 end)),0) st07,
+						value(sum((case when prd_cls = '13' then 1 end)),0) st08,
+						value(sum((case when prd_cls = '15' then 1 end)),0) st09,
+						value(sum((case when prd_cls = '89' then 1 end)),0) st10,
+						value(sum((case when prd_cls = '79' then 1 end)),0) st11,
+						value(sum((case when prd_detl_cls = '05' then 1 end)),0) st12,
+						term_cls
+						from (
+						select 
+							days(current date) - days(a.fk_rciv_date),
+							case 
+								when (days(current date) - days(a.fk_rciv_date))  < 30 then '01'
+								when (days(current date) - days(a.fk_rciv_date))  between 31 and 90 then '02'
+								when (days(current date) - days(a.fk_rciv_date))  between 91 and 180 then '03'
+								when (days(current date) - days(a.fk_rciv_date))  between 181 and 365 then '04'
+								when (days(current date) - days(a.fk_rciv_date))  between 366 and 730 then '05'
+								when (days(current date) - days(a.fk_rciv_date))  between 731 and 1095 then '06'
+							else '07'
+							end as term_cls,
+							a.prd_cls, 
+							a.prd_detl_cls
+						from pmac03tb a,pmal00tb b,pmrq00tb c
+						where a.FK_BSNS_CLS = '3'
+						and a.FK_BSNS_CLS = b.FK_BSNS_CLS
+						and a.FK_RCIV_DATE = b.FK_RCIV_DATE
+						and a.FK_RCIV_SEQ_NUM = b.FK_RCIV_SEQ_NUM
+						and b.FK_AGRM_SEQ_NUM = a.AGRM_SEQ_NUM
+						and b.CHRG_DTBN_TER_DATE = '9999-12-31'
+						and a.FK_BSNS_CLS = c.FK_BSNS_CLS
+						and a.FK_RCIV_DATE = c.FK_RCIV_DATE
+						and a.FK_RCIV_SEQ_NUM = c.FK_RCIV_SEQ_NUM
+						and b.FK_AGRM_SEQ_NUM = c.FK_AGRM_SEQ_NUM
+						and b.clerk_no = #clerkNo#
+						and c.ter_date = '0001-01-01'		
+						)a
+					group by a.term_cls	
+				) a		
+		]]>
+	</entry>
+	
+	<entry key="sql.selectNine">
+		<![CDATA[
+			SELECT  AA.FK_RPT_DATE      rptDate 
+             ,  AA.PMT_PRSN_NAME    pmtPrsnName 
+             ,  AA.CONTRACTOR_CD    contractorCd            
+             ,  AA.DEAL_AMT         dealAmt 
+             ,  AA.SEQ_NUM          seqNum            
+             ,  AA.RPT_TOTZ_NO      rptTotzNo 
+             ,  AA.ACCOUNT_CLS      acntAttr 
+             ,  AA.FK_BANK_CD       bankCd 
+             ,  AA.FK_ACNT_NO       acntNo 
+             ,  AA.OUTSRC_ACNT_NO   outsrcAcntNo 
+             ,  AA.DEAL_CLS         dealCls             
+		FROM               
+       		( 
+       		SELECT   
+                SYSIBM.ROW_NUMBER() OVER(ORDER BY CHAR(A.FK_RPT_DATE) || A.FK_BANK_CD || A.FK_ACNT_NO || CHAR(A.SEQ_NUM)  DESC) ROWNUM 
+             ,  A.FK_RPT_DATE       
+             ,  A.PMT_PRSN_NAME     
+             ,  A.CONTRACTOR_CD     
+             ,  A.DEAL_AMT          
+             ,  A.SEQ_NUM           
+             ,  A.RPT_TOTZ_NO       
+             ,  B.ACCOUNT_CLS       
+             ,  A.FK_BANK_CD        
+             ,  A.FK_ACNT_NO        
+             ,  A.OUTSRC_ACNT_NO    
+             ,  A.DEAL_CLS          
+        FROM  EFIC41TB  A,  
+    		(SELECT  ACCOUNT_CLS, ACNT_NO 
+	           FROM  EFCD20TB   
+    		  WHERE  ACNT_NO = #accountNo#  
+	            AND  BANK_CD = #bankCode# 
+                AND  APPL_START_DATE <= #transactionDate#
+	            AND  APPL_END_DATE   >= #transactionDate#
+	         )B 
+		WHERE   A.FK_RPT_DATE   = #transactionDate#         
+		  AND   A.FK_BANK_CD    = #bankCode#      
+		  AND   A.FK_ACNT_NO    = #accountNo# 
+		  AND   A.FK_ACNT_NO    = B.ACNT_NO 
+		  AND   A.PMT_PRSN_NAME NOT LIKE '%집금%'
+		  AND   A.DEAL_CLS <> '2'	  
+		  AND   A.CONTRACTOR_CD <> ''	  
+       ) AA 
+        WHERE   AA.ROWNUM       >= #startRowNum# 
+          AND   AA.ROWNUM       <= #endRowNum#
+        ORDER  BY AA.FK_RPT_DATE, AA.FK_BANK_CD, AA.FK_ACNT_NO, AA.SEQ_NUM
+     OPTIMIZE  FOR 1 ROW FOR FETCH ONLY
+		]]>
+	</entry>
+	
+	<entry key="sql.insertOne">
+		INSERT INTO pcpa31tb VALUES (
+			#bsnsCls#,
+			#rcivDate#,
+			#rcivSeqNum#,
+			#agtSeqNum#,
+			#covrCls#,
+			#damOrder#,
+			#seqNum#,
+			#damPrsnName#,
+			#pibojaName#,
+			#accdDate#,	
+			#accdTime#,	
+			#accdPlace#,	
+			#insrdCarNo#,
+			#damCarNo#,	
+			#agreeMny#,
+			#lossReprMny#,
+			#etcReprMny#,
+			#depositorBank#,
+			#depositorName#,
+			#depositAccNo#,
+			#agreeCond#,	
+			#inputDate#,	
+			#inputClerk#,
+			#applStartDate#,
+			#applEndDate#,
+			#encDepositAccNo# 						
+			)
+	
+	</entry>
+	
+	<entry key="sql.insertTwo">
+		INSERT INTO pcpa31tb(
+			ORDER,
+			DESC,
+			TEST_COLUMN,
+			VALUE
+		)VALUES (
+			#bsnsCls#,
+			#rcivDate#,
+			#rcivSeqNum#,
+			#agtSeqNum#,
+			#covrCls#,
+			#damOrder#,
+			#seqNum#,
+			#damPrsnName#,
+			#pibojaName#,
+			#accdDate#,	
+			#accdTime#,	
+			#accdPlace#,	
+			#insrdCarNo#,
+			#damCarNo#,	
+			#agreeMny#,
+			#lossReprMny#,
+			#etcReprMny#,
+			#depositorBank#,
+			#depositorName#,
+			#depositAccNo#,
+			#agreeCond#,	
+			#inputDate#,	
+			#inputClerk#,
+			#applStartDate#,
+			#applEndDate#,
+			#encDepositAccNo# 						
+			)
+	
+	</entry>
+	
+	<entry key="sql.updateOne">
+		UPDATE pmac03tb A1
+		SET  piboja_name      = #pibojaName#, 
+		     pa_agr_ins_nm    = #paAgrInsNm#,
+			 tot_join_amt     = #totalJoinAmount#,
+			 tot_agr_amt      = #totalAgreeAmount#,
+			 agrm_deduct_amt  = #deductStr#,
+			 agrm_trd_cond    = #agrmTrdCond#
+		WHERE fk_bsns_cls     = #bsnsCls#
+		AND   fk_rciv_date    = #rcivDate#
+		AND   fk_rciv_seq_num = #rcivSeqNum#
+		AND   agrm_seq_num    = #agrmSeqNum#
+		AND	  TEST_COLUMN	= A1.$TEST_VALUE$
+	
+	</entry>
+	
+	<entry key="sql.selectEleven">
+		select  1
+	                           from  PMRV01TB
+	                          where  FK_BSNS_CLS    = A01.BSNS_CLS
+	                            and  FK_RCV_YEAR    = A01.RCV_YEAR
+	                            and  FK_RCV_SEQ_NUM = A01.RCV_SEQ_NUM
+	                            and  RCV_DTBN_CLS   in ('01', '02')
+	                            and  DTBN_TER_DATE  = '9999-12-31'
+	                            and  CLERK_NO       = #clerkNo# 
+	                         
+	      
+	
+	     order by  A01.$orderValue1$ desc,A01.$orderValue2$ desc, A03.FK_RCIV_DATE desc, A03.FK_RCIV_SEQ_NUM desc, A03.AGRM_SEQ_NUM desc
+	</entry>
+	
+	<entry key="sql.selectTen">
+		SELECT substr(char(10000000 + NEXT VALUE FOR SONBO_SEQ),2,7) AS EMSG_MNG_NO FROM SYSIBM.SYSDUMMY1
+	</entry>
+	
+	<!--     동적 방식으로 팩터헤더명 조회    -->
+    <entry key="sql.selectTwelve">
+	SELECT factor_cd_nm as factorCdNm   
+		FROM ( 
+			SELECT 
+                	t.factor_cd
+            FROM 
+            (
+                SELECT DECODE(b.rowCnt, 1, a.factor_cd_1,
+                       DECODE(b.rowCnt, 2, a.factor_cd_2,
+                       DECODE(b.rowCnt, 3, a.factor_cd_3,
+                       DECODE(b.rowCnt, 4, a.factor_cd_4,
+                       DECODE(b.rowCnt, 5, a.factor_cd_5,
+                       DECODE(b.rowCnt, 6, a.factor_cd_6,
+                       DECODE(b.rowCnt, 7, a.factor_cd_7,
+                       DECODE(b.rowCnt, 8, a.factor_cd_8,
+                       DECODE(b.rowCnt, 9, a.factor_cd_9,
+                       DECODE(b.rowCnt, 10, a.factor_cd_10,
+                       DECODE(b.rowCnt, 11, a.factor_cd_11,
+                       DECODE(b.rowCnt, 12, a.factor_cd_12,
+                       DECODE(b.rowCnt, 13, a.factor_cd_13,
+                       DECODE(b.rowCnt, 14, a.factor_cd_14,
+                       DECODE(b.rowCnt, 15, a.factor_cd_15,
+                       DECODE(b.rowCnt, 16, a.factor_cd_16,
+                       DECODE(b.rowCnt, 17, a.factor_cd_17,
+                       DECODE(b.rowCnt, 18, a.factor_cd_18,
+                       DECODE(b.rowCnt, 19, a.factor_cd_19,
+                       DECODE(b.rowCnt, 20, a.factor_cd_20,                           
+                           
+                       DECODE(b.rowCnt, 21, a.factor_val_1,
+                       DECODE(b.rowCnt, 22, a.factor_val_2,
+                       DECODE(b.rowCnt, 23, a.factor_val_3,
+                       DECODE(b.rowCnt, 24, a.factor_val_4,
+                       DECODE(b.rowCnt, 25, a.factor_val_5,
+                       DECODE(b.rowCnt, 26, a.factor_val_6,
+                       DECODE(b.rowCnt, 27, a.factor_val_7,
+                       DECODE(b.rowCnt, 28, a.factor_val_8,
+                       DECODE(b.rowCnt, 29, a.factor_val_9,
+                       DECODE(b.rowCnt, 30, a.factor_val_10,
+                       DECODE(b.rowCnt, 31, a.factor_val_11,
+                       DECODE(b.rowCnt, 32, a.factor_val_12,
+                       DECODE(b.rowCnt, 33, a.factor_val_13,
+                       DECODE(b.rowCnt, 34, a.factor_val_14,
+                       DECODE(b.rowCnt, 35, a.factor_val_15,
+                       DECODE(b.rowCnt, 36, a.factor_val_16,
+                       DECODE(b.rowCnt, 37, a.factor_val_17,
+                       DECODE(b.rowCnt, 38, a.factor_val_18,
+                       DECODE(b.rowCnt, 39, a.factor_val_19,
+                       DECODE(b.rowCnt, 40, a.factor_val_20)))))))))))))))))))))))))))))))))))))))) factor_cd
+				FROM
+				(              
+					SELECT max(factor_cd_1) as factor_cd_1
+                         , max(factor_cd_2) as factor_cd_2
+                       	 , max(factor_cd_3) as factor_cd_3
+                         , max(factor_cd_4) as factor_cd_4
+                         , max(factor_cd_5) as factor_cd_5
+                         , max(factor_cd_6) as factor_cd_6
+                         , max(factor_cd_7) as factor_cd_7
+                         , max(factor_cd_8) as factor_cd_8
+                         , max(factor_cd_9) as factor_cd_9
+                         , max(factor_cd_10) as factor_cd_10
+                         , max(factor_cd_11) as factor_cd_11
+                         , max(factor_cd_12) as factor_cd_12
+                         , max(factor_cd_13) as factor_cd_13
+                         , max(factor_cd_14) as factor_cd_14
+                         , max(factor_cd_15) as factor_cd_15
+                         , max(factor_cd_16) as factor_cd_16
+                         , max(factor_cd_17) as factor_cd_17
+                         , max(factor_cd_18) as factor_cd_18       
+                         , max(factor_cd_19) as factor_cd_19
+                         , max(factor_cd_20) as factor_cd_20      
+                       
+                         , max(factor_val_1) as factor_val_1  
+                         , max(factor_val_2) as factor_val_2    
+                         , max(factor_val_3) as factor_val_3    
+                         , max(factor_val_4) as factor_val_4    
+                         , max(factor_val_5) as factor_val_5    
+                         , max(factor_val_6) as factor_val_6    
+                         , max(factor_val_7) as factor_val_7    
+                         , max(factor_val_8) as factor_val_8    
+                         , max(factor_val_9) as factor_val_9    
+                         , max(factor_val_10) as factor_val_10  
+                         , max(factor_val_11) as factor_val_11  
+                         , max(factor_val_12) as factor_val_12    
+                         , max(factor_val_13) as factor_val_13    
+                         , max(factor_val_14) as factor_val_14    
+                         , max(factor_val_15) as factor_val_15    
+                         , max(factor_val_16) as factor_val_16    
+                         , max(factor_val_17) as factor_val_17    
+                         , max(factor_val_18) as factor_val_18    
+                         , max(factor_val_18) as factor_val_19    
+                         , max(factor_val_20) as factor_val_20         
+					FROM drbs67tb
+					WHERE factor_cls_cd = #factorClsCd#
+                      AND bsns_rule_rt_cd = #bsnsRuleRtCd#
+                    GROUP BY factor_val_1, factor_val_2, factor_val_3, factor_val_4, factor_val_5
+                    	, factor_val_6, factor_val_7, factor_val_8, factor_val_9, factor_val_10
+                    	, factor_val_11, factor_val_12, factor_val_13, factor_val_14, factor_val_15
+                    	, factor_val_16, factor_val_17, factor_val_18, factor_val_19, factor_val_20
+                    	, factor_cd_1, factor_cd_2, factor_cd_3, factor_cd_4, factor_cd_5
+                    	, factor_cd_6, factor_cd_7, factor_cd_8, factor_cd_9, factor_cd_10
+                    	, factor_cd_11, factor_cd_12, factor_cd_13, factor_cd_14, factor_cd_15
+                    	, factor_cd_16, factor_cd_17, factor_cd_18, factor_cd_19, factor_cd_20 
+				) a 
+                  ,(SELECT rownum as rowCnt FROM drss01tb  WHERE rownum <![CDATA[ < ]]> 41) b
+			) t
+			WHERE t.factor_cd is not null
+		) t1, drbs61tb s
+		WHERE t1.factor_cd = s.factor_cd
+    </entry>
+    
+    <!-- 표준활동종합지수 : HC 영업소 전체 (201007조회부터)-->
+    <entry key="sql.selectThirteen">         
+    /* TS.NewStandardActivityExponentHcClerk self/Activity 홍수미 */
+                 
+       
+    </entry>
+</properties>

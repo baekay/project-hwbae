@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!--
+코드표준검증룰 페이지 용 SQL XML 파일
+
+@sfmi.title 코드표준검증룰 페이지 용 SQL XML 파일
+@sfmi.portal-id jk420.kim
+@sfmi.developer 이해봉
+-->
+<!DOCTYPE sqlMap
+	PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--
+	ruleId           검증룰항목ID
+	name             검증룰항목명
+	targetType       대분류
+	category         중분류
+	type             표준구분
+	levelCdVal       위반구분
+	description      검증룰내용
+	badCodeSample    BAD사례
+	goodCodeSample   GOOD사례
+	applStartDt      적용개시일
+	applEndDt        적용종료일
+	inputDttm        입력일시
+	inputClerk       입력자
+-->
+<sqlMap namespace="CodeStandardRuleDesc">
+
+	<!--
+	결과 매핑에 사용할 공통 타입 정의
+	-->
+	<typeAlias alias="codeStandardRuleDesc" type="sfmi.component.squad.itqualitybdt.CodeStandardRuleDesc"/>
+
+	<!--
+	코드표준검증룰 리스트 조회
+	 -->
+	<select id="selectCIStandardRuleListCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		SELECT COUNT(1)
+		FROM DPQA05TB
+		WHERE STD_CLS like #typeParam#||'%'
+			AND IMDG_CLS like #levelParam#||'%'
+			AND (CASE WHEN #targetTypeParam# IS NULL THEN '1' ELSE LCLS END) LIKE (CASE WHEN #targetTypeParam# IS NULL THEN '1' ELSE #targetTypeParam#||'%' END)
+			AND (CASE WHEN #categoryParam# IS NULL THEN '1' ELSE MCLS END) LIKE (CASE WHEN #categoryParam# IS NULL THEN '1' ELSE #categoryParam#||'%' END)
+			AND SUBSTR(APPL_END_DT, 1, 8) >= TO_CHAR(sysdate, 'yyyyMMdd')
+	</select>
+	<select id="selectCIStandardRuleList" parameterClass="java.util.Map" resultClass="codeStandardRuleDesc">
+		SELECT
+			VERIF_ITEM_ID as ruleId
+			, VERIF_ITEM_NM as name
+			, (CASE WHEN LCLS IS NULL THEN '-' ELSE (SELECT CD_NM FROM DPLY21TB WHERE CD_VALUE = LCLS) END) as targetType
+			, (CASE WHEN LCLS IS NULL THEN '-' ELSE (SELECT CD_NM FROM DPLY21TB WHERE CD_VALUE = MCLS) END) as category
+			, (SELECT CD_NM FROM DPLY21TB WHERE CD_VALUE = STD_CLS) as type
+			, (SELECT CD_NM FROM DPLY21TB WHERE CD_VALUE = IMDG_CLS) as levelCdVal
+			, APPL_START_DT as applStartDt
+			, APPL_END_DT as applEndDt
+		FROM
+		(
+			SELECT
+				VERIF_ITEM_ID, VERIF_ITEM_NM, LCLS, MCLS
+				, STD_CLS, IMDG_CLS, APPL_START_DT, APPL_END_DT
+				, CEIL(ROWNUM / #rowCntPerPage#) AS PAGE
+			FROM
+			(
+			SELECT
+				VERIF_ITEM_ID, VERIF_ITEM_NM, LCLS, MCLS
+				, STD_CLS, IMDG_CLS, APPL_START_DT, APPL_END_DT
+			FROM
+				DPQA05TB
+			WHERE
+					STD_CLS like #typeParam#||'%'
+				AND IMDG_CLS like #levelParam#||'%'
+				AND (CASE WHEN #targetTypeParam# IS NULL THEN '1' ELSE LCLS END)
+					LIKE (CASE WHEN #targetTypeParam# IS NULL THEN '1' ELSE #targetTypeParam#||'%' END)
+				AND (CASE WHEN #categoryParam# IS NULL THEN '1' ELSE MCLS END)
+					LIKE (CASE WHEN #categoryParam# IS NULL THEN '1' ELSE #categoryParam#||'%' END)
+				AND SUBSTR(APPL_END_DT, 1, 8) >= TO_CHAR(sysdate, 'yyyyMMdd')
+			ORDER BY
+				IMDG_CLS, VERIF_ITEM_NM
+			) DATA
+		) WHERE PAGE = #currentPage#
+	</select>
+
+	<!--
+	코드표준검증룰 조회
+	-->
+	<select id="selectCIStandardRule" parameterClass="java.util.Map" resultClass="codeStandardRuleDesc">
+		SELECT
+			VERIF_ITEM_ID as ruleId
+			, VERIF_ITEM_NM as name
+			, (CASE WHEN LCLS IS NULL THEN '-' ELSE (SELECT(CASE WHEN #flag# = '1' THEN CD_NM ELSE CD_VALUE END)
+													FROM DPLY21TB WHERE CD_VALUE = LCLS)END) as targetType
+			, (CASE WHEN LCLS IS NULL THEN '-' ELSE (SELECT(CASE WHEN #flag# = '1' THEN CD_NM ELSE CD_VALUE END)
+													FROM DPLY21TB WHERE CD_VALUE = MCLS)END) as category
+			, (SELECT(CASE WHEN #flag# = '1' THEN CD_NM ELSE CD_VALUE END)FROM DPLY21TB WHERE CD_VALUE = STD_CLS) as type
+			, (SELECT(CASE WHEN #flag# = '1' THEN CD_NM ELSE CD_VALUE END)FROM DPLY21TB WHERE CD_VALUE = IMDG_CLS) as levelCdVal
+			, RULE_CONTS as description
+			, BAD_CASE as badCodeSample
+			, GOOD_CASE as goodCodeSample
+			, APPL_START_DT as applStartDt
+			, APPL_END_DT as applEndDt
+			, INPUT_DTTM as inputDttm
+			, INPUT_CLERK as inputClerk
+		FROM
+			DPQA05TB
+		WHERE
+			VERIF_ITEM_ID = #ruleId#
+	</select>
+
+	<!--
+	코드표준검증룰 등록
+	-->
+	<insert id="createCIStandardRule" parameterClass="codeStandardRuleDesc">
+		INSERT INTO DPQA05TB
+		(
+			VERIF_ITEM_ID, VERIF_ITEM_NM, LCLS, MCLS, STD_CLS, IMDG_CLS, RULE_CONTS
+			, BAD_CASE, GOOD_CASE, APPL_START_DT, APPL_END_DT, INPUT_DTTM, INPUT_CLERK
+		)
+		VALUES
+		(
+			DPQA05TB_SEQ.NEXTVAL, #name#, #targetType#, #category#, #type#, #levelCdVal#, #description#
+			, #badCodeSample#, #goodCodeSample#, #applStartDt#, #applEndDt#, TO_CHAR(sysdate,'yyyyMMddHH24miss'), #inputClerk#
+		)
+	</insert>
+
+	<!--
+	코드표준검증룰 수정
+	 -->
+	<update id="updateCIStandardRule" parameterClass="codeStandardRuleDesc">
+		UPDATE
+			DPQA05TB
+		SET
+			VERIF_ITEM_NM = #name#
+			, LCLS = #targetType#
+			, MCLS = #category#
+			, STD_CLS = #type#
+			, IMDG_CLS = #levelCdVal#
+			, RULE_CONTS = #description#
+			, BAD_CASE = #badCodeSample#
+			, GOOD_CASE = #goodCodeSample#
+			, APPL_START_DT = #applStartDt#
+			, APPL_END_DT = #applEndDt#
+			, INPUT_DTTM = to_char(sysdate,'yyyyMMddHH24miss')
+			, INPUT_CLERK = #inputClerk#
+		WHERE
+			VERIF_ITEM_ID = #ruleId#
+	</update>
+
+	<!--
+	코드표준검증룰 삭제
+	 -->
+	<delete id="deleteCIStandardRule" parameterClass="codeStandardRuleDesc">
+		DELETE FROM DPQA05TB WHERE VERIF_ITEM_ID = #ruleId#
+	</delete>
+
+    <!--
+	코드표준검증룰 적용일 변경
+    -->
+	<update id="updateCIStandardRuleSetApplyEndDate" parameterClass="java.lang.String">
+        UPDATE DPQA05TB SET APPL_END_DT=TO_CHAR(SYSDATE - 1,'YYYYMMDD')||'235959'
+        WHERE VERIF_ITEM_ID IN (SELECT VERIF_ITEM_ID FROM DPQA05TB WHERE APPL_END_DT='99991231235959')
+        AND VERIF_ITEM_NM NOT LIKE 'ILMStandardCommentWithPageIdCheckDB_%'
+	</update>
+
+	<!--
+	코드표준검증룰셋 등록
+	-->
+    <insert id="createCIStandardRuleSet" parameterClass="codeStandardRuleDesc">
+        INSERT INTO DPQA05TB
+        (
+            VERIF_ITEM_ID, VERIF_ITEM_NM, LCLS, MCLS, STD_CLS, IMDG_CLS, RULE_CONTS
+            , BAD_CASE, GOOD_CASE, APPL_START_DT, APPL_END_DT, INPUT_DTTM, INPUT_CLERK
+        )
+        VALUES
+        (
+            DPQA05TB_SEQ.NEXTVAL, #name#, #targetType#, #category#, #type#, #levelCdVal#, #description#
+            , #badCodeSample#, #goodCodeSample#, TO_CHAR(SYSDATE,'YYYYMMDD')||'000000', '99991231235959', TO_CHAR(sysdate,'yyyyMMddHH24miss'), 'jk420.kim'
+        )
+    </insert>
+
+	<!--
+	코드표준검증룰  예외 항목 조회
+	-->
+	<select id="selectCIStandardExceptionByRule" parameterClass="java.util.Map" resultClass="codeStandardRuleDesc">
+		SELECT
+			RULE_ID as name
+		FROM DPQA21TB
+		WHERE SYSTEM_ID = #systemId#
+		AND APPLY_YN = #applyYn#
+	</select>
+</sqlMap>

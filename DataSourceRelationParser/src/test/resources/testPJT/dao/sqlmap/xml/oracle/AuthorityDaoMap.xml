@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!-- 
+권한관리 페이지 용 SQL XML 파일
+ 
+@sfmi.title 권한관리 페이지 용 SQL XML 파일
+@sfmi.portal-id jk420.kim
+@sfmi.developer 이해봉
+-->
+<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Authority">
+
+	<!-- 
+	결과 매핑에 사용할 공통 타입 정의  
+	-->
+	<typeAlias alias="authority" type="sfmi.component.squad.itqualitybdt.Authority"/>
+
+	<!--
+	권한관리 리스트 조회 카운트
+	-->
+	<select id="selectAuthorityByParamCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		SELECT  
+			COUNT(A.CLERK_ID)             
+		FROM DPQA27TB A, CSYST800T B, CSYST700T C 
+		WHERE (A.CLERK_ID LIKE #clerkId#||'%' OR A.CLERK_NM LIKE #clerkNm#||'%') 
+		  AND A.CLERK_AUTH LIKE #clerkAuth#||'%' 
+		  AND B.JUMIN_NO = A.CLERK_NO 
+		  AND C.PART_CODE = B.PART_CODE 
+	</select>
+	
+	<!-- 
+	권한관리 리스트 조회 
+	-->
+	<select id="selectAuthorityByParamList" parameterClass="java.util.Map" resultClass="authority">
+		SELECT  
+			CLERK_ID as clerkId,
+			CLERK_NM as clerkNm,
+			CLERK_NO as clerkNo,
+			PART_CD as partCd,
+			PART_NM as partNm,
+			DUTY as duty,
+			'' as oldClerkAuth,
+			CLERK_AUTH as clerkAuth,
+			CLERK_AUTH_NM as clerkAuthNm,
+			SYS_CD as sysCd,
+			DPLYF_SYS_NM(SYS_CD) as sysCdNm,
+			INPUT_DT as inputDt,
+			INPUT_CLERK_ID as inputClerkID,
+			UPDATE_DT as updateDt,
+			UPDATE_CLERK_ID as updateClerkID
+		FROM (
+			SELECT  
+				A.CLERK_ID,
+				A.CLERK_NM,
+				A.CLERK_NO,
+				B.PART_CODE as PART_CD,
+				C.PART_NAME as PART_NM,
+				B.DUTY,
+				A.CLERK_AUTH,
+				dplyf_code(A.CLERK_AUTH) as CLERK_AUTH_NM,
+				A.SYS_CD,
+				CEIL(ROWNUM / #rowCntPerPage#) AS PAGE,
+				A.INPUT_DT,
+				A.INPUT_CLERK_ID,
+				A.UPDATE_DT,
+				A.UPDATE_CLERK_ID
+			FROM DPQA27TB A, CSYST800T B, CSYST700T C
+			WHERE (A.CLERK_ID LIKE #clerkId#||'%' OR A.CLERK_NM LIKE #clerkNm#||'%') 
+			  AND A.CLERK_AUTH LIKE #clerkAuth#||'%' 
+			  AND B.JUMIN_NO = A.CLERK_NO 
+			  AND C.PART_CODE = B.PART_CODE 
+			)
+		WHERE PAGE = #currentPage#
+		ORDER BY CLERK_ID, CLERK_AUTH
+	</select>
+	
+	<!-- 
+	권한관리 상세 조회
+	 -->
+	<select id="selectAuthorityByParam" parameterClass="authority" resultClass="authority">
+		SELECT  
+			A.CLERK_ID as clerkId,
+			A.CLERK_NM as clerkNm,
+			A.CLERK_NO as clerkNo,
+			B.PART_CODE AS partCd,
+			C.PART_NAME AS partNm,
+			B.DUTY as duty,
+			'' as oldClerkAuth,
+			A.CLERK_AUTH as clerkAuth,
+			dplyf_code(A.CLERK_AUTH) as clerkAuthNm,
+			A.SYS_CD as sysCd,
+			DPLYF_SYS_NM(A.SYS_CD) as sysCdNm,
+			A.INPUT_DT as inputDt,
+			A.INPUT_CLERK_ID as inputClerkId,
+			A.UPDATE_DT as updateDt,
+			A.UPDATE_CLERK_ID as updateClerkId              
+		FROM DPQA27TB A, CSYST800T B, CSYST700T C 
+		WHERE A.CLERK_ID = #clerkId#     
+		  AND A.CLERK_AUTH = #clerkAuth#         
+		  AND B.JUMIN_NO = A.CLERK_NO 
+		  AND C.PART_CODE = B.PART_CODE
+	</select>
+	
+	<!-- 
+	권한관리 등록
+	 -->
+	<insert id="insertAuthority" parameterClass="authority">
+		INSERT INTO DPQA27TB ( 
+			CLERK_ID,       CLERK_NO,  CLERK_NM,
+			CLERK_AUTH,     SYS_CD,    INPUT_DT,
+			INPUT_CLERK_ID, UPDATE_DT, UPDATE_CLERK_ID)
+		VALUES (
+			#clerkId#,      #clerkNo#, #clerkNm#,
+			#clerkAuth#,    #sysCd#,   SYSDATE,
+			#inputClerkID#, SYSDATE,   #updateClerkID#
+		)
+	</insert>
+
+	<!-- 
+	권한관리 수정
+	 -->
+	<update id="updateAuthority" parameterClass="authority">
+		UPDATE DPQA27TB 
+		SET CLERK_AUTH = #clerkAuth#,
+			SYS_CD = #sysCd#,
+			UPDATE_DT = SYSDATE,
+			UPDATE_CLERK_ID = #updateClerkID#
+		WHERE CLERK_ID = #clerkId# 
+		  AND CLERK_AUTH = #oldClerkAuth#      
+	</update>
+
+	<!-- 
+	권한관리 삭제
+	 -->
+	<delete id="deleteAuthority" parameterClass="authority">
+		DELETE FROM DPQA27TB 
+		WHERE CLERK_ID = #clerkId# 
+		  AND CLERK_AUTH = #oldClerkAuth#
+	</delete>
+
+	<!-- 
+	접속 유저에 대한 권한 정보 리스트 조회
+	 -->
+	<select id="selectUserAuthorityList" parameterClass="authority" resultClass="authority">
+        <!--
+        SELECT  
+            A.CLERK_ID as clerkId,
+            A.CLERK_NO as clerkNo,
+            A.CLERK_AUTH as clerkAuth,
+            dplyf_code(A.CLERK_AUTH) as clerkAuthNm,
+        FROM DPQA27TB A 
+        WHERE A.CLERK_ID = #clerkId#
+       ================================================  
+       SELECT B.DEPT_CD AS soPartCd
+            , (SELECT COUNT(1)
+                   FROM DPLY09TB 
+                 WHERE CLERK_NO = B.CLERK_NO
+                     AND CLERK_AUTH = 'D09EA') AS testEvalAdmin
+         FROM CSYST800T A
+            , SIDV11TB@ILM B
+        WHERE A.CLERK_NO = B.CLERK_NO
+          AND B.END_DATE = '99991231'
+          AND A.PORTAL_ID = #clerkId#
+         -->             
+       SELECT B.DEPT_CD AS soPartCd
+            , A.PORTAL_ID AS clerkId
+            , A.CLERK_NAME AS clerkAuthNm
+            , C.CLERK_AUTH AS clerkAuth
+            , A.CLERK_NO AS clerkNo
+         FROM CSYST800T A
+            , SIDV11TB@ILM B
+            , DPLY09TB C
+        WHERE A.CLERK_NO = B.CLERK_NO
+          AND A.CLERK_NO = C.CLERK_NO(+)
+          AND B.END_DATE = '99991231'
+          AND A.PORTAL_ID = #clerkId#
+                          
+	</select>
+</sqlMap>
